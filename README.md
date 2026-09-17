@@ -62,7 +62,7 @@ Dongle integration:
 ```yaml
 include:
   - board: nice_nano//zmk
-    shield: cornix_dongle_adapter cornix_dongle_eyelash dongle_display
+    shield: cornix_dongle_adapter cornix_dongle_eyelash cornix_dongle_display
     snippet: studio-rpc-usb-uart
     artifact-name: cornix_dongle
 
@@ -78,7 +78,10 @@ include:
 ```
 
 Use `cornix_dongle_eyelash` only when the dongle board does not already expose
-`zephyr,display`. The `dongle_display` module supplies the display widgets.
+`zephyr,display`. The local `cornix_dongle_display` shield supplies the display widgets and
+Salary Cat (月薪喵) animation. See [implementation and validation](boards/shields/cornix_dongle_display/UPSTREAM.md)
+and [artwork attribution](boards/shields/cornix_dongle_display/ASSETS.md).
+Display-only updates require flashing the dongle only, without a settings reset.
 
 ## RGB indicators
 
