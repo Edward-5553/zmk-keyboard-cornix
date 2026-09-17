@@ -14,7 +14,7 @@
 ---
 include:
   - board: nice_nano//zmk
-    shield: cornix_dongle_adapter cornix_dongle_eyelash dongle_display
+    shield: cornix_dongle_adapter cornix_dongle_eyelash cornix_dongle_display
     snippet: studio-rpc-usb-uart nrf52840-nosd
     artifact-name: cornix_dongle_nosd
   # dongle screen not yet supports zephyr4
@@ -27,15 +27,15 @@ include:
   #   snippet: studio-rpc-usb-uart
   #   artifact-name: cornix_dongle_zds_nano
   - board: cornix_left//zmk
-    # shield: cornix_indicator
+    shield: cornix_indicator
     artifact-name: cornix_left_default_nosd
 
   - board: cornix_ph_left//zmk
-    # shield: cornix_indicator
+    shield: cornix_indicator
     artifact-name: cornix_left_for_dongle_nosd
 
   - board: cornix_right//zmk
-    # shield: cornix_indicator
+    shield: cornix_indicator
     artifact-name: cornix_right_nosd
 
   - board: cornix_right//zmk

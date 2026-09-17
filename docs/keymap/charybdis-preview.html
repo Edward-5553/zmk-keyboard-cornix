@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#164f46">
+    <meta name="description" content="Cornix 当前 ZMK 固件的 42 键交互式键位图。">
+    <link rel="icon" href="../assets/cornix-mark.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="../assets/site.css?v=2">
+    <title>Cornix 当前固件键位图</title>
+    <style>
+      .preview-main { padding: 56px 0 90px; }
+      .preview-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(290px, .48fr); align-items: end; gap: 46px; margin-bottom: 28px; }
+      .preview-hero h1 { margin-bottom: 14px; font-size: clamp(2.55rem, 5.6vw, 4.7rem); }
+      .preview-hero p { max-width: 760px; margin: 0; color: var(--ink-muted); }
+      .draft-pill { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 18px; padding: 7px 12px; color: #7a2d1d; border: 1px solid rgba(241,111,81,.38); border-radius: 999px; background: var(--signal-soft); font-size: .8rem; font-weight: 800; }
+      .draft-pill::before { width: 8px; height: 8px; border-radius: 50%; background: var(--signal); content: ""; }
+      .source-card { padding: 20px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: rgba(255,253,248,.78); font-size: .87rem; }
+      .source-card strong, .source-card span { display: block; }
+      .source-card span { margin-top: 5px; color: var(--ink-muted); }
+      .mapping-notes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 0 0 28px; }
+      .mapping-note { min-width: 0; padding: 17px; border: 1px solid var(--line); border-radius: 16px; background: rgba(255,253,248,.7); }
+      .mapping-note strong { display: block; margin-bottom: 5px; font-size: .9rem; }
+      .mapping-note span { display: block; color: var(--ink-muted); font-size: .76rem; line-height: 1.5; }
+      .keymap-viewer { padding: clamp(20px, 3vw, 34px); border: 1px solid var(--line); border-radius: var(--radius-lg); background: rgba(255,253,248,.9); box-shadow: var(--shadow); }
+      .viewer-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 22px; }
+      .viewer-head h2 { margin-bottom: 6px; font-size: clamp(1.7rem, 3vw, 2.45rem); }
+      .layer-description { margin: 0; color: var(--ink-muted); font-size: .92rem; }
+      .status-note { flex: 0 0 auto; padding: 9px 13px; color: #7a2d1d; border-radius: 999px; background: var(--signal-soft); font-size: .77rem; font-weight: 800; }
+      .layer-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 30px; padding: 0; }
+      .layer-tab { min-height: 42px; padding: 8px 14px; color: var(--ink-muted); border: 1px solid var(--line); border-radius: 999px; background: transparent; font: inherit; font-size: .8rem; font-weight: 750; cursor: pointer; }
+      .layer-tab:hover { color: var(--forest); border-color: rgba(22,79,70,.36); background: rgba(198,240,223,.32); }
+      .layer-tab[aria-selected="true"] { color: var(--white); border-color: var(--forest); background: var(--forest); }
+      .keyboard-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: clamp(22px, 4vw, 58px); }
+      .hand { min-width: 0; }
+      .hand-label { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; color: var(--ink-muted); font-size: .76rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+      .hand-label::after { width: 28px; height: 1px; background: var(--line); content: ""; }
+      .key-plane { position: relative; width: 100%; }
+      .keycap { position: absolute; display: flex; min-width: 0; padding: 5px; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; color: var(--ink); border: 1px solid rgba(21,35,33,.16); border-radius: clamp(7px,1vw,13px); background: var(--paper-raised); box-shadow: 0 5px 0 rgba(13,51,46,.1), 0 9px 18px rgba(16,42,39,.08); font: inherit; line-height: 1.08; text-align: center; cursor: pointer; transition: border-color 150ms ease, box-shadow 150ms ease; }
+      .keycap:hover { border-color: var(--signal); }
+      .keycap[aria-pressed="true"] { border-color: var(--signal); box-shadow: 0 0 0 3px rgba(241,111,81,.24), 0 5px 0 rgba(13,51,46,.12); }
+      .keycap.dual { background: var(--mint); }
+      .keycap.system { background: rgba(214,163,60,.23); }
+      .keycap.transparent { color: var(--ink-muted); border-style: dashed; background: rgba(233,226,213,.62); box-shadow: 0 4px 0 rgba(13,51,46,.06); }
+      .keycap.none { color: rgba(91,105,102,.58); border-color: rgba(21,35,33,.08); background: rgba(233,226,213,.3); box-shadow: none; }
+      .key-main, .key-sub { display: block; width: 100%; overflow: hidden; text-overflow: ellipsis; }
+      .key-main { font-size: clamp(.63rem,1.08vw,.93rem); font-weight: 780; white-space: nowrap; }
+      .key-sub { margin-top: 4px; color: var(--ink-muted); font-size: clamp(.49rem,.76vw,.66rem); font-weight: 650; white-space: nowrap; }
+      .keycap.system .key-main { font-size: clamp(.55rem,.85vw,.76rem); }
+      .key-detail { display: grid; grid-template-columns: minmax(0,.8fr) minmax(220px,1.2fr); gap: 18px; margin-top: 30px; padding-top: 24px; border-top: 1px solid var(--line); }
+      .detail-title { margin: 0 0 5px; font-size: 1.22rem; font-weight: 780; }
+      .detail-meta, .detail-copy { margin: 0; color: var(--ink-muted); font-size: .86rem; }
+      .detail-copy code { display: inline-block; margin-top: 7px; }
+      .legend { display: flex; flex-wrap: wrap; gap: 9px 16px; margin-top: 24px; color: var(--ink-muted); font-size: .74rem; }
+      .legend-item { display: inline-flex; align-items: center; gap: 7px; }
+      .legend-swatch { width: 13px; height: 13px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper-raised); }
+      .legend-swatch.dual { background: var(--mint); }
+      .legend-swatch.system { background: rgba(214,163,60,.23); }
+      .legend-swatch.transparent { border-style: dashed; background: var(--paper-deep); }
+      .legend-swatch.none { opacity: .38; background: var(--paper-deep); }
+      .preview-footnote { max-width: 880px; margin: 22px auto 0; color: var(--ink-muted); font-size: .78rem; text-align: center; }
+      @media (max-width: 920px) { .mapping-notes { grid-template-columns: repeat(2,1fr); } }
+      @media (max-width: 820px) { .preview-hero, .key-detail { grid-template-columns: 1fr; } .preview-hero { gap: 22px; } .source-card { max-width: 460px; } .viewer-head { flex-direction: column; gap: 10px; } }
+      @media (max-width: 680px) {
+        .preview-main { padding-top: 42px; }
+        .mapping-notes { grid-template-columns: 1fr; }
+        .keymap-viewer { margin-inline: -4px; padding: 18px 14px 22px; border-radius: 22px; }
+        .keyboard-pair { grid-template-columns: 1fr; gap: 32px; }
+        .key-main { font-size: clamp(.65rem,2.8vw,.92rem); }
+        .key-sub { font-size: clamp(.5rem,2vw,.65rem); }
+      }
+      @media print { .site-header,.layer-tabs,.mapping-notes,.key-detail,.legend,.site-footer { display:none; } .preview-main { padding:0; } .keymap-viewer { border:0; box-shadow:none; } .keycap { box-shadow:none; } }
+    </style>
+  </head>
+  <body>
+    <a class="skip-link" href="#preview">跳至键位图</a>
+    <header class="site-header">
+      <nav class="site-nav shell" aria-label="主导航">
+        <a class="brand" href="../zh/"><img src="../assets/cornix-mark.svg" alt=""><span>Cornix × ZMK</span></a>
+        <ul class="nav-links">
+          <li><a href="charybdis-preview.html" aria-current="page">当前键位</a></li>
+          <li><a href="../zh/">项目指南</a></li>
+          <li><a href="https://github.com/hitsmaxft/zmk-keyboard-cornix/blob/main/config/cornix.keymap">查看源码</a></li>
+        </ul>
+        <ul class="language-links" aria-label="状态"><li><a href="charybdis-preview.html" aria-current="page">待验证</a></li></ul>
+      </nav>
+    </header>
+
+    <main class="preview-main" id="preview">
+      <div class="shell">
+        <section class="preview-hero" aria-labelledby="page-title">
+          <div>
+            <div class="draft-pill">固件已更新 · 待实机验证</div>
+            <p class="eyebrow">Cornix · 当前仓库配置</p>
+            <h1 id="page-title">42 键当前键位。</h1>
+            <p>当前固件保留 Base、数字导航蓝牙、功能符号三层核心输入，并提供 Scroll 与 Snipe 两个透明预留层。</p>
+          </div>
+          <div class="source-card">
+            <strong>固件配置</strong>
+            <span><code>config/cornix.keymap</code></span>
+            <span>50 个矩阵位置 · 42 个有效键位 · 5 层</span>
+          </div>
+        </section>
+
+        <section class="mapping-notes" aria-label="迁移适配说明">
+          <article class="mapping-note"><strong>主键区</strong><span>移除 Charybdis 顶部功能行；Base 保留标准三行 QWERTY，右上角改为 Backspace。</span></article>
+          <article class="mapping-note"><strong>拇指区</strong><span>Space/L1 与 Enter/L2 合并为轻触/长按键，腾出 Esc、Alt、Delete 与 Caps。</span></article>
+          <article class="mapping-note"><strong>数字 / 蓝牙</strong><span>右手为 456 / 0123 / 789，数字 1 对应 J 盲键；左手底排为清除当前配对与设备 1–5。</span></article>
+          <article class="mapping-note"><strong>精简功能</strong><span>不保留鼠标按键；Scroll 与 Snipe 仅作为透明预留层，未迁移未绑定的 RGB 跳层宏。</span></article>
+        </section>
+
+        <section class="keymap-viewer" aria-labelledby="active-layer-name">
+          <div class="viewer-head">
+            <div><h2 id="active-layer-name">L0 · Base</h2><p class="layer-description" id="layer-description">三行 QWERTY；拇指区承担 Esc、Alt、双功能层键、Delete 与 Caps。</p></div>
+            <div class="status-note">已写入 keymap · 待实机验证</div>
+          </div>
+          <div class="layer-tabs" id="layer-tabs" role="tablist" aria-label="选择键盘图层"></div>
+          <div class="keyboard-pair" aria-live="polite">
+            <section class="hand" aria-label="左手键位"><div class="hand-label"><span>Left</span></div><div class="key-plane" id="left-hand"></div></section>
+            <section class="hand" aria-label="右手键位"><div class="hand-label"><span>Right</span></div><div class="key-plane" id="right-hand"></div></section>
+          </div>
+          <div class="key-detail" aria-live="polite">
+            <div><p class="detail-title" id="detail-title">Space · 长按 L1</p><p class="detail-meta" id="detail-meta">左手 · 拇指键 · 索引 43</p></div>
+            <p class="detail-copy" id="detail-copy">轻触空格，长按进入 L1 数字导航层。<br><code>&amp;lt 1 SPACE</code></p>
+          </div>
+          <div class="legend" aria-label="键位颜色图例">
+            <span class="legend-item"><i class="legend-swatch"></i>普通按键</span><span class="legend-item"><i class="legend-swatch dual"></i>轻触 / 长按双功能</span><span class="legend-item"><i class="legend-swatch system"></i>蓝牙管理</span><span class="legend-item"><i class="legend-swatch transparent"></i>透传下层</span><span class="legend-item"><i class="legend-swatch none"></i>未使用位置</span>
+          </div>
+        </section>
+        <p class="preview-footnote">确认重点：右上角使用 Backspace 而非反斜杠；Caps 位于右外侧拇指键；L1 左手底排提供当前槽位清除与设备 1–5，不设置“清除全部”；L1/L2 拇指区保持透传。反斜杠仍可在 L2 输入。</p>
+      </div>
+    </main>
+
+    <footer class="site-footer"><div class="shell footer-grid"><div><strong>Cornix 当前固件键位</strong><p>此页面与 <code>config/cornix.keymap</code> 保持同步；最终手感仍需实机验证。</p></div><a href="#preview">返回顶部 ↑</a></div></footer>
+
+    <script>
+      (() => {
+        "use strict";
+        const layout = [
+          {row:0,col:0,x:0,y:.5},{row:0,col:1,x:1,y:.5},{row:0,col:2,x:2,y:.25},{row:0,col:3,x:3,y:0},{row:0,col:4,x:4,y:.25},{row:0,col:5,x:5,y:.5},
+          {row:0,col:8,x:8.5,y:.5},{row:0,col:9,x:9.5,y:.3},{row:0,col:10,x:10.5,y:0},{row:0,col:11,x:11.5,y:.33},{row:0,col:12,x:12.5,y:.5},{row:0,col:13,x:13.5,y:.5},
+          {row:1,col:0,x:0,y:1.5},{row:1,col:1,x:1,y:1.5},{row:1,col:2,x:2,y:1.25},{row:1,col:3,x:3,y:1},{row:1,col:4,x:4,y:1.25},{row:1,col:5,x:5,y:1.5},
+          {row:1,col:8,x:8.5,y:1.5},{row:1,col:9,x:9.5,y:1.3},{row:1,col:10,x:10.5,y:1},{row:1,col:11,x:11.5,y:1.33},{row:1,col:12,x:12.5,y:1.5},{row:1,col:13,x:13.5,y:1.5},
+          {row:2,col:0,x:0,y:2.55},{row:2,col:1,x:1,y:2.55},{row:2,col:2,x:2,y:2.25},{row:2,col:3,x:3,y:2},{row:2,col:4,x:4,y:2.25},{row:2,col:5,x:5,y:2.55},{row:2,col:6,x:6,y:2},
+          {row:2,col:7,x:7.5,y:2},{row:2,col:8,x:8.5,y:2.55},{row:2,col:9,x:9.5,y:2.3},{row:2,col:10,x:10.5,y:2},{row:2,col:11,x:11.5,y:2.33},{row:2,col:12,x:12.5,y:2.55},{row:2,col:13,x:13.5,y:2.55},
+          {row:3,col:0,x:0,y:3.55},{row:3,col:1,x:1,y:3.55},{row:3,col:2,x:2,y:3.3},{row:3,col:3,x:3.5,y:3.63},{row:3,col:4,x:4.5,y:3.7,r:11.93,rx:5,ry:4.75},{row:3,col:5,x:5.5,y:3.65,r:23,rx:5,ry:4.75},
+          {row:3,col:8,x:7.64,y:5.38,r:-23,rx:5,ry:4.75},{row:3,col:9,x:9,y:3.75,r:-11.93,rx:9.25,ry:4.75},{row:3,col:10,x:10,y:3.63},{row:3,col:11,x:11.5,y:3.38},{row:3,col:12,x:12.5,y:3.55},{row:3,col:13,x:13.5,y:3.55}
+        ];
+        const activeIndexes = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,32,33,34,35,36,37,41,42,43,44,45,46];
+        const activeSet = new Set(activeIndexes);
+        const transparentLayer = () => Array.from({length:50}, (_,index) => activeSet.has(index) ? "&trans" : "&none");
+        const base = `&kp TAB
+&kp Q
+&kp W
+&kp E
+&kp R
+&kp T
+&kp Y
+&kp U
+&kp I
+&kp O
+&kp P
+&kp BACKSPACE
+&kp LEFT_SHIFT
+&kp A
+&kp S
+&kp D
+&kp F
+&kp G
+&kp H
+&kp J
+&kp K
+&kp L
+&kp SEMI
+&kp SQT
+&kp LEFT_CONTROL
+&kp Z
+&kp X
+&kp C
+&kp V
+&kp B
+&none
+&none
+&kp N
+&kp M
+&kp COMMA
+&kp DOT
+&kp FSLH
+&kp RIGHT_SHIFT
+&none
+&none
+&none
+&kp ESC
+&kp LEFT_ALT
+&lt 1 SPACE
+&lt 2 ENTER
+&kp DELETE
+&kp CAPSLOCK
+&none
+&none
+&none`.split("\n");
+        const numNav = transparentLayer();
+        Object.assign(numNav,{3:"&kp UP",7:"&kp N4",8:"&kp N5",9:"&kp N6",14:"&kp LEFT",15:"&kp DOWN",16:"&kp RIGHT",18:"&kp N0",19:"&kp N1",20:"&kp N2",21:"&kp N3",24:"&bt BT_CLR",25:"&bt BT_SEL 0",26:"&bt BT_SEL 1",27:"&bt BT_SEL 2",28:"&bt BT_SEL 3",29:"&bt BT_SEL 4",33:"&kp N7",34:"&kp N8",35:"&kp N9"});
+        const fnSymbols = transparentLayer();
+        const fnRow = ["F1","F2","F3","F4","F5","F6","F7","F8","F9","F10","F11","F12"];
+        const symbolRow = ["TILDE","EXCL","AT","HASH","DLLR","PRCNT","CARET","AMPS","ASTRK","LPAR","RPAR","GRAVE"];
+        const bracketRow = ["BSLH","LBRC","LBKT","LT","MINUS","UNDER","PLUS","EQUAL","GT","RBKT","RBRC","PIPE"];
+        fnRow.forEach((code,index) => fnSymbols[index] = `&kp ${code}`);
+        symbolRow.forEach((code,index) => fnSymbols[index+12] = `&kp ${code}`);
+        [24,25,26,27,28,29,32,33,34,35,36,37].forEach((position,index) => fnSymbols[position] = `&kp ${bracketRow[index]}`);
+        const layers = {
+          Base:{tab:"L0 · Base",description:"三行 QWERTY；拇指区承担 Esc、Alt、双功能层键、Delete 与 Caps。",keys:base},
+          NumNav:{tab:"L1 · 数字 / 导航",description:"ESDF 方向键保持不变；右手为 456 / 0123 / 789，数字 1 落在 J 盲键；左手底排为蓝牙配对管理。",keys:numNav},
+          FnSymbols:{tab:"L2 · 功能 / 符号",description:"首行 F1–F12，下两行为 Charybdis 原功能符号层；拇指区全部透传。",keys:fnSymbols},
+          Scroll:{tab:"L3 · Scroll",description:"当前配置保留的全透明滚动预留层，暂不分配独立键位。",keys:transparentLayer()},
+          Snipe:{tab:"L4 · Snipe",description:"当前配置保留的全透明精准指针预留层，暂不分配独立键位。",keys:transparentLayer()}
+        };
+        const layerOrder = Object.keys(layers);
+        const keyNames = {
+          TAB:"Tab",ESC:"Esc",BACKSPACE:"Bksp",DELETE:"Delete",SPACE:"Space",ENTER:"Enter",LEFT_SHIFT:"Shift",RIGHT_SHIFT:"Shift",LEFT_CONTROL:"Ctrl",LEFT_ALT:"Alt",CAPSLOCK:"Caps",BSLH:"\\",SEMI:";",SQT:"'",COMMA:",",DOT:".",FSLH:"/",
+          UP:"↑",DOWN:"↓",LEFT:"←",RIGHT:"→",TILDE:"~",EXCL:"!",AT:"@",HASH:"#",DLLR:"$",PRCNT:"%",CARET:"^",AMPS:"&",ASTRK:"*",LPAR:"(",RPAR:")",GRAVE:"`",LBRC:"{",LBKT:"[",LT:"<",MINUS:"−",UNDER:"_",PLUS:"+",EQUAL:"=",GT:">",RBKT:"]",RBRC:"}",PIPE:"|"
+        };
+        const handIndexes = {left:[0,1,2,3,4,5,12,13,14,15,16,17,24,25,26,27,28,29,30,38,39,40,41,42,43],right:[6,7,8,9,10,11,18,19,20,21,22,23,31,32,33,34,35,36,37,44,45,46,47,48,49]};
+        const tabs=document.getElementById("layer-tabs"),title=document.getElementById("active-layer-name"),description=document.getElementById("layer-description"),detailTitle=document.getElementById("detail-title"),detailMeta=document.getElementById("detail-meta"),detailCopy=document.getElementById("detail-copy");
+        let activeLayer="Base",selectedIndex=43;
+        const escapeHtml=value=>value.replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"})[char]);
+        const nameKey=code=>keyNames[code]||(/^N\d$/.test(code)?code.slice(1):code.replaceAll("_"," "));
+        function describeBinding(binding){
+          const parts=binding.trim().split(/\s+/),behavior=parts[0].slice(1),args=parts.slice(1);
+          if(behavior==="kp")return{main:nameKey(args[0]),sub:"按键",type:"tap",copy:`轻触输入 ${nameKey(args[0])}。`};
+          if(behavior==="lt")return{main:nameKey(args[1]),sub:`长按 L${args[0]}`,type:"dual",copy:`轻触输入 ${nameKey(args[1])}，长按进入 ${layers[layerOrder[Number(args[0])]].tab}。`};
+          if(behavior==="bt"){
+            if(args[0]==="BT_CLR")return{main:"清除配对",sub:"当前设备",type:"system",copy:"清除当前蓝牙槽位的配对信息，以便重新配对。"};
+            if(args[0]==="BT_SEL")return{main:`设备 ${Number(args[1])+1}`,sub:"选择蓝牙",type:"system",copy:`切换到蓝牙槽位 ${Number(args[1])+1}。`};
+          }
+          if(behavior==="trans")return{main:"▽",sub:"透传下层",type:"transparent",copy:"此位置继续解析当前活动的下层。"};
+          return{main:"—",sub:"未使用",type:"none",copy:"此位置在当前 42 键布局中不使用。"};
+        }
+        function rotatePoint(px,py,key){if(!key.r)return{x:px,y:py};const angle=key.r*Math.PI/180,rx=key.rx??key.x,ry=key.ry??key.y,dx=px-rx,dy=py-ry;return{x:rx+dx*Math.cos(angle)-dy*Math.sin(angle),y:ry+dx*Math.sin(angle)+dy*Math.cos(angle)};}
+        function getBounds(indexes){const points=indexes.flatMap(index=>{const key=layout[index];return[[key.x,key.y],[key.x+1,key.y],[key.x+1,key.y+1],[key.x,key.y+1]].map(([x,y])=>rotatePoint(x,y,key));});const pad=.14;return{minX:Math.min(...points.map(p=>p.x))-pad,maxX:Math.max(...points.map(p=>p.x))+pad,minY:Math.min(...points.map(p=>p.y))-pad,maxY:Math.max(...points.map(p=>p.y))+pad};}
+        function renderHand(side){
+          const plane=document.getElementById(`${side}-hand`),indexes=handIndexes[side],bounds=getBounds(indexes),width=bounds.maxX-bounds.minX,height=bounds.maxY-bounds.minY;
+          plane.style.aspectRatio=`${width} / ${height}`;plane.replaceChildren();
+          indexes.forEach(index=>{const key=layout[index],info=describeBinding(layers[activeLayer].keys[index]),button=document.createElement("button"),rx=key.rx??key.x+.5,ry=key.ry??key.y+.5;button.type="button";button.className=`keycap ${info.type}`;button.dataset.index=String(index);button.setAttribute("aria-pressed",String(index===selectedIndex));button.setAttribute("aria-label",`${info.main}，${info.sub}`);button.style.left=`${((key.x-bounds.minX)/width)*100}%`;button.style.top=`${((key.y-bounds.minY)/height)*100}%`;button.style.width=`${(1/width)*100}%`;button.style.height=`${(1/height)*100}%`;button.style.transformOrigin=`${(rx-key.x)*100}% ${(ry-key.y)*100}%`;button.style.transform=`rotate(${key.r||0}deg)`;button.innerHTML=`<span class="key-main">${escapeHtml(info.main)}</span><span class="key-sub">${escapeHtml(info.sub)}</span>`;button.addEventListener("click",()=>{selectedIndex=index;updateSelection();});plane.appendChild(button);});
+        }
+        function updateSelection(){document.querySelectorAll(".keycap").forEach(key=>key.setAttribute("aria-pressed",String(Number(key.dataset.index)===selectedIndex)));const binding=layers[activeLayer].keys[selectedIndex],info=describeBinding(binding),key=layout[selectedIndex],side=handIndexes.left.includes(selectedIndex)?"左手":"右手",region=[41,42,43,44,45,46].includes(selectedIndex)?"拇指键":`矩阵 ${key.row},${key.col}`;detailTitle.textContent=`${info.main} · ${info.sub}`;detailMeta.textContent=`${side} · ${region} · 索引 ${selectedIndex}`;detailCopy.innerHTML=`${escapeHtml(info.copy)}<br><code>${escapeHtml(binding)}</code>`;}
+        function renderLayer(){title.textContent=layers[activeLayer].tab;description.textContent=layers[activeLayer].description;tabs.querySelectorAll(".layer-tab").forEach(tab=>{const selected=tab.dataset.layer===activeLayer;tab.setAttribute("aria-selected",String(selected));tab.tabIndex=selected?0:-1;});renderHand("left");renderHand("right");updateSelection();}
+        layerOrder.forEach((name,index)=>{if(layers[name].keys.length!==50)throw new Error(`${name} has ${layers[name].keys.length} bindings`);const button=document.createElement("button");button.type="button";button.className="layer-tab";button.id=`preview-tab-${index}`;button.dataset.layer=name;button.setAttribute("role","tab");button.setAttribute("aria-selected",String(index===0));button.tabIndex=index===0?0:-1;button.textContent=layers[name].tab;button.addEventListener("click",()=>{activeLayer=name;renderLayer();});button.addEventListener("keydown",event=>{if(!["ArrowLeft","ArrowRight","Home","End"].includes(event.key))return;event.preventDefault();const current=layerOrder.indexOf(activeLayer),next=event.key==="Home"?0:event.key==="End"?layerOrder.length-1:(current+(event.key==="ArrowRight"?1:-1)+layerOrder.length)%layerOrder.length;activeLayer=layerOrder[next];renderLayer();document.getElementById(`preview-tab-${next}`).focus();});tabs.appendChild(button);});
+        renderLayer();
+      })();
+    </script>
+  </body>
+</html>

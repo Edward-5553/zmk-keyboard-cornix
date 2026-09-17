@@ -24,6 +24,26 @@
 Cornix 采用紧凑的 3×6 列交错布局，每侧有三个拇指键。硬件支持 USB-C、
 蓝牙、Kailh Choc V2 热插拔轴座，以及 10°、18°、25° 三档帐篷角度。
 
+## 当前键位预设
+
+当前配置使用 **50 个绑定位置**。下图完整展示常用的三层，包含尚未分配功能的位置：
+
+- **L0 基础层**：轻点 Space / Enter 输入空格 / 回车，按住分别进入 L1 / L2。
+- **L1 数字 / 导航层**：E/S/D/F 对应方向键，右手数字区，左下方为蓝牙档位控制。
+- **L2 功能 / 符号层**：上方两行符号，第三行为 F1–F12。
+
+![Cornix 最新键位图：基础、数字导航、功能符号三层，每层完整显示 50 个位置](keymap-drawer/cornix.svg)
+
+[查看 PNG 原图](keymap-drawer/cornix.png) · [下载离线键位编辑器](keymap-drawer/cornix.html)
+（下载 HTML 后在浏览器中打开）。编辑器支持实体键盘录入、拖动交换和导出修改后的 HTML。
+
+绿色键兼具轻点 / 长按功能；`from L0` 表示透明键并显示基础层回落值；`—` 表示未分配。
+Scroll、Snipe 仍为全透明的预留层，当前没有切入按键。图中数据来自当前
+`config/cornix.keymap`，不代表 v3.0.0 发行包或设备上通过 Studio 保存的改键。
+
+修改键位后运行 `python scripts/generate-keymap-image.py`，同步生成 HTML、SVG 和 PNG
+（需要 Pillow）。
+
 ## Zephyr 4.1 要求
 
 必须使用 `nice_nano//zmk` 等带限定符的 ZMK 板名。未限定的 `nice_nano`
@@ -60,7 +80,7 @@ Dongle 集成：
 ```yaml
 include:
   - board: nice_nano//zmk
-    shield: cornix_dongle_adapter cornix_dongle_eyelash dongle_display
+    shield: cornix_dongle_adapter cornix_dongle_eyelash cornix_dongle_display
     snippet: studio-rpc-usb-uart
     artifact-name: cornix_dongle
 
@@ -76,7 +96,10 @@ include:
 ```
 
 仅当 dongle 开发板尚未提供 `zephyr,display` 时，方需加入
-`cornix_dongle_eyelash`；`dongle_display` 模块负责提供显示组件。
+`cornix_dongle_eyelash`；本地 `cornix_dongle_display` shield 提供显示组件及月薪喵动画。
+低速敲键盘、高速吃零食打字，闲置显示睡觉静态帧；切换依据 ZMK 的 WPM 采样。
+详见[实现与验证](boards/shields/cornix_dongle_display/UPSTREAM.md)及[素材署名](boards/shields/cornix_dongle_display/ASSETS.md)。
+仅更新动画时，只刷 dongle 固件，无需刷 reset 或重新刷左右手。
 
 ## RGB 指示灯
 

@@ -25,6 +25,29 @@ Cornix uses a compact 3×6 column-staggered layout with three thumb keys per
 half. The hardware supports USB-C, Bluetooth, Kailh Choc V2 hot-swap sockets,
 and 10°, 18°, or 25° tenting.
 
+## Current keymap
+
+The current preset uses 50 binding positions. The diagram below shows all positions
+on the three active layers, including unassigned keys:
+
+- **L0 Base:** Space held activates L1; Enter held activates L2.
+- **L1 Num/Nav:** arrows on E/S/D/F, numbers on the right, and Bluetooth profile controls.
+- **L2 Fn/Symbol:** two rows of symbols, with F1–F12 on the third row.
+
+![Cornix current keymap: Base, Num/Nav and Fn/Symbol, 50 positions per layer](keymap-drawer/cornix.svg)
+
+[Full-size PNG](keymap-drawer/cornix.png) · [Offline keymap editor](keymap-drawer/cornix.html)
+(download the HTML and open it locally).
+The editor supports physical-keyboard input, drag-to-swap and exporting an edited HTML.
+
+Green keys have tap/hold behavior; `from L0` indicates a transparent binding shown
+with its base-layer fallback; `—` is unassigned. Scroll and Snipe remain transparent
+reserved layers with no entry binding. This reflects `config/cornix.keymap`, not
+the v3.0.0 release package or changes saved on a device through Studio.
+
+Regenerate the HTML and diagrams after keymap edits with
+`python scripts/generate-keymap-image.py` (requires Pillow).
+
 ## Zephyr 4.1 requirements
 
 Always use qualified ZMK board names such as `nice_nano//zmk`. The unqualified
@@ -62,7 +85,7 @@ Dongle integration:
 ```yaml
 include:
   - board: nice_nano//zmk
-    shield: cornix_dongle_adapter cornix_dongle_eyelash dongle_display
+    shield: cornix_dongle_adapter cornix_dongle_eyelash cornix_dongle_display
     snippet: studio-rpc-usb-uart
     artifact-name: cornix_dongle
 
@@ -78,7 +101,10 @@ include:
 ```
 
 Use `cornix_dongle_eyelash` only when the dongle board does not already expose
-`zephyr,display`. The `dongle_display` module supplies the display widgets.
+`zephyr,display`. The local `cornix_dongle_display` shield supplies the display widgets and
+Salary Cat (月薪喵) animation. See [implementation and validation](boards/shields/cornix_dongle_display/UPSTREAM.md)
+and [artwork attribution](boards/shields/cornix_dongle_display/ASSETS.md).
+Display-only updates require flashing the dongle only, without a settings reset.
 
 ## RGB indicators
 

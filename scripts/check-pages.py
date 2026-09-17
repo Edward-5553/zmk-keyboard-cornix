@@ -19,6 +19,7 @@ REQUIRED_FILES = {
     Path("404.html"),
     Path("en/index.html"),
     Path("zh/index.html"),
+    Path("keymap/index.html"),
     Path("assets/site.css"),
     Path("assets/cornix-mark.svg"),
     Path("assets/cornix_with_dongle.png"),
