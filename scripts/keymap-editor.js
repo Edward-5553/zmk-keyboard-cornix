@@ -1,0 +1,82 @@
+const $ = id => document.getElementById(id);
+const names = ['L0 基础', 'L1 数字 / 导航', 'L2 功能 / 符号', 'L3 Scroll', 'L4 Snipe'];
+const layerIds = ['BASE', 'NUM_NAV', 'FN_SYMBOLS', 'SCROLL', 'SNIPE'];
+const labels = {TAB:'Tab',BACKSPACE:'Backspace',LEFT_SHIFT:'左 Shift',RIGHT_SHIFT:'右 Shift',LEFT_CONTROL:'左 Ctrl',RIGHT_CONTROL:'右 Ctrl',LEFT_ALT:'左 Alt',RIGHT_ALT:'右 Alt',LEFT_GUI:'左 Win',RIGHT_GUI:'右 Win',ESC:'Esc',SPACE:'Space',ENTER:'Enter',DELETE:'Delete',CAPSLOCK:'Caps',SEMI:';',SQT:"'",COMMA:',',DOT:'.',FSLH:'/',UP:'↑',LEFT:'←',DOWN:'↓',RIGHT:'→',TILDE:'~',EXCL:'!',AT:'@',HASH:'#',DLLR:'$',PRCNT:'%',CARET:'^',AMPS:'&',ASTRK:'*',LPAR:'(',RPAR:')',GRAVE:'`',BSLH:'\\',LBRC:'{',LBKT:'[',LT:'<',MINUS:'-',UNDER:'_',PLUS:'+',EQUAL:'=',GT:'>',RBKT:']',RBRC:'}',PIPE:'|',HOME:'Home',END:'End',PG_UP:'Page Up',PG_DN:'Page Down',INSERT:'Insert',C_VOL_UP:'音量 +',C_VOL_DN:'音量 −',C_MUTE:'静音',C_PLAY_PAUSE:'播放 / 暂停',C_NEXT:'下一曲',C_PREV:'上一曲'};
+const options = new Map();
+function add(binding, text) { options.set(binding, text); }
+for (const c of 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') add('&kp '+c,c);
+for (let i=0;i<10;i++) add('&kp N'+i,String(i));
+for (let i=1;i<=24;i++) add('&kp F'+i,'F'+i);
+for (const [code,text] of Object.entries(labels)) add('&kp '+code,text);
+add('&trans','透明 · 跟随下层'); add('&none','无动作');
+for(let i=0;i<5;i++) {
+  add('&mo '+i,'按住进入 L'+i); add('&to '+i,'切换到 L'+i); add('&tog '+i,'开关 L'+i);
+  add('&bt BT_SEL '+i,'蓝牙档位 '+(i+1));
+}
+add('&bt BT_CLR','清除当前主机配对');
+for(const layer of layerIds) for(const key of ['SPACE','ENTER','TAB','ESC']) add(`&lt ${layer} ${key}`,`${labels[key]} / 按住 L${layerIds.indexOf(layer)}`);
+for(const mod of ['LC','LS','LA','LG']) for(const key of 'ACVXZSY') add(`&kp ${mod}(${key})`,`${{LC:'Ctrl',LS:'Shift',LA:'Alt',LG:'Win'}[mod]} + ${key}`);
+for(const layer of DATA.layers) for(const binding of layer.keys) if(!options.has(binding)) add(binding,binding);
+const initial=JSON.stringify(DATA.layers);
+// A draft is scoped to the exact embedded preset, so exported HTML is self-contained.
+let hash=2166136261; for(const c of initial) hash=Math.imul(hash^c.charCodeAt(0),16777619);
+const storageKey='cornix-keymap-editor-v1-'+(hash>>>0);
+let active=0, selected=null, drag=null, history=[], dirty=false, cached=false;
+const hidden=new Set([30,31,38,39,40,47,48,49]);
+try { const saved=JSON.parse(localStorage.getItem(storageKey)); if(saved?.length===5 && saved.every((l,i)=>l.name===DATA.layers[i].name && l.keys?.length===50 && l.keys.every(k=>typeof k==='string' && valid(k)))) { DATA.layers=saved; dirty=true; cached=true; } } catch {}
+function valid(value) { let key=value.replace(/^&kp /,'');while(/^(LC|RC|LS|RS|LA|RA|LG|RG)\(.+\)$/.test(key))key=key.slice(3,-1);return options.has(value) || (value.startsWith('&kp ')&&/^[A-Z][A-Z0-9_]*$/.test(key)) || /^&lt (?:BASE|NUM_NAV|FN_SYMBOLS|SCROLL|SNIPE|[0-4]) [A-Z][A-Z0-9_]*$/.test(value); }
+function keyLabel(binding) {
+  if(binding==='&none') return '—'; if(binding==='&trans') return '↧';
+  const p=binding.split(' ');
+  if(p[0]==='&lt') return labels[p[2]]||p[2];
+  if(p[0]==='&kp') return labels[p[1]]||p[1].replace(/^N(?=\d$)/,'');
+  if(p[0]==='&bt') return p[1]==='BT_CLR'?'清除配对':'BT '+(Number(p[2])+1);
+  return ({'&mo':'按住 L','&to':'切到 L','&tog':'开关 L'}[p[0]]||p[0])+p[1];
+}
+function layerNumber(binding){const token=binding.split(' ')[1];return layerIds.includes(token)?layerIds.indexOf(token):token;}
+function node(tag,attrs={},text) {const n=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const [k,v]of Object.entries(attrs))n.setAttribute(k,v);if(text!==undefined)n.textContent=text;return n;}
+const style=document.createElement('style'); style.textContent=`svg{touch-action:none;user-select:none}svg .selected rect{stroke:#f8cb79;stroke-width:4}svg .target rect{stroke:#82cfff;stroke-width:4}input,select{font:inherit;background:#101b23;color:#e8edef;border:1px solid #50636f;border-radius:8px;padding:10px;max-width:100%}.editor-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0}.editor-row input{flex:1;min-width:190px}.editor-row select{flex:2;min-width:220px}button:disabled{opacity:.4;cursor:default}#status{color:#eac891}svg .index{font-size:9px;fill:#90a6b3}`; document.head.append(style);
+const toolbar=document.createElement('div');toolbar.className='bar';toolbar.id='editor-toolbar';toolbar.innerHTML='<button id="export">导出修改后的 HTML</button><button id="undo">撤销</button><span id="status" role="status"></span>'; $('tabs').before(toolbar);
+function status(message){$('status').textContent=message;}
+function persist(){dirty=true;try{localStorage.setItem(storageKey,JSON.stringify(DATA.layers));status('已暂存到浏览器 · 完成后请导出 HTML');}catch{status('浏览器暂存不可用 · 请及时导出 HTML');}$('undo').disabled=!history.length;}
+function mutate(callback){history.push(JSON.stringify(DATA.layers));if(history.length>100)history.shift();callback();persist();render();if(selected!==null)edit(selected);}
+function applyBinding(value){if(selected===null)return;value=value.trim().replace(/\s+/g,' ');if(!valid(value)){status('绑定格式不支持，请从功能列表选择；自定义键码需为有效 ZMK 键码。');return;}if(DATA.layers[active].keys[selected]===value)return;mutate(()=>DATA.layers[active].keys[selected]=value);}
+function edit(i){selected=i;render();const raw=DATA.layers[active].keys[i];$('detail').innerHTML='<strong id="selected-title"></strong><p id="capture-hint">现在按笔记本或外接键盘上的键，即可设定此位置。支持 Ctrl+C 等组合；单独设置 Ctrl / Shift / Alt / Win 时，按下后松开即可。</p><button id="capture-focus">开始录入键盘按键</button><details><summary style="cursor:pointer;margin-top:18px">特殊功能 / 手动绑定（切层、蓝牙、透明键等）</summary><div class="editor-row"><input id="search" placeholder="搜索特殊功能" aria-label="搜索功能"><select id="choice" aria-label="选择按键功能"></select><button id="apply">应用选择</button></div><div class="editor-row"><input id="binding" aria-label="ZMK 绑定" spellcheck="false"><button id="apply-raw">应用绑定</button></div></details><p style="margin:12px 0 0;font-size:13px">录入采用实体键位置，符号按美式布局解释。部分系统快捷键可能被系统截获，可用手动绑定。修改仅作用于当前层。</p>';
+  $('selected-title').textContent=`${names[active]} · 位置 ${i} · ${keyLabel(raw)}`;$('binding').value=raw;
+  function filter(){const q=$('search').value.toLowerCase();$('choice').replaceChildren();const all=new Map(options);if(!all.has(raw))all.set(raw,raw);for(const [v,t]of all){if(!(`${t} ${v}`).toLowerCase().includes(q))continue;const o=document.createElement('option');o.value=v;o.textContent=t+'  ·  '+v;o.selected=v===raw;$('choice').append(o);}}
+  $('search').oninput=filter;filter();$('apply').onclick=()=>{if($('choice').value)applyBinding($('choice').value)};$('apply-raw').onclick=()=>applyBinding($('binding').value);$('binding').onkeydown=e=>{if(e.key==='Enter')applyBinding(e.target.value)};$('capture-focus').onclick=()=>{$('capture-focus').focus();status('等待实体键盘输入…');};$('capture-focus').focus({preventScroll:true});
+}
+function render(){[...$('tabs').children].forEach((b,i)=>b.setAttribute('aria-pressed',i===active));$('hint').textContent=`${names[active]} · 拖动交换，或点选后按实体键盘录入。绿色为轻点 / 长按双功能键，— 为未绑定。`;$('board').replaceChildren();DATA.positions.forEach(([w,h,x,y,r,rx,ry],i)=>{const raw=DATA.layers[active].keys[i];if(hidden.has(i)&&!$('reserved').checked&&raw==='&none')return;const trans=raw==='&trans',effective=trans?DATA.layers[0].keys[i]:raw;
+  const g=node('g',{'data-index':i,class:'key '+(raw==='&none'?'ghost ':effective.startsWith('&lt')?'layer ':'')+(selected===i?'selected':''),tabindex:0,role:'button','aria-label':`位置 ${i} ${keyLabel(effective)}${trans?' 继承':''}`,transform:`rotate(${r} ${rx*100} ${ry*100})`});g.append(node('rect',{x:x*100+4,y:y*100+4,width:w*100-8,height:h*100-8,rx:12}));g.append(node('text',{x:x*100+50,y:y*100+19,class:'index'},String(i)));g.append(node('text',{x:x*100+50,y:y*100+48,'font-size':keyLabel(effective).length>9?'12':'16'},keyLabel(effective)));g.append(node('text',{x:x*100+50,y:y*100+72,class:'sub'},trans?'↧ 继承':effective.startsWith('&lt')?'按住 L'+layerNumber(effective):''));g.append(node('title',{},raw));g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();edit(i)}});$('board').append(g);
+});}
+$('board').addEventListener('pointerdown',e=>{const g=e.target.closest('[data-index]');if(!g||e.button!==0)return;drag={index:Number(g.dataset.index),x:e.clientX,y:e.clientY,moved:false};$('board').setPointerCapture(e.pointerId);e.preventDefault();});
+$('board').addEventListener('pointermove',e=>{if(!drag)return;if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)>6)drag.moved=true;document.querySelectorAll('.target').forEach(n=>n.classList.remove('target'));const target=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-index]');if(drag.moved&&target)target.classList.add('target');});
+$('board').addEventListener('pointerup',e=>{if(!drag)return;const from=drag;drag=null;const g=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-index]');document.querySelectorAll('.target').forEach(n=>n.classList.remove('target'));if(!g)return;const to=Number(g.dataset.index);if(from.moved&&to!==from.index){selected=to;mutate(()=>{const keys=DATA.layers[active].keys;[keys[from.index],keys[to]]=[keys[to],keys[from.index]];});}else if(!from.moved)edit(from.index);});
+$('board').addEventListener('pointercancel',()=>{drag=null;document.querySelectorAll('.target').forEach(n=>n.classList.remove('target'));});
+const physicalCodes={Backquote:'GRAVE',Minus:'MINUS',Equal:'EQUAL',BracketLeft:'LBKT',BracketRight:'RBKT',Backslash:'BSLH',Semicolon:'SEMI',Quote:'SQT',Comma:'COMMA',Period:'DOT',Slash:'FSLH',Space:'SPACE',Enter:'ENTER',Tab:'TAB',Backspace:'BACKSPACE',Escape:'ESC',Delete:'DELETE',Insert:'INSERT',Home:'HOME',End:'END',PageUp:'PG_UP',PageDown:'PG_DN',ArrowUp:'UP',ArrowDown:'DOWN',ArrowLeft:'LEFT',ArrowRight:'RIGHT',CapsLock:'CAPSLOCK',PrintScreen:'PSCRN',ScrollLock:'SLCK',Pause:'PAUSE_BREAK',NumLock:'KP_NUMLOCK',NumpadAdd:'KP_PLUS',NumpadSubtract:'KP_MINUS',NumpadMultiply:'KP_MULTIPLY',NumpadDivide:'KP_DIVIDE',NumpadDecimal:'KP_DOT',NumpadEnter:'KP_ENTER',ContextMenu:'K_APP',AudioVolumeMute:'C_MUTE',AudioVolumeUp:'C_VOL_UP',AudioVolumeDown:'C_VOL_DN',MediaPlayPause:'C_PLAY_PAUSE',MediaTrackNext:'C_NEXT',MediaTrackPrevious:'C_PREV',ControlLeft:'LEFT_CONTROL',ControlRight:'RIGHT_CONTROL',ShiftLeft:'LEFT_SHIFT',ShiftRight:'RIGHT_SHIFT',AltLeft:'LEFT_ALT',AltRight:'RIGHT_ALT',MetaLeft:'LEFT_GUI',MetaRight:'RIGHT_GUI'};
+const modifierCodes={ControlLeft:'LC',ControlRight:'RC',ShiftLeft:'LS',ShiftRight:'RS',AltLeft:'LA',AltRight:'RA',MetaLeft:'LG',MetaRight:'RG'};
+const heldModifiers=new Set();let modifierOnly=null;
+function physicalKey(code){if(/^Key[A-Z]$/.test(code))return code.slice(3);if(/^Digit[0-9]$/.test(code))return 'N'+code.slice(5);if(/^Numpad[0-9]$/.test(code))return 'KP_N'+code.slice(6);if(/^F([1-9]|1[0-9]|2[0-4])$/.test(code))return code;return physicalCodes[code];}
+function captureActive(){return selected!==null&&document.activeElement?.id==='capture-focus';}
+document.addEventListener('keydown',e=>{
+  if(!captureActive())return;e.preventDefault();e.stopPropagation();if(e.repeat||e.isComposing)return;
+  if(modifierCodes[e.code]){heldModifiers.add(e.code);modifierOnly=e.code;status('松开可录入修饰键，或继续按另一个键录入组合。');return;}
+  modifierOnly=null;let key=physicalKey(e.code);if(!key){status('浏览器未提供可识别键值，请展开特殊功能手动设置。');return;}
+  for(const [flag,prefix,fallback]of [['ctrlKey','Control','LC'],['altKey','Alt','LA'],['shiftKey','Shift','LS'],['metaKey','Meta','LG']]){if(e[flag]){const side=[...heldModifiers].find(c=>c.startsWith(prefix));key=(modifierCodes[side]||fallback)+'('+key+')';}}
+  applyBinding('&kp '+key);status('已录入 '+key+' · 可继续按键替换，或点击下一个位置');
+},true);
+document.addEventListener('keyup',e=>{if(captureActive()){e.preventDefault();e.stopPropagation();if(e.code===modifierOnly){applyBinding('&kp '+physicalKey(e.code));status('已录入 '+keyLabel('&kp '+physicalKey(e.code)));modifierOnly=null;}}heldModifiers.delete(e.code);},true);
+window.addEventListener('blur',()=>{heldModifiers.clear();modifierOnly=null;});
+$('undo').onclick=()=>{if(!history.length)return;DATA.layers=JSON.parse(history.pop());persist();render();if(selected!==null)edit(selected);};
+function exportHtml(){
+  const root=document.documentElement.cloneNode(true);
+  root.querySelector('#editor-toolbar')?.remove();root.querySelector('#tabs').replaceChildren();root.querySelector('#board').replaceChildren();root.querySelector('#detail').textContent='点击图上的键位，再按实体键盘录入。';
+  const script=root.querySelector('script');script.textContent=script.textContent.replace(/^const DATA=.*;$/m,()=> 'const DATA='+JSON.stringify(DATA).replace(/</g,'\\u003c')+';');
+  // Runtime styles are recreated on opening; retain only the original stylesheet.
+  [...root.querySelectorAll('style')].slice(1).forEach(n=>n.remove());
+  return '<!doctype html>\n'+root.outerHTML;
+}
+$('export').onclick=()=>{const blob=new Blob([exportHtml()],{type:'text/html;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='cornix-edited.html';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);dirty=false;status('已发起下载 cornix-edited.html · 请确认保存后提供文件路径');};
+$('tabs').replaceChildren();names.forEach((name,i)=>{const b=document.createElement('button');b.textContent=name;b.onclick=()=>{active=i;selected=null;render();$('detail').textContent='点击图上的键位，再按实体键盘录入。';};$('tabs').append(b)});
+$('reserved').onchange=render;$('undo').disabled=true;render();status(cached?'已恢复浏览器草稿 · 完成后请导出 HTML':'尚未修改 · 所有 50 个键位均可编辑');
+window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
