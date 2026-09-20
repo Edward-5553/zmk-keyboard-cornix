@@ -31,7 +31,7 @@ The current preset uses 50 binding positions. The diagram below shows all positi
 on the three active layers, including unassigned keys:
 
 - **L0 Base:** Space held activates L1; Enter held activates L2.
-- **L1 Num/Nav:** arrows on E/S/D/F and Ctrl shortcuts on Z/X/C/V; BT Clear and BT 1–3 on the leftmost column. Right-hand digits use 789 / 456 / 0123, with decimal above zero.
+- **L1 Num/Nav:** arrows on E/S/D/F and Ctrl shortcuts on Z/X/C/V; the four former Bluetooth controls in the leftmost column are unassigned. Right-hand digits use 789 / 456 / 0123, with decimal above zero.
 - **L2 Fn/Symbol:** two rows of symbols; left Shift and F2–F12 on the third row, with F1 on the base-layer Caps thumb position. Left-hand A/S/D type `{}` / `[]` / `<>` and move the caret left once (`|` in the diagram denotes the caret). Punctuation depends on the active input method; editor auto-pairing may affect the result.
 
 Encoders are identical on every layer: left clockwise scrolls down, counter-clockwise scrolls up; right clockwise increases volume, counter-clockwise decreases it. Pressing the left encoder toggles Caps Lock; pressing the right toggles mute (positions 30/31). Base position 41 sends Ctrl+Alt+Delete and position 42 sends Alt+Space; Fn/Symbol position 41 remains F1, while transparent bindings inherit the base shortcuts. Scrolling uses mouse-wheel reports and follows host scroll settings. When first enabling pointing over BLE, refresh the host HID cache (usually by removing and re-pairing the device) if scrolling does not work.

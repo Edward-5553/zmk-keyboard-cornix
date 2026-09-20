@@ -5,7 +5,6 @@
  */
 
 #include <behaviors.dtsi>
-#include <dt-bindings/zmk/bt.h>
 #include <dt-bindings/zmk/keys.h>
 #include <dt-bindings/zmk/pointing.h>
 
@@ -81,14 +80,14 @@
         num_nav_layer {
             display-name = "Num/Nav";
 
-            // Left column: BT Clear, BT 1, BT 2, BT 3. Z/X/C/V: Ctrl shortcuts.
+            // Left column: unassigned. Z/X/C/V: Ctrl shortcuts.
             // Right digits: 789 / 456 / 0123, with decimal above zero.
 
             bindings = <
-&bt BT_CLR       &trans           &trans           &kp UP           &trans           &trans           &trans           &kp N7           &kp N8           &kp N9           &trans           &trans
-&bt BT_SEL 0     &trans           &kp LEFT         &kp DOWN         &kp RIGHT        &trans           &kp DOT          &kp N4           &kp N5           &kp N6           &trans           &trans
-&bt BT_SEL 1     &kp LC(Z)        &kp LC(X)        &kp LC(C)        &kp LC(V)        &trans           &kp CAPSLOCK            &kp C_MUTE            &kp N0           &kp N1           &kp N2           &kp N3           &trans           &trans
-&bt BT_SEL 2     &none            &none            &trans           &trans           &trans           &trans           &trans           &trans           &none            &none            &none
+&none            &trans           &trans           &kp UP           &trans           &trans           &trans           &kp N7           &kp N8           &kp N9           &trans           &trans
+&none            &trans           &kp LEFT         &kp DOWN         &kp RIGHT        &trans           &kp DOT          &kp N4           &kp N5           &kp N6           &trans           &trans
+&none            &kp LC(Z)        &kp LC(X)        &kp LC(C)        &kp LC(V)        &trans           &kp CAPSLOCK            &kp C_MUTE            &kp N0           &kp N1           &kp N2           &kp N3           &trans           &trans
+&none            &none            &none            &trans           &trans           &trans           &trans           &trans           &trans           &none            &none            &none
             >;
 
             sensor-bindings = <&encoder_scroll &inc_dec_kp C_VOL_UP C_VOL_DN>;
