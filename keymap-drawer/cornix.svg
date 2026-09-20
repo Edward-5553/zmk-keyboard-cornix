@@ -155,14 +155,14 @@
 <text x="550.0" y="302.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">B</text>
 <text x="550.0" y="328.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;none</title><rect x="604.0" y="204.0" width="92.0" height="92.0" rx="12" fill="#1b2831" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp CAPSLOCK</title><rect x="604.0" y="204.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
 <text x="650.0" y="217.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">30</text>
-<text x="650.0" y="247.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a7b6bf" text-anchor="middle" dominant-baseline="central">—</text>
+<text x="650.0" y="247.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">Caps</text>
 <text x="650.0" y="273.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;none</title><rect x="754.0" y="204.0" width="92.0" height="92.0" rx="12" fill="#1b2831" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp C_MUTE</title><rect x="754.0" y="204.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
 <text x="800.0" y="217.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">31</text>
-<text x="800.0" y="247.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a7b6bf" text-anchor="middle" dominant-baseline="central">—</text>
+<text x="800.0" y="247.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">Mute</text>
 <text x="800.0" y="273.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
 <g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp N</title><rect x="854.0" y="259.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
@@ -210,9 +210,9 @@
 <text x="250.0" y="377.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a7b6bf" text-anchor="middle" dominant-baseline="central">—</text>
 <text x="250.0" y="403.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp CAPSLOCK</title><rect x="354.0" y="367.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;none</title><rect x="354.0" y="367.0" width="92.0" height="92.0" rx="12" fill="#1b2831" stroke="#50636f"/>
 <text x="400.0" y="380.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">41</text>
-<text x="400.0" y="410.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">Caps</text>
+<text x="400.0" y="410.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a7b6bf" text-anchor="middle" dominant-baseline="central">—</text>
 <text x="400.0" y="436.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
 <g transform="rotate(11.93 500.0 475.0)"><title>&amp;kp LEFT_ALT</title><rect x="454.0" y="374.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
@@ -409,14 +409,14 @@
 <text x="550.0" y="302.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a7b6bf" text-anchor="middle" dominant-baseline="central">B</text>
 <text x="550.0" y="328.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central">from L0</text>
 </g>
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;none</title><rect x="604.0" y="204.0" width="92.0" height="92.0" rx="12" fill="#1b2831" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp CAPSLOCK</title><rect x="604.0" y="204.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
 <text x="650.0" y="217.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">30</text>
-<text x="650.0" y="247.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a7b6bf" text-anchor="middle" dominant-baseline="central">—</text>
+<text x="650.0" y="247.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">Caps</text>
 <text x="650.0" y="273.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;none</title><rect x="754.0" y="204.0" width="92.0" height="92.0" rx="12" fill="#1b2831" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp C_MUTE</title><rect x="754.0" y="204.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
 <text x="800.0" y="217.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">31</text>
-<text x="800.0" y="247.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a7b6bf" text-anchor="middle" dominant-baseline="central">—</text>
+<text x="800.0" y="247.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">Mute</text>
 <text x="800.0" y="273.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
 <g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp N0</title><rect x="854.0" y="259.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
@@ -464,9 +464,9 @@
 <text x="250.0" y="377.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a7b6bf" text-anchor="middle" dominant-baseline="central">—</text>
 <text x="250.0" y="403.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;trans</title><rect x="354.0" y="367.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;trans</title><rect x="354.0" y="367.0" width="92.0" height="92.0" rx="12" fill="#1b2831" stroke="#50636f"/>
 <text x="400.0" y="380.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">41</text>
-<text x="400.0" y="410.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a7b6bf" text-anchor="middle" dominant-baseline="central">Caps</text>
+<text x="400.0" y="410.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a7b6bf" text-anchor="middle" dominant-baseline="central">—</text>
 <text x="400.0" y="436.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central">from L0</text>
 </g>
 <g transform="rotate(11.93 500.0 475.0)"><title>&amp;trans</title><rect x="454.0" y="374.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
@@ -663,14 +663,14 @@
 <text x="550.0" y="302.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">F6</text>
 <text x="550.0" y="328.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;none</title><rect x="604.0" y="204.0" width="92.0" height="92.0" rx="12" fill="#1b2831" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp CAPSLOCK</title><rect x="604.0" y="204.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
 <text x="650.0" y="217.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">30</text>
-<text x="650.0" y="247.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a7b6bf" text-anchor="middle" dominant-baseline="central">—</text>
+<text x="650.0" y="247.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">Caps</text>
 <text x="650.0" y="273.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;none</title><rect x="754.0" y="204.0" width="92.0" height="92.0" rx="12" fill="#1b2831" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp C_MUTE</title><rect x="754.0" y="204.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
 <text x="800.0" y="217.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">31</text>
-<text x="800.0" y="247.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a7b6bf" text-anchor="middle" dominant-baseline="central">—</text>
+<text x="800.0" y="247.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">Mute</text>
 <text x="800.0" y="273.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
 <g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp F7</title><rect x="854.0" y="259.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
@@ -765,6 +765,6 @@
 </g>
 </g>
 <text x="30" y="1910" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a7b6bf" text-anchor="start" dominant-baseline="central">Green: tap key / hold layer.  from L0: transparent binding.  —: no action.</text>
-<text x="30" y="1945" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a7b6bf" text-anchor="start" dominant-baseline="central">L3 Scroll and L4 Snipe: reserved transparent layers; no entry binding in this preset.</text>
-<text x="30" y="1980" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a9e5cf" text-anchor="start" dominant-baseline="central">ALL LAYERS / Left knob: CW scroll down, CCW up.  Right knob: CW volume +, CCW volume -.</text>
+<text x="30" y="1945" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a7b6bf" text-anchor="start" dominant-baseline="central">L3 Scroll and L4 Snipe: reserved; encoder clicks remain Caps / Mute on every layer.</text>
+<text x="30" y="1980" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a9e5cf" text-anchor="start" dominant-baseline="central">ALL LAYERS / Left knob: scroll down/up, press Caps.  Right knob: volume +/-, press Mute. (CW/CCW)</text>
 </svg>
