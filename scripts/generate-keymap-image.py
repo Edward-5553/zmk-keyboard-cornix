@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 data = runpy.run_path(str(ROOT / 'scripts/generate-keymap-html.py'))
 layers, positions = data['layers'], data['positions']
 labels = dict(TAB='Tab', ESC='Esc', BACKSPACE='Bksp', BSLH='\\', LEFT_SHIFT='L Shift', RIGHT_SHIFT='R Shift', LEFT_CONTROL='L Ctrl', LEFT_ALT='L Alt', CAPSLOCK='Caps', SPACE='Space', ENTER='Enter', DELETE='Delete', SEMI=';', SQT="'", COMMA=',', DOT='.', FSLH='/', UP='Up', DOWN='Down', LEFT='Left', RIGHT='Right', TILDE='~', EXCL='!', AT='@', HASH='#', DLLR='$', PRCNT='%', CARET='^', AMPS='&', ASTRK='*', LPAR='(', RPAR=')', GRAVE='`', LBRC='{', LBKT='[', LT='<', MINUS='-', UNDER='_', PLUS='+', EQUAL='=', GT='>', RBKT=']', RBRC='}', PIPE='|')
-WIDTH, HEIGHT = 1510, 1980
+WIDTH, HEIGHT = 1510, 2020
 svg = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{WIDTH}" height="{HEIGHT}" viewBox="0 0 {WIDTH} {HEIGHT}" role="img" aria-label="Cornix current 50-position keymap, layers 0 to 2">', '<rect width="100%" height="100%" fill="#10171d"/>']
 canvas = Image.new('RGBA', (WIDTH, HEIGHT), '#10171d')
 font_path = next((p for p in [Path('C:/Windows/Fonts/segoeui.ttf'), Path('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf')] if p.exists()), None)
@@ -63,6 +63,7 @@ for index, title in enumerate(['L0 / BASE','L1 / NUMBERS + NAVIGATION','L2 / SYM
     svg.append('</g>')
 text(30,1910,'Green: tap key / hold layer.  from L0: transparent binding.  —: no action.',18,'#a7b6bf')
 text(30,1945,'L3 Scroll and L4 Snipe: reserved transparent layers; no entry binding in this preset.',18,'#a7b6bf')
+text(30,1980,'ALL LAYERS / Left knob: CW scroll down, CCW up.  Right knob: CW volume +, CCW volume -.',18,'#a9e5cf')
 svg.append('</svg>')
 out=ROOT/'keymap-drawer'
 (out/'cornix.svg').write_text('\n'.join(svg)+'\n',encoding='utf-8')

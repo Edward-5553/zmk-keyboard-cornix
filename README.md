@@ -34,6 +34,8 @@ on the three active layers, including unassigned keys:
 - **L1 Num/Nav:** arrows on E/S/D/F and Ctrl shortcuts on Z/X/C/V; BT Clear and BT 1–3 on the leftmost column. Right-hand digits use 789 / 456 / 0123, with decimal above zero.
 - **L2 Fn/Symbol:** two rows of symbols; left Shift and F2–F12 on the third row, with F1 on the base-layer Caps thumb position. Left-hand A/S/D type `{}` / `[]` / `<>` and move the caret left once (`|` in the diagram denotes the caret). Punctuation depends on the active input method; editor auto-pairing may affect the result.
 
+Encoders are identical on every layer: left clockwise scrolls down, counter-clockwise scrolls up; right clockwise increases volume, counter-clockwise decreases it. Scrolling uses mouse-wheel reports and follows host scroll settings. When first enabling pointing over BLE, refresh the host HID cache (usually by removing and re-pairing the device) if scrolling does not work.
+
 ![Cornix current keymap: Base, Num/Nav and Fn/Symbol, 50 positions per layer](keymap-drawer/cornix.svg)
 
 [Full-size PNG](keymap-drawer/cornix.png) · [Offline keymap editor](keymap-drawer/cornix.html)
