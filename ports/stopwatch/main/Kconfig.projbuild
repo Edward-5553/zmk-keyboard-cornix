@@ -1,0 +1,33 @@
+menu "Cornix StopWatch display"
+config STOPWATCH_DISPLAY
+    bool "Enable StopWatch round display"
+    default y
+    select LV_FONT_MONTSERRAT_14
+    select LV_FONT_MONTSERRAT_28
+    select LV_USE_LABEL
+    select LV_USE_IMAGE
+    help
+        Display runs independently of BLE and USB. Disable for a headless comparison.
+config STOPWATCH_LCD_X_GAP
+    int "CO5300 horizontal RAM offset"
+    range 0 14
+    default 6
+config STOPWATCH_LCD_CLOCK_MHZ
+    int "QSPI clock (MHz)"
+    range 10 80
+    default 40
+config STOPWATCH_ORIENTATION
+    bool "Gravity-aligned display (experimental)"
+    depends on STOPWATCH_DISPLAY && SPIRAM
+    default y
+config STOPWATCH_ORIENTATION_OFFSET
+    int "Mounting correction in degrees"
+    range -180 180
+    default 0
+config STOPWATCH_ORIENTATION_INVERT_X
+    bool "Invert IMU screen X axis (mounting calibration)"
+    default n
+config STOPWATCH_ORIENTATION_INVERT_Y
+    bool "Invert IMU screen Y axis (mounting calibration)"
+    default n
+endmenu

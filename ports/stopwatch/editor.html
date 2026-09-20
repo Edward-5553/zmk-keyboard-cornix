@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>StopWatch · 在线键位编辑器</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,"Microsoft YaHei",sans-serif;background:#10171d;color:#e8edef}*{box-sizing:border-box}body{margin:0;padding:40px 5vw;max-width:1500px;margin:auto}header small{color:#83c9b8;letter-spacing:3px}h1{font-size:36px;margin:10px 0}p{color:#a7b6bf;line-height:1.8}.bar{display:flex;flex-wrap:wrap;gap:9px;margin:25px 0}button{font:inherit;cursor:pointer;color:inherit;background:#202c35;border:1px solid #40535f;border-radius:10px;padding:11px 16px}button[aria-pressed=true]{background:#a9e5cf;color:#10251f;border-color:#a9e5cf}button:focus-visible{outline:3px solid #f4c77c;outline-offset:3px}.panel{background:#16212a;border:1px solid #30414c;border-radius:20px;padding:20px;margin-bottom:18px}.scroll{overflow-x:auto}svg{display:block;width:100%;min-width:740px}svg .key{cursor:pointer;outline:none}svg rect{fill:#263640;stroke:#50636f;stroke-width:1}svg .key:hover rect,svg .key:focus rect{stroke:#afe8d2;stroke-width:3}svg text{fill:#edf4f6;text-anchor:middle;font-size:16px;pointer-events:none}svg .sub{font-size:10px;fill:#95d7c0}svg .ghost rect{fill:#1b2831;stroke-dasharray:4 3}svg .ghost text{fill:#81929e}svg .layer rect{fill:#265446;stroke:#89cdb4}#detail{min-height:75px;overflow-wrap:anywhere}#detail strong{color:#b5e8d7}code{color:#eac891}.notes{display:grid;grid-template-columns:1fr 1fr;gap:20px}.notes h3{margin-top:0;font-size:16px}.notes p{font-size:14px;margin:0}label{display:flex;gap:8px;align-items:center;color:#a7b6bf;font-size:14px}footer{color:#81939e;font-size:12px;line-height:1.9;margin-top:25px}@media(max-width:700px){body{padding:24px 16px}.notes{grid-template-columns:1fr}h1{font-size:28px}.panel{padding:12px}}@media print{body{background:white;color:black}.bar,label{display:none}p,footer{color:#444}}
+</style>
+<header><small>CORNIX / STOPWATCH</small><h1>StopWatch，直接改键。</h1><p>拖动交换键位 · 点选后按实体键盘录入 · 通过 USB 直接写入 StopWatch，断电保存。</p></header>
+<nav class="bar" aria-label="选择键位层" id="tabs"></nav>
+<div class="panel"><label><input type="checkbox" id="reserved" checked>显示全部 50 个键位（含 8 个未绑定位置）</label><p id="hint"></p><div class="scroll"><svg id="board" viewBox="-15 -15 1480 540" role="group" aria-label="Cornix 键位图"></svg></div></div>
+<div class="panel" id="detail" aria-live="polite">点击图上的键位，再按笔记本或外接键盘上的键。</div>
+<div class="panel"><h3>保存与使用</h3><p>连接后先读取设备键位，编辑完成点击「写入并保存到设备」。浏览器草稿与导出 HTML 只是备份，不会自动写入设备。写入成功后无需重新刷机，重启仍保留。恢复默认只改变草稿，检查后仍须写入。</p><p>拖动交换当前层的两个绑定；透明键标注 ↧，预览按基础层回落，实际固件按激活层栈回落。符号按美式布局标注。所有层：左旋钮顺时针向下滚动、逆时针向上滚动；右旋钮顺时针增大音量、逆时针减小音量。左旋钮按下为 Caps Lock，右旋钮按下为静音（编号 30/31）。此编辑器仅编辑按键，旋钮映射固定。</p></div>
+<footer>基于当前工作区 config/cornix.keymap。编号为 0–49 的固件索引。仅适配 StopWatch 在线改键固件。支持已有宏的分配，不支持编辑宏内容；暂不支持蓝牙控制、组合触发或新行为。长按判定 200 ms，快速轻点窗口 150 ms。</footer>
+<script>
+const DATA={"layers": [{"name": "base_layer", "keys": ["&kp ESC", "&kp Q", "&kp W", "&kp E", "&kp R", "&kp T", "&kp Y", "&kp U", "&kp I", "&kp O", "&kp P", "&kp BSLH", "&kp TAB", "&kp A", "&kp S", "&kp D", "&kp F", "&kp G", "&kp H", "&kp J", "&kp K", "&kp L", "&kp SEMI", "&kp SQT", "&kp LEFT_SHIFT", "&kp Z", "&kp X", "&kp C", "&kp V", "&kp B", "&kp CAPSLOCK", "&kp C_MUTE", "&kp N", "&kp M", "&kp COMMA", "&kp DOT", "&kp FSLH", "&kp RIGHT_SHIFT", "&kp LEFT_CONTROL", "&none", "&none", "&kp LC(LA(DELETE))", "&kp LA(SPACE)", "&lt NUM_NAV SPACE", "&lt FN_SYMBOLS ENTER", "&kp BACKSPACE", "&none", "&none", "&none", "&kp DELETE"]}, {"name": "num_nav_layer", "keys": ["&none", "&trans", "&trans", "&kp UP", "&trans", "&trans", "&trans", "&kp N7", "&kp N8", "&kp N9", "&trans", "&trans", "&none", "&trans", "&kp LEFT", "&kp DOWN", "&kp RIGHT", "&trans", "&kp DOT", "&kp N4", "&kp N5", "&kp N6", "&trans", "&trans", "&none", "&kp LC(Z)", "&kp LC(X)", "&kp LC(C)", "&kp LC(V)", "&trans", "&kp CAPSLOCK", "&kp C_MUTE", "&kp N0", "&kp N1", "&kp N2", "&kp N3", "&trans", "&trans", "&none", "&none", "&none", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&none", "&none", "&none"]}, {"name": "fn_symbols_layer", "keys": ["&kp TILDE", "&kp EXCL", "&kp AT", "&kp HASH", "&kp DLLR", "&kp PRCNT", "&kp CARET", "&kp AMPS", "&kp ASTRK", "&kp LPAR", "&kp RPAR", "&kp GRAVE", "&kp BSLH", "&pair_braces", "&pair_brackets", "&pair_angles", "&kp MINUS", "&kp UNDER", "&kp PLUS", "&kp EQUAL", "&kp GT", "&kp RBKT", "&kp RBRC", "&kp PIPE", "&kp LEFT_SHIFT", "&kp F2", "&kp F3", "&kp F4", "&kp F5", "&kp F6", "&kp CAPSLOCK", "&kp C_MUTE", "&kp F7", "&kp F8", "&kp F9", "&kp F10", "&kp F11", "&kp F12", "&none", "&none", "&none", "&kp F1", "&trans", "&trans", "&trans", "&trans", "&trans", "&none", "&none", "&none"]}, {"name": "scroll_layer", "keys": ["&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&kp CAPSLOCK", "&kp C_MUTE", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&none", "&none", "&none", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&none", "&none", "&none"]}, {"name": "snipe_layer", "keys": ["&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&kp CAPSLOCK", "&kp C_MUTE", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&none", "&none", "&none", "&trans", "&trans", "&trans", "&trans", "&trans", "&trans", "&none", "&none", "&none"]}], "positions": [[1.0, 1.0, 0.0, 0.5, 0.0, 0.0, 0.0], [1.0, 1.0, 1.0, 0.5, 0.0, 0.0, 0.0], [1.0, 1.0, 2.0, 0.25, 0.0, 0.0, 0.0], [1.0, 1.0, 3.0, 0.0, 0.0, 0.0, 0.0], [1.0, 1.0, 4.0, 0.25, 0.0, 0.0, 0.0], [1.0, 1.0, 5.0, 0.5, 0.0, 0.0, 0.0], [1.0, 1.0, 8.5, 0.5, 0.0, 0.0, 0.0], [1.0, 1.0, 9.5, 0.3, 0.0, 0.0, 0.0], [1.0, 1.0, 10.5, 0.0, 0.0, 0.0, 0.0], [1.0, 1.0, 11.5, 0.33, 0.0, 0.0, 0.0], [1.0, 1.0, 12.5, 0.5, 0.0, 0.0, 0.0], [1.0, 1.0, 13.5, 0.5, 0.0, 0.0, 0.0], [1.0, 1.0, 0.0, 1.5, 0.0, 0.0, 0.0], [1.0, 1.0, 1.0, 1.5, 0.0, 0.0, 0.0], [1.0, 1.0, 2.0, 1.25, 0.0, 0.0, 0.0], [1.0, 1.0, 3.0, 1.0, 0.0, 0.0, 0.0], [1.0, 1.0, 4.0, 1.25, 0.0, 0.0, 0.0], [1.0, 1.0, 5.0, 1.5, 0.0, 0.0, 0.0], [1.0, 1.0, 8.5, 1.5, 0.0, 0.0, 0.0], [1.0, 1.0, 9.5, 1.3, 0.0, 0.0, 0.0], [1.0, 1.0, 10.5, 1.0, 0.0, 0.0, 0.0], [1.0, 1.0, 11.5, 1.33, 0.0, 0.0, 0.0], [1.0, 1.0, 12.5, 1.5, 0.0, 0.0, 0.0], [1.0, 1.0, 13.5, 1.5, 0.0, 0.0, 0.0], [1.0, 1.0, 0.0, 2.55, 0.0, 0.0, 0.0], [1.0, 1.0, 1.0, 2.55, 0.0, 0.0, 0.0], [1.0, 1.0, 2.0, 2.25, 0.0, 0.0, 0.0], [1.0, 1.0, 3.0, 2.0, 0.0, 0.0, 0.0], [1.0, 1.0, 4.0, 2.25, 0.0, 0.0, 0.0], [1.0, 1.0, 5.0, 2.55, 0.0, 0.0, 0.0], [1.0, 1.0, 6.0, 2.0, 0.0, 0.0, 0.0], [1.0, 1.0, 7.5, 2.0, 0.0, 0.0, 0.0], [1.0, 1.0, 8.5, 2.55, 0.0, 0.0, 0.0], [1.0, 1.0, 9.5, 2.3, 0.0, 0.0, 0.0], [1.0, 1.0, 10.5, 2.0, 0.0, 0.0, 0.0], [1.0, 1.0, 11.5, 2.33, 0.0, 0.0, 0.0], [1.0, 1.0, 12.5, 2.55, 0.0, 0.0, 0.0], [1.0, 1.0, 13.5, 2.55, 0.0, 0.0, 0.0], [1.0, 1.0, 0.0, 3.55, 0.0, 0.0, 0.0], [1.0, 1.0, 1.0, 3.55, 0.0, 0.0, 0.0], [1.0, 1.0, 2.0, 3.3, 0.0, 0.0, 0.0], [1.0, 1.0, 3.5, 3.63, 0.0, 0.0, 0.0], [1.0, 1.0, 4.5, 3.7, 11.93, 5.0, 4.75], [1.0, 1.0, 5.5, 3.65, 23.0, 5.0, 4.75], [1.0, 1.0, 7.64, 5.38, -23.0, 5.0, 4.75], [1.0, 1.0, 9.0, 3.75, -11.93, 9.25, 4.75], [1.0, 1.0, 10.0, 3.63, 0.0, 0.0, 0.0], [1.0, 1.0, 11.5, 3.38, 0.0, 0.0, 0.0], [1.0, 1.0, 12.5, 3.55, 0.0, 0.0, 0.0], [1.0, 1.0, 13.5, 3.55, 0.0, 0.0, 0.0]]};
+// Shared by the standalone HTML and Node regression tests. No device access here.
+function createStopWatchCodec(config) {
+  const mods={LC:1,LS:2,LA:4,LG:8,RC:16,RS:32,RA:64,RG:128};
+  const layers=['BASE','NUM_NAV','FN_SYMBOLS','SCROLL','SNIPE'];
+  const reverse=new Map();
+  for(const [name,[page,code,m]] of Object.entries(config.keys))if(!m&&!reverse.has(`${page}:${code}`))reverse.set(`${page}:${code}`,name);
+  function key(value) {
+    const wrap=/^(LC|LS|LA|LG|RC|RS|RA|RG)\((.+)\)$/.exec(value);
+    if(wrap){const k=key(wrap[2]);k[2]|=mods[wrap[1]];return k;}
+    if(!config.keys[value])throw Error(`暂不支持键码 ${value}`);
+    return [...config.keys[value]];
+  }
+  function parse(value) {
+    const s=value.trim().replace(/\s+/g,' ').split(' ');
+    if(s.length===1&&s[0]==='&none')return [0,0,0,0,0,0];
+    if(s.length===1&&s[0]==='&trans')return [1,0,0,0,0,0];
+    const macro=config.macros.indexOf(s[0].slice(1));
+    if(s.length===1&&macro>=0)return [4,0,macro,0,0,0];
+    let kind,layer=0,k;
+    if(s.length===2&&s[0]==='&kp'){kind=2;k=key(s[1]);}
+    else if(s.length===3&&s[0]==='&lt') {
+      kind=3;layer=layers.indexOf(s[1]);if(layer<0&&/^[1-4]$/.test(s[1]))layer=Number(s[1]);
+      if(layer<1||layer>4)throw Error('长按目标层须为 L1–L4');k=key(s[2]);
+      if(k[0]!==7)throw Error('轻点/长按暂不支持多媒体键');
+    } else throw Error(`StopWatch 暂不支持 ${value}`);
+    if(k[0]===12&&k[2])throw Error('多媒体键暂不支持组合修饰键');
+    return [kind,k[2],k[1]&255,k[1]>>>8,k[0],layer];
+  }
+  function format(a) {
+    if(a[0]===0)return '&none';if(a[0]===1)return '&trans';
+    const code=a[2]|a[3]<<8;
+    if(a[0]===4){if(!config.macros[code])throw Error('未知宏');return '&'+config.macros[code];}
+    let k=reverse.get(`${a[4]}:${code}`);if(!k)throw Error(`此页面不能编辑设备键码 ${a[4]}:${code}`);
+    for(const [name,bit]of Object.entries(mods))if(a[1]&bit)k=`${name}(${k})`;
+    if(a[0]===2)return '&kp '+k;
+    if(a[0]===3&&a[5]>0&&a[5]<5)return `&lt ${layers[a[5]]} ${k}`;
+    throw Error('未知绑定类型');
+  }
+  function encode(list) {
+    if(list.length!==5||list.some(l=>l.keys.length!==50))throw Error('需要 5 层 × 50 键');
+    return Uint8Array.from(list.flatMap((l,li)=>l.keys.flatMap((v,pi)=>{
+      try{return parse(v);}catch(e){throw Error(`L${li} / 位置 ${pi}：${e.message}`);}
+    })));
+  }
+  function decode(bytes) {
+    if(bytes.length!==1500)throw Error('设备键位数据长度错误');
+    return Array.from({length:5},(_,l)=>Array.from({length:50},(_,p)=>format(bytes.slice((l*50+p)*6,(l*50+p+1)*6))));
+  }
+  function hash(bytes){let h=2166136261;for(const b of bytes)h=Math.imul(h^b,16777619);return h>>>0;}
+  return {parse,format,encode,decode,hash,schema:config.schema};
+}
+if(typeof module!=='undefined')module.exports={createStopWatchCodec};
+
+const SWCodec=createStopWatchCodec({"keys": {"A": [7, 4, 0], "B": [7, 5, 0], "C": [7, 6, 0], "D": [7, 7, 0], "E": [7, 8, 0], "F": [7, 9, 0], "G": [7, 10, 0], "H": [7, 11, 0], "I": [7, 12, 0], "J": [7, 13, 0], "K": [7, 14, 0], "L": [7, 15, 0], "M": [7, 16, 0], "N": [7, 17, 0], "O": [7, 18, 0], "P": [7, 19, 0], "Q": [7, 20, 0], "R": [7, 21, 0], "S": [7, 22, 0], "T": [7, 23, 0], "U": [7, 24, 0], "V": [7, 25, 0], "W": [7, 26, 0], "X": [7, 27, 0], "Y": [7, 28, 0], "Z": [7, 29, 0], "N0": [7, 39, 0], "N1": [7, 30, 0], "N2": [7, 31, 0], "N3": [7, 32, 0], "N4": [7, 33, 0], "N5": [7, 34, 0], "N6": [7, 35, 0], "N7": [7, 36, 0], "N8": [7, 37, 0], "N9": [7, 38, 0], "F1": [7, 58, 0], "F2": [7, 59, 0], "F3": [7, 60, 0], "F4": [7, 61, 0], "F5": [7, 62, 0], "F6": [7, 63, 0], "F7": [7, 64, 0], "F8": [7, 65, 0], "F9": [7, 66, 0], "F10": [7, 67, 0], "F11": [7, 68, 0], "F12": [7, 69, 0], "ENTER": [7, 40, 0], "RET": [7, 40, 0], "ESC": [7, 41, 0], "ESCAPE": [7, 41, 0], "BACKSPACE": [7, 42, 0], "BSPC": [7, 42, 0], "TAB": [7, 43, 0], "SPACE": [7, 44, 0], "MINUS": [7, 45, 0], "EQUAL": [7, 46, 0], "LBKT": [7, 47, 0], "RBKT": [7, 48, 0], "BSLH": [7, 49, 0], "SEMI": [7, 51, 0], "SQT": [7, 52, 0], "GRAVE": [7, 53, 0], "COMMA": [7, 54, 0], "DOT": [7, 55, 0], "FSLH": [7, 56, 0], "CAPSLOCK": [7, 57, 0], "CAPS": [7, 57, 0], "INSERT": [7, 73, 0], "INS": [7, 73, 0], "HOME": [7, 74, 0], "PAGE_UP": [7, 75, 0], "PG_UP": [7, 75, 0], "DELETE": [7, 76, 0], "DEL": [7, 76, 0], "END": [7, 77, 0], "PAGE_DOWN": [7, 78, 0], "PG_DN": [7, 78, 0], "RIGHT": [7, 79, 0], "LEFT": [7, 80, 0], "DOWN": [7, 81, 0], "UP": [7, 82, 0], "LEFT_CONTROL": [7, 224, 0], "LCTRL": [7, 224, 0], "LCTL": [7, 224, 0], "LEFT_SHIFT": [7, 225, 0], "LSHIFT": [7, 225, 0], "LSHFT": [7, 225, 0], "LEFT_ALT": [7, 226, 0], "LALT": [7, 226, 0], "LEFT_GUI": [7, 227, 0], "LGUI": [7, 227, 0], "RIGHT_CONTROL": [7, 228, 0], "RCTRL": [7, 228, 0], "RIGHT_SHIFT": [7, 229, 0], "RSHIFT": [7, 229, 0], "RIGHT_ALT": [7, 230, 0], "RALT": [7, 230, 0], "RIGHT_GUI": [7, 231, 0], "RGUI": [7, 231, 0], "TILDE": [7, 53, 2], "EXCL": [7, 30, 2], "AT": [7, 31, 2], "HASH": [7, 32, 2], "DLLR": [7, 33, 2], "PRCNT": [7, 34, 2], "CARET": [7, 35, 2], "AMPS": [7, 36, 2], "ASTRK": [7, 37, 2], "LPAR": [7, 38, 2], "RPAR": [7, 39, 2], "UNDER": [7, 45, 2], "PLUS": [7, 46, 2], "LBRC": [7, 47, 2], "RBRC": [7, 48, 2], "PIPE": [7, 49, 2], "LT": [7, 54, 2], "GT": [7, 55, 2], "COLON": [7, 51, 2], "DQT": [7, 52, 2], "QMARK": [7, 56, 2], "C_MUTE": [12, 226, 0], "C_VOL_UP": [12, 233, 0], "C_VOL_DN": [12, 234, 0], "C_PLAY_PAUSE": [12, 205, 0], "C_NEXT": [12, 181, 0], "C_PREV": [12, 182, 0], "F13": [7, 104, 0], "F14": [7, 105, 0], "F15": [7, 106, 0], "F16": [7, 107, 0], "F17": [7, 108, 0], "F18": [7, 109, 0], "F19": [7, 110, 0], "F20": [7, 111, 0], "F21": [7, 112, 0], "F22": [7, 113, 0], "F23": [7, 114, 0], "F24": [7, 115, 0], "KP_N0": [7, 98, 0], "KP_N1": [7, 89, 0], "KP_N2": [7, 90, 0], "KP_N3": [7, 91, 0], "KP_N4": [7, 92, 0], "KP_N5": [7, 93, 0], "KP_N6": [7, 94, 0], "KP_N7": [7, 95, 0], "KP_N8": [7, 96, 0], "KP_N9": [7, 97, 0], "PSCRN": [7, 70, 0], "SLCK": [7, 71, 0], "PAUSE_BREAK": [7, 72, 0], "KP_NUMLOCK": [7, 83, 0], "KP_DIVIDE": [7, 84, 0], "KP_MULTIPLY": [7, 85, 0], "KP_MINUS": [7, 86, 0], "KP_PLUS": [7, 87, 0], "KP_ENTER": [7, 88, 0], "KP_DOT": [7, 99, 0], "K_APP": [7, 101, 0]}, "macros": ["pair_braces", "pair_brackets", "pair_angles"], "schema": 3212528949});
+const $ = id => document.getElementById(id);
+const names = ['L0 基础', 'L1 数字 / 导航', 'L2 功能 / 符号', 'L3 Scroll', 'L4 Snipe'];
+const layerIds = ['BASE', 'NUM_NAV', 'FN_SYMBOLS', 'SCROLL', 'SNIPE'];
+const labels = {TAB:'Tab',BACKSPACE:'Backspace',LEFT_SHIFT:'左 Shift',RIGHT_SHIFT:'右 Shift',LEFT_CONTROL:'左 Ctrl',RIGHT_CONTROL:'右 Ctrl',LEFT_ALT:'左 Alt',RIGHT_ALT:'右 Alt',LEFT_GUI:'左 Win',RIGHT_GUI:'右 Win',ESC:'Esc',SPACE:'Space',ENTER:'Enter',DELETE:'Delete',CAPSLOCK:'Caps',SEMI:';',SQT:"'",COMMA:',',DOT:'.',FSLH:'/',UP:'↑',LEFT:'←',DOWN:'↓',RIGHT:'→',TILDE:'~',EXCL:'!',AT:'@',HASH:'#',DLLR:'$',PRCNT:'%',CARET:'^',AMPS:'&',ASTRK:'*',LPAR:'(',RPAR:')',GRAVE:'`',BSLH:'\\',LBRC:'{',LBKT:'[',LT:'<',MINUS:'-',UNDER:'_',PLUS:'+',EQUAL:'=',GT:'>',RBKT:']',RBRC:'}',PIPE:'|',HOME:'Home',END:'End',PG_UP:'Page Up',PG_DN:'Page Down',INSERT:'Insert',C_VOL_UP:'音量 +',C_VOL_DN:'音量 −',C_MUTE:'静音',C_PLAY_PAUSE:'播放 / 暂停',C_NEXT:'下一曲',C_PREV:'上一曲'};
+const pairLabels = {'&pair_braces':'{|}', '&pair_brackets':'[|]', '&pair_angles':'<|>'};
+const shortcutLabels = {'&kp LC(LA(DELETE))':'Ctrl+Alt+Del', '&kp LA(SPACE)':'Alt+Space'};
+const options = new Map();
+function add(binding, text) { options.set(binding, text); }
+for (const c of 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') add('&kp '+c,c);
+for (let i=0;i<10;i++) add('&kp N'+i,String(i));
+for (let i=1;i<=24;i++) add('&kp F'+i,'F'+i);
+for (const [code,text] of Object.entries(labels)) add('&kp '+code,text);
+add('&trans','透明 · 跟随下层'); add('&none','无动作');
+for(let i=0;i<5;i++) {
+  add('&mo '+i,'按住进入 L'+i); add('&to '+i,'切换到 L'+i); add('&tog '+i,'开关 L'+i);
+  add('&bt BT_SEL '+i,'蓝牙档位 '+(i+1));
+}
+add('&bt BT_CLR','清除当前主机配对');
+for (const [binding,label] of Object.entries(shortcutLabels)) add(binding,label);
+for (const [binding,label] of Object.entries(pairLabels)) add(binding,label+' 成对输入，光标居中');
+for(const layer of layerIds) for(const key of ['SPACE','ENTER','TAB','ESC']) add(`&lt ${layer} ${key}`,`${labels[key]} / 按住 L${layerIds.indexOf(layer)}`);
+for(const mod of ['LC','LS','LA','LG']) for(const key of 'ACVXZSY') add(`&kp ${mod}(${key})`,`${{LC:'Ctrl',LS:'Shift',LA:'Alt',LG:'Win'}[mod]} + ${key}`);
+for(const layer of DATA.layers) for(const binding of layer.keys) if(!options.has(binding)) add(binding,binding);
+for(const binding of options.keys()){try{SWCodec.parse(binding);}catch{options.delete(binding);}}
+const initial=JSON.stringify(DATA.layers);
+// A draft is scoped to the exact embedded preset, so exported HTML is self-contained.
+let hash=2166136261; for(const c of initial) hash=Math.imul(hash^c.charCodeAt(0),16777619);
+const storageKey='stopwatch-keymap-editor-v1-'+(hash>>>0);
+let active=0, selected=null, drag=null, history=[], dirty=false, cached=false;
+const hidden=new Set([30,31,38,39,40,47,48,49]);
+try { const saved=JSON.parse(localStorage.getItem(storageKey)); if(saved?.length===5 && saved.every((l,i)=>l.name===DATA.layers[i].name && l.keys?.length===50 && l.keys.every(k=>typeof k==='string' && valid(k)))) { DATA.layers=saved; dirty=true; cached=true; } } catch {}
+function valid(value) {try{SWCodec.parse(value);return true;}catch{return false;}}
+function keyLabel(binding) {
+  if(shortcutLabels[binding]) return shortcutLabels[binding];
+  if(pairLabels[binding]) return pairLabels[binding];
+  if(binding==='&none') return '—'; if(binding==='&trans') return '↧';
+  const p=binding.split(' ');
+  if(p[0]==='&lt') return labels[p[2]]||p[2];
+  if(p[0]==='&kp') return labels[p[1]]||p[1].replace(/^N(?=\d$)/,'');
+  if(p[0]==='&bt') return p[1]==='BT_CLR'?'清除配对':'BT '+(Number(p[2])+1);
+  return ({'&mo':'按住 L','&to':'切到 L','&tog':'开关 L'}[p[0]]||p[0])+p[1];
+}
+function layerNumber(binding){const token=binding.split(' ')[1];return layerIds.includes(token)?layerIds.indexOf(token):token;}
+function node(tag,attrs={},text) {const n=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const [k,v]of Object.entries(attrs))n.setAttribute(k,v);if(text!==undefined)n.textContent=text;return n;}
+const style=document.createElement('style'); style.textContent=`svg{touch-action:none;user-select:none}svg .selected rect{stroke:#f8cb79;stroke-width:4}svg .target rect{stroke:#82cfff;stroke-width:4}input,select{font:inherit;background:#101b23;color:#e8edef;border:1px solid #50636f;border-radius:8px;padding:10px;max-width:100%}.editor-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0}.editor-row input{flex:1;min-width:190px}.editor-row select{flex:2;min-width:220px}button:disabled{opacity:.4;cursor:default}#status{color:#eac891}svg .index{font-size:9px;fill:#90a6b3}`; document.head.append(style);
+const toolbar=document.createElement('div');toolbar.className='bar';toolbar.id='editor-toolbar';toolbar.innerHTML='<button id="export">导出修改后的 HTML</button><button id="undo">撤销</button><span id="status" role="status"></span>'; $('tabs').before(toolbar);
+function status(message){$('status').textContent=message;}
+function persist(){dirty=true;try{localStorage.setItem(storageKey,JSON.stringify(DATA.layers));status('草稿已暂存 · 尚未写入设备');}catch{status('浏览器暂存不可用 · 请及时导出 HTML');}$('undo').disabled=!history.length;}
+function mutate(callback){history.push(JSON.stringify(DATA.layers));if(history.length>100)history.shift();callback();persist();render();if(selected!==null)edit(selected);}
+function applyBinding(value){if(selected===null)return;value=value.trim().replace(/\s+/g,' ');if(!valid(value)){status('绑定格式不支持，请从功能列表选择；自定义键码需为有效 ZMK 键码。');return;}if(DATA.layers[active].keys[selected]===value)return;mutate(()=>DATA.layers[active].keys[selected]=value);}
+function edit(i){selected=i;render();const raw=DATA.layers[active].keys[i];$('detail').innerHTML='<strong id="selected-title"></strong><p id="capture-hint">现在按笔记本或外接键盘上的键，即可设定此位置。支持 Ctrl+C 等组合；单独设置 Ctrl / Shift / Alt / Win 时，按下后松开即可。</p><button id="capture-focus">开始录入键盘按键</button><details><summary style="cursor:pointer;margin-top:18px">特殊功能 / 手动绑定（切层、透明键、已有宏）</summary><div class="editor-row"><input id="search" placeholder="搜索特殊功能" aria-label="搜索功能"><select id="choice" aria-label="选择按键功能"></select><button id="apply">应用选择</button></div><div class="editor-row"><input id="binding" aria-label="ZMK 绑定" spellcheck="false"><button id="apply-raw">应用绑定</button></div></details><p style="margin:12px 0 0;font-size:13px">录入采用实体键位置，符号按美式布局解释。部分系统快捷键可能被系统截获，可用手动绑定。修改仅作用于当前层。</p>';
+  $('selected-title').textContent=`${names[active]} · 位置 ${i} · ${keyLabel(raw)}`;$('binding').value=raw;
+  function filter(){const q=$('search').value.toLowerCase();$('choice').replaceChildren();const all=new Map(options);if(!all.has(raw))all.set(raw,raw);for(const [v,t]of all){if(!(`${t} ${v}`).toLowerCase().includes(q))continue;const o=document.createElement('option');o.value=v;o.textContent=t+'  ·  '+v;o.selected=v===raw;$('choice').append(o);}}
+  $('search').oninput=filter;filter();$('apply').onclick=()=>{if($('choice').value)applyBinding($('choice').value)};$('apply-raw').onclick=()=>applyBinding($('binding').value);$('binding').onkeydown=e=>{if(e.key==='Enter')applyBinding(e.target.value)};$('capture-focus').onclick=()=>{$('capture-focus').focus();status('等待实体键盘输入…');};$('capture-focus').focus({preventScroll:true});
+}
+function render(){[...$('tabs').children].forEach((b,i)=>b.setAttribute('aria-pressed',i===active));$('hint').textContent=`${names[active]} · 拖动交换，或点选后按实体键盘录入。绿色为轻点 / 长按双功能键，— 为未绑定。`;$('board').replaceChildren();DATA.positions.forEach(([w,h,x,y,r,rx,ry],i)=>{const raw=DATA.layers[active].keys[i];if(hidden.has(i)&&!$('reserved').checked&&raw==='&none')return;const trans=raw==='&trans',effective=trans?DATA.layers[0].keys[i]:raw;
+  const g=node('g',{'data-index':i,class:'key '+(raw==='&none'?'ghost ':effective.startsWith('&lt')?'layer ':'')+(selected===i?'selected':''),tabindex:0,role:'button','aria-label':`位置 ${i} ${keyLabel(effective)}${trans?' 继承':''}`,transform:`rotate(${r} ${rx*100} ${ry*100})`});g.append(node('rect',{x:x*100+4,y:y*100+4,width:w*100-8,height:h*100-8,rx:12}));g.append(node('text',{x:x*100+50,y:y*100+19,class:'index'},String(i)));g.append(node('text',{x:x*100+50,y:y*100+48,style:'font-size:'+(keyLabel(effective).length>9?'11':'16')+'px'},keyLabel(effective)));g.append(node('text',{x:x*100+50,y:y*100+72,class:'sub'},trans?'↧ 继承':effective.startsWith('&lt')?'按住 L'+layerNumber(effective):''));g.append(node('title',{},raw));g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();edit(i)}});$('board').append(g);
+});}
+$('board').addEventListener('pointerdown',e=>{const g=e.target.closest('[data-index]');if(!g||e.button!==0)return;drag={index:Number(g.dataset.index),x:e.clientX,y:e.clientY,moved:false};$('board').setPointerCapture(e.pointerId);e.preventDefault();});
+$('board').addEventListener('pointermove',e=>{if(!drag)return;if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)>6)drag.moved=true;document.querySelectorAll('.target').forEach(n=>n.classList.remove('target'));const target=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-index]');if(drag.moved&&target)target.classList.add('target');});
+$('board').addEventListener('pointerup',e=>{if(!drag)return;const from=drag;drag=null;const g=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-index]');document.querySelectorAll('.target').forEach(n=>n.classList.remove('target'));if(!g)return;const to=Number(g.dataset.index);if(from.moved&&to!==from.index){selected=to;mutate(()=>{const keys=DATA.layers[active].keys;[keys[from.index],keys[to]]=[keys[to],keys[from.index]];});}else if(!from.moved)edit(from.index);});
+$('board').addEventListener('pointercancel',()=>{drag=null;document.querySelectorAll('.target').forEach(n=>n.classList.remove('target'));});
+const physicalCodes={Backquote:'GRAVE',Minus:'MINUS',Equal:'EQUAL',BracketLeft:'LBKT',BracketRight:'RBKT',Backslash:'BSLH',Semicolon:'SEMI',Quote:'SQT',Comma:'COMMA',Period:'DOT',Slash:'FSLH',Space:'SPACE',Enter:'ENTER',Tab:'TAB',Backspace:'BACKSPACE',Escape:'ESC',Delete:'DELETE',Insert:'INSERT',Home:'HOME',End:'END',PageUp:'PG_UP',PageDown:'PG_DN',ArrowUp:'UP',ArrowDown:'DOWN',ArrowLeft:'LEFT',ArrowRight:'RIGHT',CapsLock:'CAPSLOCK',PrintScreen:'PSCRN',ScrollLock:'SLCK',Pause:'PAUSE_BREAK',NumLock:'KP_NUMLOCK',NumpadAdd:'KP_PLUS',NumpadSubtract:'KP_MINUS',NumpadMultiply:'KP_MULTIPLY',NumpadDivide:'KP_DIVIDE',NumpadDecimal:'KP_DOT',NumpadEnter:'KP_ENTER',ContextMenu:'K_APP',AudioVolumeMute:'C_MUTE',AudioVolumeUp:'C_VOL_UP',AudioVolumeDown:'C_VOL_DN',MediaPlayPause:'C_PLAY_PAUSE',MediaTrackNext:'C_NEXT',MediaTrackPrevious:'C_PREV',ControlLeft:'LEFT_CONTROL',ControlRight:'RIGHT_CONTROL',ShiftLeft:'LEFT_SHIFT',ShiftRight:'RIGHT_SHIFT',AltLeft:'LEFT_ALT',AltRight:'RIGHT_ALT',MetaLeft:'LEFT_GUI',MetaRight:'RIGHT_GUI'};
+const modifierCodes={ControlLeft:'LC',ControlRight:'RC',ShiftLeft:'LS',ShiftRight:'RS',AltLeft:'LA',AltRight:'RA',MetaLeft:'LG',MetaRight:'RG'};
+const heldModifiers=new Set();let modifierOnly=null;
+function physicalKey(code){if(/^Key[A-Z]$/.test(code))return code.slice(3);if(/^Digit[0-9]$/.test(code))return 'N'+code.slice(5);if(/^Numpad[0-9]$/.test(code))return 'KP_N'+code.slice(6);if(/^F([1-9]|1[0-9]|2[0-4])$/.test(code))return code;return physicalCodes[code];}
+function captureActive(){return selected!==null&&document.activeElement?.id==='capture-focus';}
+document.addEventListener('keydown',e=>{
+  if(!captureActive())return;e.preventDefault();e.stopPropagation();if(e.repeat||e.isComposing)return;
+  if(modifierCodes[e.code]){heldModifiers.add(e.code);modifierOnly=e.code;status('松开可录入修饰键，或继续按另一个键录入组合。');return;}
+  modifierOnly=null;let key=physicalKey(e.code);if(!key){status('浏览器未提供可识别键值，请展开特殊功能手动设置。');return;}
+  for(const [flag,prefix,fallback]of [['ctrlKey','Control','LC'],['altKey','Alt','LA'],['shiftKey','Shift','LS'],['metaKey','Meta','LG']]){if(e[flag]){const side=[...heldModifiers].find(c=>c.startsWith(prefix));key=(modifierCodes[side]||fallback)+'('+key+')';}}
+  applyBinding('&kp '+key);status('已录入 '+key+' · 可继续按键替换，或点击下一个位置');
+},true);
+document.addEventListener('keyup',e=>{if(captureActive()){e.preventDefault();e.stopPropagation();if(e.code===modifierOnly){applyBinding('&kp '+physicalKey(e.code));status('已录入 '+keyLabel('&kp '+physicalKey(e.code)));modifierOnly=null;}}heldModifiers.delete(e.code);},true);
+window.addEventListener('blur',()=>{heldModifiers.clear();modifierOnly=null;});
+$('undo').onclick=()=>{if(!history.length)return;DATA.layers=JSON.parse(history.pop());persist();render();if(selected!==null)edit(selected);};
+function exportHtml(){
+  const root=document.documentElement.cloneNode(true);
+  root.querySelector('#device-toolbar')?.remove();root.querySelector('#editor-toolbar')?.remove();root.querySelector('#tabs').replaceChildren();root.querySelector('#board').replaceChildren();root.querySelector('#detail').textContent='点击图上的键位，再按实体键盘录入。';
+  const script=root.querySelector('script');script.textContent=script.textContent.replace(/^const DATA=.*;$/m,()=> 'const DATA='+JSON.stringify(DATA).replace(/</g,'\\u003c')+';');
+  // Runtime styles are recreated on opening; retain only the original stylesheet.
+  [...root.querySelectorAll('style')].slice(1).forEach(n=>n.remove());
+  return '<!doctype html>\n'+root.outerHTML;
+}
+$('export').onclick=()=>{const blob=new Blob([exportHtml()],{type:'text/html;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='stopwatch-edited.html';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);status('已发起下载 stopwatch-edited.html · 仅为离线备份，设备未改变');};
+$('tabs').replaceChildren();names.forEach((name,i)=>{const b=document.createElement('button');b.textContent=name;b.onclick=()=>{active=i;selected=null;render();$('detail').textContent='点击图上的键位，再按实体键盘录入。';};$('tabs').append(b)});
+$('reserved').onchange=render;$('undo').disabled=true;render();status(cached?'已恢复浏览器草稿 · 连接后先读取设备':'尚未修改 · 所有 50 个键位均可编辑');
+window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
+
+// Injected after the existing editor script; the generated HTML is self-contained.
+const deviceBar=document.createElement('section');deviceBar.id='device-toolbar';deviceBar.className='panel';
+deviceBar.innerHTML='<h2>StopWatch · 在线改键</h2><div class="bar"><button id="device-connect">连接 StopWatch</button><button id="device-read" disabled>读取设备键位</button><button id="device-save" disabled>写入并保存到设备</button><button id="device-defaults" disabled>恢复默认到草稿</button><button id="device-close" disabled>断开</button></div><p id="device-status" role="status">未连接 · 先刷入支持在线改键的 StopWatch 固件，再用桌面 Chrome / Edge 打开本页。</p><p>点选键位后按笔记本或其他键盘录入，也可拖动交换。只有点击“写入并保存到设备”才会改变设备；成功保存后断电保留。旋钮转动功能固定，旋钮按压可以改键。</p>';
+$('tabs').before(deviceBar);
+let hidDevice=null,deviceBusy=false,deviceRevision=null,deviceBaseline=null;
+let sequence=crypto.getRandomValues(new Uint32Array(1))[0];
+const deviceMessage=text=>$('device-status').textContent=text;
+function deviceButtons(){
+  for(const element of [$('board').closest('.panel'),$('detail'),$('tabs'),$('editor-toolbar')])element.inert=deviceBusy;
+  $('device-connect').disabled=deviceBusy||!!hidDevice;
+  for(const id of ['device-read','device-defaults','device-close'])$(id).disabled=deviceBusy||!hidDevice;
+  $('device-save').disabled=deviceBusy||!hidDevice||deviceRevision===null;
+}
+function bytes32(n){return [n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255];}
+function number32(b,o=0){return (b[o]|b[o+1]<<8|b[o+2]<<16|b[o+3]<<24)>>>0;}
+const rpcErrors=['','请求格式错误','页面与固件版本不兼容，请使用对应版本编辑器','设备键位已被其他窗口修改，请先重新读取','设备正忙，请松开所有键，或稍后重试','传输顺序错误，请重新保存','键位未通过校验，未保存','设备存储失败，未切换当前键位','写入会话已过期，请重新保存'];
+async function rpc(command,payload=[]) {
+  const dev=hidDevice;if(!dev?.opened)throw Error('设备已断开');
+  const seq=sequence=(sequence+1)>>>0;
+  const request=new Uint8Array(63);request.set([83,75,1,command,...bytes32(seq)]);request.set(payload,8);
+  await dev.sendFeatureReport(5,request);
+  const deadline=Date.now()+6000;
+  while(Date.now()<deadline) {
+    const report=await dev.receiveFeatureReport(5);
+    const raw=new Uint8Array(report.buffer,report.byteOffset,report.byteLength);
+    if(raw.length!==64||raw[0]!==5)throw Error('设备协议不匹配，请更新固件');
+    const b=raw.subarray(1);
+    if(b[0]===83&&b[1]===75&&b[2]===1&&b[3]===command&&number32(b,4)===seq) {
+      if(b[8])throw Error(rpcErrors[b[8]]||`设备错误 ${b[8]}`);
+      return b.slice(9);
+    }
+    await new Promise(resolve=>setTimeout(resolve,15));
+  }
+  throw Error('设备响应超时；若刚才在保存，请重新读取确认实际结果');
+}
+async function getInfo(){
+  const info=await rpc(1);
+  if(info[0]!==5||info[1]!==50||info[2]!==6||info[3]!==48||number32(info,4)!==SWCodec.schema)
+    throw Error('页面与固件的层数或行为版本不一致，请用本次固件对应的 editor.html');
+  return {revision:number32(info,8),saved:!!info[12]};
+}
+async function readBytes(defaults=false) {
+  const before=await getInfo(),bytes=new Uint8Array(1500);
+  for(let offset=0;offset<bytes.length;offset+=48) {
+    const count=Math.min(48,bytes.length-offset),result=await rpc(2,[offset&255,offset>>>8,count,+defaults]);
+    if((result[0]|result[1]<<8)!==offset||result[2]!==count)throw Error('读取数据不完整，请重试');
+    bytes.set(result.subarray(3,3+count),offset);
+  }
+  if((await getInfo()).revision!==before.revision)throw Error('读取期间设备键位发生变化，请重试');
+  return {bytes,info:before};
+}
+function installDraft(bytes) {
+  const keys=SWCodec.decode(bytes);history.push(JSON.stringify(DATA.layers));
+  DATA.layers.forEach((layer,i)=>layer.keys=keys[i]);
+  selected=null;persist();render();$('detail').textContent='点击键位，再按实体键盘录入。';
+}
+async function readDevice(){
+  if(dirty&&!confirm('读取设备键位会替换当前页面草稿。是否继续？'))return;
+  const {bytes,info}=await readBytes();installDraft(bytes);
+  deviceRevision=info.revision;deviceBaseline=bytes;dirty=false;
+  status('已读取设备键位 · 修改后请写入保存');
+  deviceMessage(`已连接 · 已读取${info.saved?'已保存键位':'固件默认键位'} · 可开始编辑`);
+}
+async function operation(fn) {
+  if(deviceBusy)return;deviceBusy=true;deviceButtons();
+  try{await fn();}catch(e){deviceMessage(e.message+'（页面草稿保留）');}
+  finally{deviceBusy=false;deviceButtons();}
+}
+$('device-connect').onclick=()=>operation(async()=>{
+  if(!navigator.hid)throw Error('此浏览器不支持 WebHID，请在桌面 Chrome / Edge 中打开');
+  const devices=await navigator.hid.requestDevice({filters:[{usagePage:0xff50,usage:1}]});
+  if(!devices.length)return;
+  const selectedDevice=devices[0];hidDevice=selectedDevice;
+  try{await selectedDevice.open();await getInfo();await readDevice();}
+  catch(e){await selectedDevice.close().catch(()=>{});hidDevice=null;deviceRevision=null;throw e;}
+});
+$('device-read').onclick=()=>operation(readDevice);
+$('device-defaults').onclick=()=>operation(async()=>{
+  if(!confirm('将固件默认键位载入页面草稿？设备暂不改变，之后可检查并点击“写入并保存”。'))return;
+  const {bytes}=await readBytes(true);installDraft(bytes);deviceMessage('默认键位已载入草稿 · 尚未写入设备');
+});
+$('device-save').onclick=()=>operation(async()=>{
+  const bytes=SWCodec.encode(DATA.layers);
+  let changes=0;for(let i=0;i<250;i++)if(bytes.subarray(i*6,i*6+6).some((v,j)=>v!==deviceBaseline?.[i*6+j]))changes++;
+  if(!changes){deviceMessage('键位与设备一致，无需写入');return;}
+  if(!confirm(`将 ${changes} 个键位的修改写入 StopWatch 并断电保存？请松开键盘上的所有按键。`))return;
+  const draftAtStart=JSON.stringify(DATA.layers);
+  deviceMessage('正在写入，请保持 USB 连接…');
+  let token=null;
+  try {
+    const started=await rpc(3,[...bytes32(deviceRevision),...bytes32(SWCodec.schema)]);token=number32(started);
+    for(let offset=0;offset<bytes.length;offset+=48) {
+      const part=bytes.slice(offset,offset+48);
+      await rpc(4,[...bytes32(token),offset&255,offset>>>8,part.length,...part]);
+    }
+    await rpc(5,[...bytes32(token),...bytes32(SWCodec.hash(bytes))]);token=null;
+    const verified=await readBytes();
+    if(!verified.bytes.every((v,i)=>v===bytes[i]))throw Error('保存后回读不一致，请重新读取设备');
+    deviceRevision=verified.info.revision;deviceBaseline=verified.bytes;
+    dirty=JSON.stringify(DATA.layers)!==draftAtStart;
+    deviceMessage(dirty?'设备已保存本次发送的键位 · 页面仍有之后的修改未写入':'写入成功并已回读核对 · 立即生效，断电保留');
+    status(dirty?'页面有新修改待写入':'已保存到 StopWatch');
+  } catch(e) {
+    if(token!==null)await rpc(6,bytes32(token)).catch(()=>{});
+    deviceRevision=null;throw Error(e.message+'；请重新读取设备后再保存');
+  }
+});
+$('device-close').onclick=()=>operation(async()=>{
+  await hidDevice.close();hidDevice=null;deviceRevision=null;deviceBaseline=null;deviceMessage('已断开 · 页面草稿保留');
+});
+navigator.hid?.addEventListener('disconnect',e=>{
+  if(e.device===hidDevice){hidDevice=null;deviceRevision=null;deviceBaseline=null;deviceButtons();deviceMessage('USB 已断开 · 重新连接并读取后再保存');}
+});
+if(!navigator.hid)deviceMessage('请使用桌面 Chrome / Edge 打开本页；当前浏览器不支持设备连接，仍可离线编辑。');
+deviceButtons();
+
+</script></html>

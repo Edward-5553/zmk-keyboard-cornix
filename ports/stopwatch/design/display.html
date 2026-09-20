@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>StopWatch · 月薪喵显示方案</title>
+<style>
+:root{color-scheme:dark;font-family:Inter,"Segoe UI","Microsoft YaHei",sans-serif;background:#101312;color:#e7ece8;font-synthesis:none}
+*{box-sizing:border-box}body{margin:0}main{max-width:1060px;margin:auto;padding:42px 28px}header{display:flex;justify-content:space-between;align-items:start;gap:20px;border-bottom:1px solid #2c332f;padding-bottom:26px}.eyebrow{font-size:12px;letter-spacing:.2em;color:#a8c2b3}h1{font-size:30px;letter-spacing:-1px;font-weight:500;margin:10px 0}p{color:#9daaa2;line-height:1.7;font-size:14px;margin:0}.version{font-size:12px;color:#aab9af;padding-top:8px;white-space:nowrap}.layout{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:60px;align-items:center;padding:42px 0}.stage{text-align:center;min-width:0}.watch{position:relative;width:100%;max-width:490px;aspect-ratio:1;margin:auto;border-radius:50%;padding:12px;background:#232a26;box-shadow:0 24px 60px #0007,inset 0 1px 2px #78847b66}.screen{container-type:inline-size;position:relative;width:100%;height:100%;border-radius:50%;overflow:hidden;background:#000;color:#f1f4ed;isolation:isolate}.screen *{position:absolute}.screen .rail{inset:3.5%;border:1px solid #26372e;border-radius:50%}.usb{top:8.6%;left:25%;width:50%;text-align:center;font-size:2.8cqw;letter-spacing:.15em;color:#96d8aa}.usb::before{content:'●';margin-right:7px;font-size:2cqw}/* Bars flank the animation; percentages remain above each track. */
+.battery{top:18.5%;width:14%;height:11.5%;text-align:center;color:#a1e0b5}.battery.left{left:18%}.battery.right{right:18%}.battery strong{position:static;display:block;font-size:4.1cqw;font-weight:500;line-height:1.5;white-space:nowrap}.battery .track{top:55%;height:22%;left:8%;width:84%;border:1px solid #395044;border-radius:20px;background:#142219;overflow:hidden}.battery .fill{bottom:0;left:0;height:100%;width:var(--level,0%);background:currentColor;border-radius:20px;transition:width .3s}.battery.right .fill{left:auto;right:0}.battery.low,.battery.off{color:#eda575}.battery.unknown .track{background:repeating-linear-gradient(135deg,#142219 0 5px,#29362e 5px 7px)}.battery.unknown .fill{display:none}.battery.off strong,.battery.unidentified strong{font-size:3cqw}.cat{top:calc(55.150215% - var(--cat-h,38.626609%)/2);left:calc((100% - var(--cat-w,38.626609%))/2);width:var(--cat-w,38.626609%);height:var(--cat-h,38.626609%);object-fit:contain;border-radius:12%;background:#fff}.layer{top:80.3%;left:10%;width:80%;text-align:center;font-size:5.9cqw;letter-spacing:.06em;font-weight:550}
+.message{top:88.4%;left:13%;width:74%;text-align:center;font-size:3cqw;color:#96a69a;white-space:nowrap}.message.alert{color:#f1ad7c}.ticks{top:91.85%;left:40%;width:20%;display:flex;gap:1.4cqw;justify-content:center}.ticks i{position:static;display:block;width:1.2cqw;height:1.2cqw;background:#334138;border-radius:50%}.ticks i.active{background:#a1e0b5}.dim .screen{filter:brightness(.35)}.stage-caption{margin-top:24px;font-size:12px;color:#a2b0a7}.controls h2{font-size:18px;font-weight:500;margin:0 0 8px}.controls>p{margin-bottom:24px}.controls fieldset{padding:0;border:0;margin:0 0 24px}.controls legend{font-size:12px;color:#acbbb1;margin-bottom:10px;letter-spacing:.05em}.buttons{display:flex;gap:8px;flex-wrap:wrap}button,select{font:inherit;font-size:13px;border:1px solid #39443d;border-radius:8px;background:#191f1b;color:#c7d2cb;padding:10px 12px;cursor:pointer}button[aria-pressed=true]{background:#b3dec0;border-color:#b3dec0;color:#112119}button:focus-visible,select:focus-visible{outline:2px solid #dbefd8;outline-offset:3px}select{width:100%}.note{border-top:1px solid #2d3630;padding-top:18px;font-size:12px;color:#8fa096;line-height:1.8}.details{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;border-top:1px solid #2c332f;padding-top:24px}.details h3{font-size:14px;font-weight:500;margin:0 0 8px}.details p{font-size:12px}footer{font-size:11px;color:#829288;line-height:1.8;margin-top:30px}a{color:#b7d6c2}@media(max-width:760px){main{padding:24px 18px}.layout{grid-template-columns:1fr;gap:36px;padding:30px 0}.controls{max-width:490px;width:100%;margin:auto}.details{grid-template-columns:1fr;gap:16px}.watch{max-width:466px}.version{display:none}h1{font-size:26px}}
+.gallery{border-top:1px solid #2c332f;padding:24px 0}.gallery h2{font-size:20px;font-weight:500}.gallery-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin:20px 0}.candidate{padding:10px;border:1px solid #39443d;border-radius:12px}.candidate img{width:100%;height:130px;object-fit:contain;background:white;border-radius:8px}.candidate button{width:100%;margin-top:8px}.candidate a{display:block;font-size:12px;margin-top:8px}.candidate p{font-size:12px}.asset-note{font-size:12px;color:#aab9af;margin-top:8px}
+.wpm{top:22.3%;left:35%;width:30%;height:7%;display:flex;align-items:baseline;justify-content:center;gap:1.3cqw;color:#e7ece8}.wpm strong{position:static;font-size:5cqw;line-height:1;font-weight:500;font-variant-numeric:tabular-nums}.wpm span{position:static;font-size:2.4cqw;color:#96a69a;letter-spacing:.08em}
+/* Rotate the enclosure and the complete UI independently around the same centre. */
+.watch{transform:rotate(var(--body-angle,0deg));transform-origin:50% 50%}
+.watch::before{content:'';position:absolute;z-index:3;top:0;left:calc(50% - 5px);width:10px;height:12px;border-radius:4px;background:#efbd73;box-shadow:0 0 0 2px #101312}
+.screen .orientation-content{inset:0;transform:rotate(var(--ui-angle,0deg));transform-origin:50% 50%}
+.gravity-guide{font-size:12px;color:#a8c2b3;margin-bottom:24px;letter-spacing:.08em}
+.orientation-controls{padding-bottom:20px!important;border-bottom:1px solid #39443d!important}
+.orientation-controls label{display:block;font-size:13px;margin-bottom:12px;line-height:1.6}
+.orientation-controls input[type=range]{width:100%;accent-color:#b3dec0;margin:10px 0}
+.orientation-controls input[type=checkbox]{accent-color:#b3dec0;margin-right:7px}
+.orientation-status{font-size:12px;color:#b7d6c2;line-height:1.8;min-height:5.4em;margin-top:12px}
+.dim .orientation-content{visibility:hidden}
+</style>
+<main>
+<header><div><div class="eyebrow">CORNIX / STOPWATCH</div><h1>桌面上的月薪喵</h1><p>连接状态一眼可见，让猫占据屏幕中央。</p></div><div class="version">四向显示 · 04</div></header>
+<section class="layout">
+<div class="stage"><div class="gravity-guide">↑ 现实中的上方 · 水平参考线 ───</div><div class="watch" id="watch"><div class="screen" role="img" aria-label="StopWatch 圆屏预览" id="screen">
+<div class="orientation-content" id="orientationContent"><div class="rail"></div><div class="usb" id="usb">USB · READY</div>
+<div class="wpm" aria-label="输入速度"><strong id="wpmValue">68</strong><span>WPM</span></div>
+<div class="battery left" id="left" aria-label="左手电量"><strong id="leftValue">82%</strong><div class="track"><i class="fill"></i></div></div>
+<div class="battery right" id="right" aria-label="右手电量"><strong id="rightValue">76%</strong><div class="track"><i class="fill"></i></div></div>
+<img class="cat" id="cat" src="assets/work.gif" alt="月薪喵 cat-sad 动画" referrerpolicy="no-referrer">
+<div class="layer"><span id="layerName" style="position:static">BASE</span></div>
+<div class="message" id="message"></div><div class="ticks" aria-hidden="true"><i class="active"></i><i></i><i></i><i></i><i></i></div>
+</div></div></div><div class="stage-caption">橙色刻度代表机身顶部，随机身旋转；屏幕内容按四向切换。<br>466 × 466 圆屏比例 · 演示数据 · 非设备实时画面</div></div>
+<aside class="controls"><h2>看看不同状态</h2><p>主屏布局固定，状态变化时只更新需要关注的内容。</p>
+<fieldset class="orientation-controls"><legend>磁吸方向模拟</legend>
+<label for="bodyAngle">机身方向（四档）：<output id="angleValue">0°</output><input id="bodyAngle" type="range" min="0" max="270" step="90" value="0"></label>
+<div class="buttons" id="anglePresets"><button type="button" data-angle="0">正放</button><button type="button" data-angle="90">侧放 90°</button><button type="button" data-angle="180">倒放 180°</button><button type="button" data-angle="270">侧放 270°</button></div>
+<label style="margin-top:16px"><input id="autoOrient" type="checkbox" checked>根据重力自动转正</label>
+<label><input id="flatPose" type="checkbox">平放，屏幕朝上（重力方向不可用）</label>
+<p class="orientation-status" id="orientationStatus" aria-live="polite"></p>
+<p class="asset-note">预览仅提供 0°、90°、180°、270° 四档。实机斜放时选择邻近四向方向，文字不会在任意倾角持续保持水平。可关闭自动转正比较。勾选平放后，模拟俯视设备：补偿角度保持上次值，画面会随机身一起转；恢复竖放后重新转正。本页演示目标效果，未模拟传感器噪声、滤波和渲染耗时。</p>
+</fieldset>
+<fieldset><legend>使用场景</legend><div class="buttons" id="scenes"><button type="button" data-scene="typing" aria-pressed="true">正常输入</button><button type="button" data-scene="idle" aria-pressed="false">闲置</button><button type="button" data-scene="lost" aria-pressed="false">右半断连</button><button type="button" data-scene="pairing" aria-pressed="false">首次配对</button><button type="button" data-scene="low" aria-pressed="false">低电量</button><button type="button" data-scene="suspend" aria-pressed="false">电脑休眠</button></div></fieldset>
+<fieldset><legend>当前键位层</legend><select id="layerSelect" aria-label="当前键位层"><option value="0">L0 · BASE</option><option value="1">L1 · NUM / NAV</option><option value="2">L2 · FN / SYMBOL</option><option value="3">L3 · SCROLL</option><option value="4">L4 · SNIPE</option></select></fieldset>
+<fieldset><legend>输入速度（演示）</legend><label for="wpmInput">正常输入 WPM：<output id="wpmOutput">68</output></label><input id="wpmInput" type="range" min="0" max="200" value="68" style="width:100%;margin-top:12px;accent-color:#b3dec0"><p class="asset-note">顶部显示演示速度；闲置和休眠示例为 0。</p></fieldset>
+<fieldset><legend>动图尺寸</legend><select id="catSize" aria-label="动图尺寸"><option value="38.626609,38.626609" selected>当前 · 180 × 180 px</option><option value="44,39">紧凑 · 205 × 182 px</option><option value="52,46">中等 · 242 × 214 px</option><option value="56,50">较大 · 261 × 233 px</option></select></fieldset>
+<fieldset><legend>动图预览</legend><button type="button" id="autoCat">恢复随状态切换</button><p class="asset-note" id="assetNote" aria-live="polite">当前：输入 cat-sad.gif / 闲置原有睡觉动画</p></fieldset>
+<fieldset><legend>电量显示</legend><div class="buttons" id="batteryModes"><button type="button" data-mode="demo" aria-pressed="true">演示电量</button><button type="button" data-mode="unknown" aria-pressed="false">尚未获取</button></div></fieldset>
+<p class="note" id="explanation" aria-live="polite">正常输入：月薪喵播放 cat-sad.gif，当前层固定显示在下方。</p>
+</aside></section>
+<section class="details"><div><h3>WPM 两侧 · 左右电量</h3><p>横向电量条放在 WPM 两侧，左右镜像填充：左条从右侧消退，右条从左侧消退，百分比在上方；左条代表左手，右条代表右手。断连明确写出。未读到电量显示 --%，不会用 0% 代替。</p></div><div><h3>中央 · 月薪喵</h3><p>默认 180 × 180 px，保持动画中心位置不变，可切换尺寸比较。输入时播放 cat-sad.gif，闲置后保留原来的睡觉动画；动画不参与键盘事件处理。</p></div><div><h3>下方 · 层与提示</h3><p>仅显示居中的层名称，去掉 Lx 前缀。输入、闲置、断连、首次配对和低电量均不显示底部文字；音量和滚轮操作可短暂提示。</p></div></section>
+<section class="gallery"><h2>换一批月薪喵</h2><p>下方是现有素材来源中的其他动图，点击“试放到屏幕”即可比较。在线图片需要联网；加载失败时可打开原图来源。名称参考上游素材说明。</p><div class="gallery-grid" id="gallery"></div><p>正常输入已选用：<a href="https://github.com/myunwang/LLMPET/blob/main/assets/cat/cat-sad.gif" target="_blank" rel="noreferrer">cat-sad.gif</a>，本地素材已同步到设备动画。<a href="https://github.com/myunwang/LLMPET/blob/main/assets/cat/CREDITS.md" target="_blank" rel="noreferrer">候选素材来源与署名</a> · 原作者 @月薪喵。</p></section>
+<footer>第三版布局已同步到固件；重力自动转正已接入实验固件，安装方向与性能待实机验证。已移除麦克风采音及两侧装饰柱条。本页仍为交互模拟。<br>月薪喵素材 © @月薪喵 · 原图沿用项目已使用素材，<a href="../../../boards/shields/cornix_dongle_display/ASSETS.md">来源与署名</a>。</footer>
+</main>
+<script>
+(()=>{
+const q=s=>document.querySelector(s);let scene='typing',unknown=false,chosen=null;
+const descriptions={typing:'正常输入：月薪喵播放 cat-sad.gif，当前层固定显示在下方。',idle:'闲置：切换睡觉动画；实机在 60 秒无输入后降低亮度，120 秒自动息屏。',lost:'断连：保留当前层，明确指出右半未连接；左半仍可使用。',pairing:'首次配对：未确认左右身份前显示待识别，不按连接先后分配左右。',low:'低电量：仅标记需要充电的一侧，不用整屏闪烁打断输入。',suspend:'电脑休眠：屏幕息屏；不将 USB 供电误显示为可以输入。'};
+function render(){
+q('#watch').classList.toggle('dim',scene==='suspend');
+const wpm=(scene==='typing'||scene==='low')?q('#wpmInput').value:'0';q('#wpmValue').textContent=wpm;q('.wpm').setAttribute('aria-label','输入速度 '+wpm+' WPM');
+q('#usb').textContent=scene==='suspend'?'USB · SUSPENDED':'USB · READY';
+for(const [side,level] of [['left',scene==='low'?12:82],['right',76]]){
+const disconnected=side==='right'&&scene==='lost',unidentified=scene==='pairing',missing=unknown||disconnected||unidentified;
+q('#'+side).className='battery '+side+(level<20?' low':'')+(disconnected?' off':'')+(missing?' unknown':'')+(unidentified?' unidentified':'');
+q('#'+side).style.setProperty('--level',missing?'0%':level+'%');
+q('#'+side+'Value').textContent=disconnected?'未连接':unidentified?'待识别':unknown?'--%':level+'%';
+}
+const sleeping=scene!=='typing'&&scene!=='low';
+const src=chosen?chosen.src:sleeping?'assets/sleep.gif':'assets/work.gif';
+if(q('#cat').getAttribute('src')!==src)q('#cat').src=src;
+q('#cat').alt=chosen?chosen.name:sleeping?'月薪喵睡觉动画':'月薪喵 cat-sad 动画';
+q('#assetNote').textContent=chosen?'当前试看：'+chosen.name:sleeping?'当前：闲置原有睡觉动画':'当前：正常输入 · cat-sad.gif（本地素材）';
+q('#message').textContent={typing:'',idle:'',lost:'',pairing:'',low:'',suspend:'等待电脑唤醒'}[scene];
+q('#message').classList.toggle('alert',scene==='lost'||scene==='low');
+q('#explanation').textContent=descriptions[scene];
+q('#screen').setAttribute('aria-label',`StopWatch 预览：${wpm} WPM，${q('#leftValue').textContent}，${q('#rightValue').textContent}，${q('#layerName').textContent}，${q('#message').textContent}`);
+}
+q('#scenes').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;scene=b.dataset.scene;for(const x of q('#scenes').querySelectorAll('button'))x.setAttribute('aria-pressed',String(x===b));render()});
+q('#batteryModes').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;unknown=b.dataset.mode==='unknown';for(const x of q('#batteryModes').querySelectorAll('button'))x.setAttribute('aria-pressed',String(x===b));render()});
+q('#layerSelect').addEventListener('change',e=>{const i=Number(e.target.value);q('#layerName').textContent=['BASE','NUM / NAV','FN / SYMBOL','SCROLL','SNIPE'][i];document.querySelectorAll('.ticks i').forEach((x,n)=>x.classList.toggle('active',i===n));render()});
+q('#wpmInput').addEventListener('input',e=>{q('#wpmOutput').textContent=e.target.value;render()});
+q('#catSize').addEventListener('change',e=>{const [w,h]=e.target.value.split(',');q('#screen').style.setProperty('--cat-w',w+'%');q('#screen').style.setProperty('--cat-h',h+'%')});
+q('#autoCat').addEventListener('click',()=>{chosen=null;q('#assetNote').textContent='当前：输入 cat-sad.gif / 闲置原有睡觉动画';render()});
+q('#cat').addEventListener('error',()=>{q('#assetNote').textContent='动图加载失败，请选择其他候选或打开原图来源。'});
+const candidates=[['cat-working','上号按钮','输入时'],['cat-working-2','熬夜看屏幕','输入时'],['cat-idle','转椅摸鱼','闲置时'],['cat-loafing','躺着刷手机','闲置时'],['cat-thinking','挠头思考','等待连接'],['cat-sleeping-2','椅子上睡觉','长时间闲置'],['cat-happy','摸头夸夸','连接成功'],['cat-roam','撒腿跑','活跃输入']];
+for(const [file,name,use] of candidates){
+const src='https://raw.githubusercontent.com/myunwang/LLMPET/main/assets/cat/'+file+'.gif';
+const card=document.createElement('div');card.className='candidate';
+const img=document.createElement('img');img.src=src;img.alt=name;img.loading='lazy';img.referrerPolicy='no-referrer';
+const caption=document.createElement('p');caption.textContent=name+' · 可用于'+use;
+const button=document.createElement('button');button.type='button';button.textContent='试放到屏幕';button.addEventListener('click',()=>{chosen={src,name};q('#assetNote').textContent='当前试看：'+name;render();q('#screen').scrollIntoView({behavior:'smooth',block:'center'})});
+const link=document.createElement('a');link.href='https://github.com/myunwang/LLMPET/blob/main/assets/cat/'+file+'.gif';link.textContent='原图来源';link.target='_blank';link.rel='noreferrer';
+img.addEventListener('error',()=>{caption.textContent=name+' · 在线图片未加载，请打开原图来源'});
+card.append(img,caption,button,link);q('#gallery').append(card);
+}
+let lastCompensation=0;
+function orient(){
+const angle=Number(q('#bodyAngle').value),automatic=q('#autoOrient').checked,flat=q('#flatPose').checked;
+if(automatic&&!flat){
+const current=-lastCompensation;
+const delta=((angle-current+180)%360+360)%360-180;
+if(Math.abs(delta)>=55)lastCompensation=-Math.round(angle/90)*90;
+}
+const compensation=automatic?lastCompensation:0;
+q('#watch').style.setProperty('--body-angle',angle+'deg');
+q('#orientationContent').style.setProperty('--ui-angle',compensation+'deg');
+q('#angleValue').textContent=angle+'°';
+const apparent=((angle+compensation+180)%360+360)%360-180;
+q('#orientationStatus').textContent=`机身 ${angle}° · 画面补偿 ${compensation}° · 观看角度 ${apparent}°。`+(automatic?(flat?'平放：保持上次补偿角度，不能继续判断上下方向。':'重力有效：仅在 0° / 90° / 180° / 270° 四向切换。'):'自动转正已关闭：画面跟随机身转动。');
+for(const b of q('#anglePresets').querySelectorAll('button'))b.setAttribute('aria-pressed',String(Number(b.dataset.angle)===angle));
+}
+q('#bodyAngle').addEventListener('input',orient);
+q('#autoOrient').addEventListener('change',orient);
+q('#flatPose').addEventListener('change',orient);
+q('#anglePresets').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;q('#bodyAngle').value=b.dataset.angle;orient()});
+orient();
+render();
+})();
+</script>
+</html>

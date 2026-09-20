@@ -20,6 +20,9 @@ ZMK board definitions and shields for the Cornix split ergonomic keyboard.
 - `cornix_dongle_adapter` — central dongle matrix and Bluetooth role
 - `cornix_dongle_eyelash` — optional display hardware overlay
 - `cornix_indicator` — production-ready RGB battery and connection indicators
+- [StopWatch Dongle (experimental)](ports/stopwatch/README.md) — independent ESP-IDF
+  USB receiver for M5Stack StopWatch; typing and round display verified on hardware;
+  no Studio support
 
 Cornix uses a compact 3×6 column-staggered layout with three thumb keys per
 half. The hardware supports USB-C, Bluetooth, Kailh Choc V2 hot-swap sockets,

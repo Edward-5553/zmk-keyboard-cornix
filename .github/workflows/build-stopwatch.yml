@@ -1,0 +1,57 @@
+name: Build experimental StopWatch dongle
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'ports/stopwatch/**'
+      - 'config/cornix.keymap'
+      - '.github/workflows/build-stopwatch.yml'
+  pull_request:
+    paths:
+      - 'ports/stopwatch/**'
+      - 'config/cornix.keymap'
+      - '.github/workflows/build-stopwatch.yml'
+permissions:
+  contents: read
+jobs:
+  engine-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: python3 ports/stopwatch/tools/test.py
+      - name: Check generated editor and browser logic
+        run: |
+          python3 ports/stopwatch/tools/build-editor.py
+          git diff --exit-code -- ports/stopwatch/editor.html ports/stopwatch/tests/editor-config.json
+          node ports/stopwatch/tests/editor-test.js
+          npm install --prefix .build/stopwatch-editor-tests --no-audit --no-fund --ignore-scripts jsdom@26.1.0
+          NODE_PATH="$PWD/.build/stopwatch-editor-tests/node_modules" node ports/stopwatch/tests/editor-dom-test.js
+  build:
+    needs: engine-tests
+    runs-on: ubuntu-latest
+    container: espressif/idf:v5.4.4
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile ESP32-S3 firmware
+        shell: bash
+        run: |
+          . /opt/esp/idf/export.sh
+          cd ports/stopwatch
+          idf.py build
+          cp editor.html build/editor.html
+      - name: Upload flash package
+        uses: actions/upload-artifact@v4
+        with:
+          name: cornix-stopwatch-experimental
+          path: |
+            ports/stopwatch/build/cornix_stopwatch.bin
+            ports/stopwatch/build/bootloader/bootloader.bin
+            ports/stopwatch/build/partition_table/partition-table.bin
+            ports/stopwatch/build/flasher_args.json
+            ports/stopwatch/build/flash_args
+            ports/stopwatch/build/editor.html
+            ports/stopwatch/build/BMI270-LICENSE.txt
+          if-no-files-found: error
