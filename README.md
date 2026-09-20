@@ -32,7 +32,7 @@ on the three active layers, including unassigned keys:
 
 - **L0 Base:** Space held activates L1; Enter held activates L2.
 - **L1 Num/Nav:** arrows on E/S/D/F and Ctrl shortcuts on Z/X/C/V; BT Clear and BT 1–3 on the leftmost column. Right-hand digits use 789 / 456 / 0123, with decimal above zero.
-- **L2 Fn/Symbol:** two rows of symbols, with F1–F12 on the third row.
+- **L2 Fn/Symbol:** two rows of symbols; left Shift and F2–F12 on the third row, with F1 on the base-layer Caps thumb position.
 
 ![Cornix current keymap: Base, Num/Nav and Fn/Symbol, 50 positions per layer](keymap-drawer/cornix.svg)
 

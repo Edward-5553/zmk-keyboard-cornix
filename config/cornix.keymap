@@ -61,14 +61,14 @@
         fn_symbols_layer {
             display-name = "Fn/Symbol";
 
-            // Imported from keymap-drawer/cornix-edited.html.
+            // Keep left Shift available; F1 is on the base Caps thumb position.
             // Binding rows: 0-11, 12-23, 24-37, 38-49.
 
             bindings = <
 &kp TILDE            &kp EXCL             &kp AT               &kp HASH             &kp DLLR             &kp PRCNT            &kp CARET            &kp AMPS             &kp ASTRK            &kp LPAR             &kp RPAR             &kp GRAVE
 &kp BSLH             &kp LBRC             &kp LBKT             &kp LT               &kp MINUS            &kp UNDER            &kp PLUS             &kp EQUAL            &kp GT               &kp RBKT             &kp RBRC             &kp PIPE
-&kp F1               &kp F2               &kp F3               &kp F4               &kp F5               &kp F6               &none                &none                &kp F7               &kp F8               &kp F9               &kp F10              &kp F11              &kp F12
-&none                &none                &none                &trans               &trans               &trans               &trans               &trans               &trans               &none                &none                &none
+&kp LEFT_SHIFT       &kp F2               &kp F3               &kp F4               &kp F5               &kp F6               &none                &none                &kp F7               &kp F8               &kp F9               &kp F10              &kp F11              &kp F12
+&none                &none                &none                &kp F1               &trans               &trans               &trans               &trans               &trans               &none                &none                &none
             >;
 
             sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp PG_UP PG_DN>;
