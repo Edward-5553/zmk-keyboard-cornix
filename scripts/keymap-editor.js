@@ -2,6 +2,7 @@ const $ = id => document.getElementById(id);
 const names = ['L0 基础', 'L1 数字 / 导航', 'L2 功能 / 符号', 'L3 Scroll', 'L4 Snipe'];
 const layerIds = ['BASE', 'NUM_NAV', 'FN_SYMBOLS', 'SCROLL', 'SNIPE'];
 const labels = {TAB:'Tab',BACKSPACE:'Backspace',LEFT_SHIFT:'左 Shift',RIGHT_SHIFT:'右 Shift',LEFT_CONTROL:'左 Ctrl',RIGHT_CONTROL:'右 Ctrl',LEFT_ALT:'左 Alt',RIGHT_ALT:'右 Alt',LEFT_GUI:'左 Win',RIGHT_GUI:'右 Win',ESC:'Esc',SPACE:'Space',ENTER:'Enter',DELETE:'Delete',CAPSLOCK:'Caps',SEMI:';',SQT:"'",COMMA:',',DOT:'.',FSLH:'/',UP:'↑',LEFT:'←',DOWN:'↓',RIGHT:'→',TILDE:'~',EXCL:'!',AT:'@',HASH:'#',DLLR:'$',PRCNT:'%',CARET:'^',AMPS:'&',ASTRK:'*',LPAR:'(',RPAR:')',GRAVE:'`',BSLH:'\\',LBRC:'{',LBKT:'[',LT:'<',MINUS:'-',UNDER:'_',PLUS:'+',EQUAL:'=',GT:'>',RBKT:']',RBRC:'}',PIPE:'|',HOME:'Home',END:'End',PG_UP:'Page Up',PG_DN:'Page Down',INSERT:'Insert',C_VOL_UP:'音量 +',C_VOL_DN:'音量 −',C_MUTE:'静音',C_PLAY_PAUSE:'播放 / 暂停',C_NEXT:'下一曲',C_PREV:'上一曲'};
+const pairLabels = {'&pair_braces':'{|}', '&pair_brackets':'[|]', '&pair_angles':'<|>'};
 const options = new Map();
 function add(binding, text) { options.set(binding, text); }
 for (const c of 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') add('&kp '+c,c);
@@ -14,6 +15,7 @@ for(let i=0;i<5;i++) {
   add('&bt BT_SEL '+i,'蓝牙档位 '+(i+1));
 }
 add('&bt BT_CLR','清除当前主机配对');
+for (const [binding,label] of Object.entries(pairLabels)) add(binding,label+' 成对输入，光标居中');
 for(const layer of layerIds) for(const key of ['SPACE','ENTER','TAB','ESC']) add(`&lt ${layer} ${key}`,`${labels[key]} / 按住 L${layerIds.indexOf(layer)}`);
 for(const mod of ['LC','LS','LA','LG']) for(const key of 'ACVXZSY') add(`&kp ${mod}(${key})`,`${{LC:'Ctrl',LS:'Shift',LA:'Alt',LG:'Win'}[mod]} + ${key}`);
 for(const layer of DATA.layers) for(const binding of layer.keys) if(!options.has(binding)) add(binding,binding);
@@ -26,6 +28,7 @@ const hidden=new Set([30,31,38,39,40,47,48,49]);
 try { const saved=JSON.parse(localStorage.getItem(storageKey)); if(saved?.length===5 && saved.every((l,i)=>l.name===DATA.layers[i].name && l.keys?.length===50 && l.keys.every(k=>typeof k==='string' && valid(k)))) { DATA.layers=saved; dirty=true; cached=true; } } catch {}
 function valid(value) { let key=value.replace(/^&kp /,'');while(/^(LC|RC|LS|RS|LA|RA|LG|RG)\(.+\)$/.test(key))key=key.slice(3,-1);return options.has(value) || (value.startsWith('&kp ')&&/^[A-Z][A-Z0-9_]*$/.test(key)) || /^&lt (?:BASE|NUM_NAV|FN_SYMBOLS|SCROLL|SNIPE|[0-4]) [A-Z][A-Z0-9_]*$/.test(value); }
 function keyLabel(binding) {
+  if(pairLabels[binding]) return pairLabels[binding];
   if(binding==='&none') return '—'; if(binding==='&trans') return '↧';
   const p=binding.split(' ');
   if(p[0]==='&lt') return labels[p[2]]||p[2];

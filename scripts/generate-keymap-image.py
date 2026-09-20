@@ -22,6 +22,8 @@ def text(x, y, value, size=18, color='#e8edef', anchor='start', target=None):
     svg.append(f'<text x="{x}" y="{y}" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="{size}" fill="{color}" text-anchor="{anchor}" dominant-baseline="central">{html.escape(value)}</text>')
 
 def label(binding):
+    pairs = {'&pair_braces': '{|}', '&pair_brackets': '[|]', '&pair_angles': '<|>'}
+    if binding in pairs: return pairs[binding]
     p=binding.split()
     if p[0]=='&none': return '—'
     if p[0]=='&trans': return 'Transparent'
