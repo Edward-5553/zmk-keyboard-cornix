@@ -379,34 +379,34 @@
 <text x="1400.0" y="197.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a7b6bf" text-anchor="middle" dominant-baseline="central">&#x27;</text>
 <text x="1400.0" y="223.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central">from L0</text>
 </g>
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;bt BT_CLR</title><rect x="4.0" y="259.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;none</title><rect x="4.0" y="259.0" width="92.0" height="92.0" rx="12" fill="#1b2831" stroke="#50636f"/>
 <text x="50.0" y="272.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">24</text>
-<text x="50.0" y="302.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">BT Clear</text>
+<text x="50.0" y="302.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a7b6bf" text-anchor="middle" dominant-baseline="central">—</text>
 <text x="50.0" y="328.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;bt BT_SEL 0</title><rect x="104.0" y="259.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;none</title><rect x="104.0" y="259.0" width="92.0" height="92.0" rx="12" fill="#1b2831" stroke="#50636f"/>
 <text x="150.0" y="272.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">25</text>
-<text x="150.0" y="302.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">BT 1</text>
+<text x="150.0" y="302.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a7b6bf" text-anchor="middle" dominant-baseline="central">—</text>
 <text x="150.0" y="328.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;bt BT_SEL 1</title><rect x="204.0" y="229.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;none</title><rect x="204.0" y="229.0" width="92.0" height="92.0" rx="12" fill="#1b2831" stroke="#50636f"/>
 <text x="250.0" y="242.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">26</text>
-<text x="250.0" y="272.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">BT 2</text>
+<text x="250.0" y="272.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a7b6bf" text-anchor="middle" dominant-baseline="central">—</text>
 <text x="250.0" y="298.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;bt BT_SEL 2</title><rect x="304.0" y="204.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;none</title><rect x="304.0" y="204.0" width="92.0" height="92.0" rx="12" fill="#1b2831" stroke="#50636f"/>
 <text x="350.0" y="217.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">27</text>
-<text x="350.0" y="247.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">BT 3</text>
+<text x="350.0" y="247.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a7b6bf" text-anchor="middle" dominant-baseline="central">—</text>
 <text x="350.0" y="273.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;bt BT_SEL 3</title><rect x="404.0" y="229.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;none</title><rect x="404.0" y="229.0" width="92.0" height="92.0" rx="12" fill="#1b2831" stroke="#50636f"/>
 <text x="450.0" y="242.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">28</text>
-<text x="450.0" y="272.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">BT 4</text>
+<text x="450.0" y="272.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a7b6bf" text-anchor="middle" dominant-baseline="central">—</text>
 <text x="450.0" y="298.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;bt BT_SEL 4</title><rect x="504.0" y="259.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;none</title><rect x="504.0" y="259.0" width="92.0" height="92.0" rx="12" fill="#1b2831" stroke="#50636f"/>
 <text x="550.0" y="272.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">29</text>
-<text x="550.0" y="302.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">BT 5</text>
+<text x="550.0" y="302.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a7b6bf" text-anchor="middle" dominant-baseline="central">—</text>
 <text x="550.0" y="328.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
 <g transform="rotate(0.0 0.0 0.0)"><title>&amp;none</title><rect x="604.0" y="204.0" width="92.0" height="92.0" rx="12" fill="#1b2831" stroke="#50636f"/>

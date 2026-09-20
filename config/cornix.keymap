@@ -5,7 +5,6 @@
  */
 
 #include <behaviors.dtsi>
-#include <dt-bindings/zmk/bt.h>
 #include <dt-bindings/zmk/keys.h>
 
 #define BASE 0
@@ -48,13 +47,13 @@
             // -------------------------------------------------------------------------------------------------------------
             // |      |     |     |  UP |     |     |                         |     |  4  |  5  |  6  |     |     |
             // |      |     | LEFT| DOWN| RIGHT|    |                         |  0  |  1  |  2  |  3  |     |     |
-            // | CLR  | BT1 | BT2 | BT3 | BT4 | BT5 |       |       |         |     |  7  |  8  |  9  |     |     |
+            // |      |     |     |     |     |     |       |       |         |     |  7  |  8  |  9  |     |     |
             // |      |     |     |  v  |  v  |  v  |                 |  v  |  v  |  v  |     |     |     |
 
             bindings = <
 &trans       &trans        &trans        &kp UP        &trans        &trans                                    &trans  &kp N4  &kp N5  &kp N6  &trans  &trans
 &trans       &trans        &kp LEFT      &kp DOWN      &kp RIGHT     &trans                                    &kp N0  &kp N1  &kp N2  &kp N3  &trans  &trans
-&bt BT_CLR   &bt BT_SEL 0  &bt BT_SEL 1  &bt BT_SEL 2  &bt BT_SEL 3  &bt BT_SEL 4  &none  &none                &trans  &kp N7  &kp N8  &kp N9  &trans  &trans
+&none        &none         &none         &none         &none         &none         &none  &none                &trans  &kp N7  &kp N8  &kp N9  &trans  &trans
 &none        &none         &none         &trans         &trans         &trans                                    &trans  &trans  &trans  &none   &none   &none
             >;
 

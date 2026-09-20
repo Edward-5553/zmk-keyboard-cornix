@@ -31,7 +31,7 @@ The current preset uses 50 binding positions. The diagram below shows all positi
 on the three active layers, including unassigned keys:
 
 - **L0 Base:** Space held activates L1; Enter held activates L2.
-- **L1 Num/Nav:** arrows on E/S/D/F, numbers on the right, and Bluetooth profile controls.
+- **L1 Num/Nav:** arrows on E/S/D/F and numbers on the right; the six former Bluetooth controls are unassigned.
 - **L2 Fn/Symbol:** two rows of symbols, with F1–F12 on the third row.
 
 ![Cornix current keymap: Base, Num/Nav and Fn/Symbol, 50 positions per layer](keymap-drawer/cornix.svg)
