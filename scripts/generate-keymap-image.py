@@ -22,7 +22,7 @@ def text(x, y, value, size=18, color='#e8edef', anchor='start', target=None):
     svg.append(f'<text x="{x}" y="{y}" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="{size}" fill="{color}" text-anchor="{anchor}" dominant-baseline="central">{html.escape(value)}</text>')
 
 def label(binding):
-    pairs = {'&pair_braces': '{|}', '&pair_brackets': '[|]', '&pair_angles': '<|>'}
+    pairs = {'&kp LC(LA(DELETE))': 'Ctrl+Alt+Del', '&kp LA(SPACE)': 'Alt+Space', '&pair_braces': '{|}', '&pair_brackets': '[|]', '&pair_angles': '<|>'}
     if binding in pairs: return pairs[binding]
     p=binding.split()
     if p[0]=='&none': return '—'
@@ -54,7 +54,7 @@ for index, title in enumerate(['L0 / BASE','L1 / NUMBERS + NAVIGATION','L2 / SYM
         ImageDraw.Draw(tile).rounded_rectangle(box,radius=12,fill=fill,outline='#50636f',width=1)
         svg.append(f'<g transform="rotate({r} {rx*100} {ry*100})"><title>{html.escape(raw)}</title><rect x="{box[0]}" y="{box[1]}" width="{w*100-8}" height="{h*100-8}" rx="12" fill="{fill}" stroke="#50636f"/>')
         text(x*100+50,y*100+17,str(i),10,'#90a6b3','middle',tile)
-        text(x*100+50,y*100+47,label(effective),18,color,'middle',tile)
+        text(x*100+50,y*100+47,label(effective),min(18, 130 / max(1, len(label(effective)))),color,'middle',tile)
         sub='from L0' if inherited else ('hold L1' if 'NUM_NAV' in raw else 'hold L2') if dual else ''
         text(x*100+50,y*100+73,sub,12,'#95d7c0','middle',tile)
         svg.append('</g>')
