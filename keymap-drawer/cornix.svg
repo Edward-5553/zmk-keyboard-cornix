@@ -259,10 +259,10 @@
 <rect x="15" y="700" width="1480" height="575" rx="20" fill="#16212a"/>
 <text x="35" y="733" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="24" fill="#a9e5cf" text-anchor="start" dominant-baseline="central">L1 / NUMBERS + NAVIGATION</text>
 <g transform="translate(30 765)">
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;trans</title><rect x="4.0" y="54.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;bt BT_CLR</title><rect x="4.0" y="54.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
 <text x="50.0" y="67.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">0</text>
-<text x="50.0" y="97.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a7b6bf" text-anchor="middle" dominant-baseline="central">Esc</text>
-<text x="50.0" y="123.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central">from L0</text>
+<text x="50.0" y="97.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">BT Clear</text>
+<text x="50.0" y="123.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
 <g transform="rotate(0.0 0.0 0.0)"><title>&amp;trans</title><rect x="104.0" y="54.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
 <text x="150.0" y="67.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">1</text>
@@ -294,19 +294,19 @@
 <text x="900.0" y="97.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a7b6bf" text-anchor="middle" dominant-baseline="central">Y</text>
 <text x="900.0" y="123.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central">from L0</text>
 </g>
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp N4</title><rect x="954.0" y="34.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp N7</title><rect x="954.0" y="34.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
 <text x="1000.0" y="47.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">7</text>
-<text x="1000.0" y="77.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">4</text>
+<text x="1000.0" y="77.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">7</text>
 <text x="1000.0" y="103.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp N5</title><rect x="1054.0" y="4.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp N8</title><rect x="1054.0" y="4.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
 <text x="1100.0" y="17.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">8</text>
-<text x="1100.0" y="47.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">5</text>
+<text x="1100.0" y="47.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">8</text>
 <text x="1100.0" y="73.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp N6</title><rect x="1154.0" y="37.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp N9</title><rect x="1154.0" y="37.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
 <text x="1200.0" y="50.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">9</text>
-<text x="1200.0" y="80.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">6</text>
+<text x="1200.0" y="80.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">9</text>
 <text x="1200.0" y="106.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
 <g transform="rotate(0.0 0.0 0.0)"><title>&amp;trans</title><rect x="1254.0" y="54.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
@@ -319,10 +319,10 @@
 <text x="1400.0" y="97.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a7b6bf" text-anchor="middle" dominant-baseline="central">\</text>
 <text x="1400.0" y="123.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central">from L0</text>
 </g>
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;trans</title><rect x="4.0" y="154.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;bt BT_SEL 0</title><rect x="4.0" y="154.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
 <text x="50.0" y="167.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">12</text>
-<text x="50.0" y="197.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a7b6bf" text-anchor="middle" dominant-baseline="central">Tab</text>
-<text x="50.0" y="223.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central">from L0</text>
+<text x="50.0" y="197.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">BT 1</text>
+<text x="50.0" y="223.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
 <g transform="rotate(0.0 0.0 0.0)"><title>&amp;trans</title><rect x="104.0" y="154.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
 <text x="150.0" y="167.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">13</text>
@@ -349,24 +349,24 @@
 <text x="550.0" y="197.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a7b6bf" text-anchor="middle" dominant-baseline="central">G</text>
 <text x="550.0" y="223.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central">from L0</text>
 </g>
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp N0</title><rect x="854.0" y="154.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp DOT</title><rect x="854.0" y="154.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
 <text x="900.0" y="167.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">18</text>
-<text x="900.0" y="197.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">0</text>
+<text x="900.0" y="197.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">.</text>
 <text x="900.0" y="223.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp N1</title><rect x="954.0" y="134.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp N4</title><rect x="954.0" y="134.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
 <text x="1000.0" y="147.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">19</text>
-<text x="1000.0" y="177.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">1</text>
+<text x="1000.0" y="177.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">4</text>
 <text x="1000.0" y="203.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp N2</title><rect x="1054.0" y="104.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp N5</title><rect x="1054.0" y="104.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
 <text x="1100.0" y="117.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">20</text>
-<text x="1100.0" y="147.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">2</text>
+<text x="1100.0" y="147.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">5</text>
 <text x="1100.0" y="173.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp N3</title><rect x="1154.0" y="137.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp N6</title><rect x="1154.0" y="137.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
 <text x="1200.0" y="150.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">21</text>
-<text x="1200.0" y="180.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">3</text>
+<text x="1200.0" y="180.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">6</text>
 <text x="1200.0" y="206.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
 <g transform="rotate(0.0 0.0 0.0)"><title>&amp;trans</title><rect x="1254.0" y="154.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
@@ -379,35 +379,35 @@
 <text x="1400.0" y="197.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a7b6bf" text-anchor="middle" dominant-baseline="central">&#x27;</text>
 <text x="1400.0" y="223.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central">from L0</text>
 </g>
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;bt BT_CLR</title><rect x="4.0" y="259.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;bt BT_SEL 1</title><rect x="4.0" y="259.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
 <text x="50.0" y="272.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">24</text>
-<text x="50.0" y="302.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">BT Clear</text>
+<text x="50.0" y="302.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">BT 2</text>
 <text x="50.0" y="328.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;bt BT_SEL 0</title><rect x="104.0" y="259.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp LC(Z)</title><rect x="104.0" y="259.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
 <text x="150.0" y="272.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">25</text>
-<text x="150.0" y="302.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">BT 1</text>
+<text x="150.0" y="302.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">Ctrl+Z</text>
 <text x="150.0" y="328.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;bt BT_SEL 1</title><rect x="204.0" y="229.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp LC(X)</title><rect x="204.0" y="229.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
 <text x="250.0" y="242.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">26</text>
-<text x="250.0" y="272.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">BT 2</text>
+<text x="250.0" y="272.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">Ctrl+X</text>
 <text x="250.0" y="298.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;bt BT_SEL 2</title><rect x="304.0" y="204.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp LC(C)</title><rect x="304.0" y="204.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
 <text x="350.0" y="217.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">27</text>
-<text x="350.0" y="247.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">BT 3</text>
+<text x="350.0" y="247.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">Ctrl+C</text>
 <text x="350.0" y="273.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;bt BT_SEL 3</title><rect x="404.0" y="229.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp LC(V)</title><rect x="404.0" y="229.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
 <text x="450.0" y="242.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">28</text>
-<text x="450.0" y="272.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">BT 4</text>
+<text x="450.0" y="272.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">Ctrl+V</text>
 <text x="450.0" y="298.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;bt BT_SEL 4</title><rect x="504.0" y="259.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;trans</title><rect x="504.0" y="259.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
 <text x="550.0" y="272.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">29</text>
-<text x="550.0" y="302.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">BT 5</text>
-<text x="550.0" y="328.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
+<text x="550.0" y="302.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a7b6bf" text-anchor="middle" dominant-baseline="central">B</text>
+<text x="550.0" y="328.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central">from L0</text>
 </g>
 <g transform="rotate(0.0 0.0 0.0)"><title>&amp;none</title><rect x="604.0" y="204.0" width="92.0" height="92.0" rx="12" fill="#1b2831" stroke="#50636f"/>
 <text x="650.0" y="217.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">30</text>
@@ -419,24 +419,24 @@
 <text x="800.0" y="247.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a7b6bf" text-anchor="middle" dominant-baseline="central">—</text>
 <text x="800.0" y="273.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;trans</title><rect x="854.0" y="259.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp N0</title><rect x="854.0" y="259.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
 <text x="900.0" y="272.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">32</text>
-<text x="900.0" y="302.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a7b6bf" text-anchor="middle" dominant-baseline="central">N</text>
-<text x="900.0" y="328.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central">from L0</text>
+<text x="900.0" y="302.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">0</text>
+<text x="900.0" y="328.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp N7</title><rect x="954.0" y="233.99999999999997" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp N1</title><rect x="954.0" y="233.99999999999997" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
 <text x="1000.0" y="246.99999999999997" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">33</text>
-<text x="1000.0" y="277.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">7</text>
+<text x="1000.0" y="277.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">1</text>
 <text x="1000.0" y="303.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp N8</title><rect x="1054.0" y="204.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp N2</title><rect x="1054.0" y="204.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
 <text x="1100.0" y="217.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">34</text>
-<text x="1100.0" y="247.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">8</text>
+<text x="1100.0" y="247.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">2</text>
 <text x="1100.0" y="273.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp N9</title><rect x="1154.0" y="237.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;kp N3</title><rect x="1154.0" y="237.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
 <text x="1200.0" y="250.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">35</text>
-<text x="1200.0" y="280.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">9</text>
+<text x="1200.0" y="280.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">3</text>
 <text x="1200.0" y="306.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
 <g transform="rotate(0.0 0.0 0.0)"><title>&amp;trans</title><rect x="1254.0" y="259.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
@@ -449,9 +449,9 @@
 <text x="1400.0" y="302.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a7b6bf" text-anchor="middle" dominant-baseline="central">R Shift</text>
 <text x="1400.0" y="328.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central">from L0</text>
 </g>
-<g transform="rotate(0.0 0.0 0.0)"><title>&amp;none</title><rect x="4.0" y="359.0" width="92.0" height="92.0" rx="12" fill="#1b2831" stroke="#50636f"/>
+<g transform="rotate(0.0 0.0 0.0)"><title>&amp;bt BT_SEL 2</title><rect x="4.0" y="359.0" width="92.0" height="92.0" rx="12" fill="#263640" stroke="#50636f"/>
 <text x="50.0" y="372.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="10" fill="#90a6b3" text-anchor="middle" dominant-baseline="central">38</text>
-<text x="50.0" y="402.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#a7b6bf" text-anchor="middle" dominant-baseline="central">—</text>
+<text x="50.0" y="402.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" fill="#edf4f6" text-anchor="middle" dominant-baseline="central">BT 3</text>
 <text x="50.0" y="428.0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="12" fill="#95d7c0" text-anchor="middle" dominant-baseline="central"></text>
 </g>
 <g transform="rotate(0.0 0.0 0.0)"><title>&amp;none</title><rect x="104.0" y="359.0" width="92.0" height="92.0" rx="12" fill="#1b2831" stroke="#50636f"/>

@@ -45,17 +45,14 @@
         num_nav_layer {
             display-name = "Num/Nav";
 
-            // -------------------------------------------------------------------------------------------------------------
-            // |      |     |     |  UP |     |     |                         |     |  4  |  5  |  6  |     |     |
-            // |      |     | LEFT| DOWN| RIGHT|    |                         |  0  |  1  |  2  |  3  |     |     |
-            // | CLR  | BT1 | BT2 | BT3 | BT4 | BT5 |       |       |         |     |  7  |  8  |  9  |     |     |
-            // |      |     |     |  v  |  v  |  v  |                 |  v  |  v  |  v  |     |     |     |
+            // Left column: BT Clear, BT 1, BT 2, BT 3. Z/X/C/V: Ctrl shortcuts.
+            // Right digits: 789 / 456 / 0123, with decimal above zero.
 
             bindings = <
-&trans       &trans        &trans        &kp UP        &trans        &trans                                    &trans  &kp N4  &kp N5  &kp N6  &trans  &trans
-&trans       &trans        &kp LEFT      &kp DOWN      &kp RIGHT     &trans                                    &kp N0  &kp N1  &kp N2  &kp N3  &trans  &trans
-&bt BT_CLR   &bt BT_SEL 0  &bt BT_SEL 1  &bt BT_SEL 2  &bt BT_SEL 3  &bt BT_SEL 4  &none  &none                &trans  &kp N7  &kp N8  &kp N9  &trans  &trans
-&none        &none         &none         &trans         &trans         &trans                                    &trans  &trans  &trans  &none   &none   &none
+&bt BT_CLR       &trans           &trans           &kp UP           &trans           &trans           &trans           &kp N7           &kp N8           &kp N9           &trans           &trans
+&bt BT_SEL 0     &trans           &kp LEFT         &kp DOWN         &kp RIGHT        &trans           &kp DOT          &kp N4           &kp N5           &kp N6           &trans           &trans
+&bt BT_SEL 1     &kp LC(Z)        &kp LC(X)        &kp LC(C)        &kp LC(V)        &trans           &none            &none            &kp N0           &kp N1           &kp N2           &kp N3           &trans           &trans
+&bt BT_SEL 2     &none            &none            &trans           &trans           &trans           &trans           &trans           &trans           &none            &none            &none
             >;
 
             sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp PG_UP PG_DN>;

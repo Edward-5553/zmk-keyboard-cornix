@@ -27,6 +27,8 @@ def label(binding):
     if p[0]=='&trans': return 'Transparent'
     if p[0]=='&bt': return 'BT Clear' if p[1]=='BT_CLR' else f'BT {int(p[2])+1}'
     code=p[2] if p[0]=='&lt' else p[1]
+    if code.startswith('LC(') and code.endswith(')'):
+        return 'Ctrl+' + code[3:-1]
     return labels.get(code, code[1:] if len(code)==2 and code[0]=='N' and code[1].isdigit() else code)
 
 text(30,40,'CORNIX / CURRENT KEYMAP',32)
