@@ -119,6 +119,24 @@ off after 1000 ms to reduce idle consumption. LEDs that remain illuminated
 still consume power. RGB is opt-in and is not enabled in the default v3.0.0
 release artifacts.
 
+The current `build.yaml` enables `cornix_indicator` for all three half targets.
+The shared `boards/shields/cornix_indicator/cornix_indicator.conf` explicitly enables
+USB power detection, battery reporting and charging animations only for builds
+using that shield, leaving reset builds unaffected. Each half uses LED 0 for its own battery and LED 1 for
+connectivity. While USB-powered below 99%, the battery LED pulses green over a
+2-second cycle with 50 ms animation ticks. At 99% or above, it shows green for
+2 seconds before restoring other indications or turning off. Unplugging stops
+the charging pulse and briefly shows the ordinary battery indication.
+
+This uses USB power and estimated charge level, not a charger completion signal.
+USB power detection does not enable USB keyboard output on BLE peripherals.
+For dongle mode, flash newly built `cornix_left_for_dongle_nosd.uf2` and
+`cornix_right_nosd.uf2`; use `cornix_left_default_nosd.uf2` for a standard central
+left half. No dongle update or pairing reset is needed for this configuration.
+On hardware, check each half independently: plug/unplug below 99%, boot while
+plugged in, charge both halves, and verify the full-battery indication. Check
+both a computer USB port and a standalone charger.
+
 ## Flashing and recovery
 
 1. Flash the matching settings-reset UF2 to every role whose bonds must be

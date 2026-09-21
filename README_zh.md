@@ -112,6 +112,23 @@ include:
 常亮指示后，WS2812 外部供电将在 1000 ms 后关闭，以降低空闲功耗；持续点亮的
 LED 仍会耗电。RGB 须主动启用，默认 v3.0.0 发布包并未开启。
 
+当前 `build.yaml` 的三种左右手构建均启用 `cornix_indicator`，其共用配置
+`boards/shields/cornix_indicator/cornix_indicator.conf` 明确启用 USB 供电检测、
+电量上报及充电呼吸动画。配置仅作用于带该 shield 的固件，不影响 reset 构建。
+每侧独立使用第 0 颗 RGB 灯指示自身电量，第 1 颗继续指示连接状态：
+
+- 插入 USB 且电量低于 99%：绿色呼吸，约 2 秒一个周期，50 ms 刷新一次。
+- 插着 USB 且电量达到 99%：绿色常亮提示 2 秒，随后恢复其他指示或熄灭。
+- 拔掉 USB：停止充电呼吸，短暂显示普通电量提示后恢复其他指示或熄灭。
+
+这里依据 USB 供电与估算电量判断，并非充电芯片的真实充满信号。
+分体的 USB 供电检测不需要启用 USB 键盘输出，dongle 模式仍通过蓝牙传输按键。
+请使用最新构建的 `cornix_left_for_dongle_nosd.uf2` 与
+`cornix_right_nosd.uf2` 分别更新左右手；标准分体模式左手使用
+`cornix_left_default_nosd.uf2`。本次灯效配置无需更新 dongle 或清除配对。
+实机验证时分别插拔两侧 USB，检查低于 99% 时持续呼吸、拔线后停止，以及
+插线启动和同时充电时两侧各自的灯效；电脑 USB 和普通充电器都应检查。
+
 ## 刷写与恢复
 
 1. 若需清除绑定，为涉及的每个角色刷入对应的 settings-reset UF2。
