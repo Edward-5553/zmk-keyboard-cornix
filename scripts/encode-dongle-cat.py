@@ -10,7 +10,7 @@ from PIL import Image, ImageSequence
 
 ROOT = Path(__file__).resolve().parents[1]
 DEST = ROOT / 'boards/shields/cornix_dongle_display/widgets'
-SOURCES = {'sleep': 'cat-sleeping.gif', 'work': 'cat-working-3.gif', 'snack': 'cat-working-4.gif'}
+SOURCES = {'idle': 'cat-idle.gif', 'error': 'cat-error.gif'}
 SIZE = 32
 
 
@@ -38,7 +38,7 @@ def main():
                 frames.append(mono.point(lambda p: 0 if p < 150 else 255, mode='1'))
                 elapsed += max(20, frame.info.get('duration', 100))
                 ends.append(elapsed)
-        selected = [frames[0]] if name == 'sleep' else [frames[next(i for i, end in enumerate(ends) if end > t)] for t in range(0, elapsed, 100)]
+        selected = [frames[next(i for i, end in enumerate(ends) if end > t)] for t in range(0, elapsed, 100)]
         c.append(f'// {filename}: SHA256 {hashlib.sha256(path.read_bytes()).hexdigest()}')
         count = len(selected)
         h.extend([f'#define SALARY_{name.upper()}_COUNT {count}', f'extern const lv_image_dsc_t *salary_{name}_frames[{count}];'])

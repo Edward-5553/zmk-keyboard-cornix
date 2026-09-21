@@ -7,9 +7,8 @@
 
 | 用途 | 原始文件 |
 |---|---|
-| 打字 | `cat-working-3.gif`（捂耳敲键盘） |
-| 高速打字 | `cat-working-4.gif`（吃零食打字） |
-| 闲置 | `cat-sleeping.gif`（被窝睡觉首帧） |
+| 默认、连续输入不足 3 秒或已停顿 1 秒 | `cat-idle.gif`（循环播放） |
+| 连续按键满 3 秒，期间每次间隔小于 1 秒 | `cat-error.gif`（循环播放） |
 
 [上游署名说明](https://github.com/myunwang/LLMPET/blob/22e34036c53bdbfe169dccde015781470476bbb5/assets/cat/CREDITS.md)
 将原始出处标为[《最近很火的月薪喵表情包第1弹》](https://www.mfuns.net/article/120254)，
@@ -18,5 +17,5 @@
 
 转换：白底合成、32×32 Lanczos 缩小、阈值 150 无抖动单色化、每 100 ms 抽帧。
 生成的 `widgets/salary_cat_images.c` 记录各 GIF 的 SHA256。
-LVGL I1 数据包含白/黑双色表；每帧 136 字节，共 29 帧、3944 字节图像数据，
+LVGL I1 数据包含白/黑双色表；每帧 136 字节，idle 3 帧、error 4 帧，共 7 帧、952 字节图像数据，
 另有描述符和指针开销。预览图仅放大这些单色帧，实际屏幕大小为 32×32 像素。

@@ -99,7 +99,8 @@ include:
 
 仅当 dongle 开发板尚未提供 `zephyr,display` 时，方需加入
 `cornix_dongle_eyelash`；本地 `cornix_dongle_display` shield 提供显示组件及月薪喵动画。
-低速敲键盘、高速吃零食打字，闲置显示睡觉静态帧；切换依据 ZMK 的 WPM 采样。
+默认循环播放 idle 动画；连续按键满 3 秒后切换为 error，停顿满 1 秒即回到 idle 并重新计时。
+依据左右手的实际按下事件判断，不依赖 WPM；单键长按和松键不延长连续输入时间。
 详见[实现与验证](boards/shields/cornix_dongle_display/UPSTREAM.md)及[素材署名](boards/shields/cornix_dongle_display/ASSETS.md)。
 仅更新动画时，只刷 dongle 固件，无需刷 reset 或重新刷左右手。
 
