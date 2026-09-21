@@ -17,6 +17,14 @@ Local changes:
 - Image bounds on a 128×64 screen: x=96–127, y=22–53. Leave the top 20 pixels
   for the two battery rows and the bottom 8 pixels for the layer label.
 - Preserve output, battery, modifier, HID indicator, optional WPM and layer widgets.
+- Prefix each peripheral battery percentage with L/R, learned from that source's
+  physical key position on the selected Cornix layout (left x <= 600, right x >= 750).
+  Unknown sources show `?` until a normal key is pressed on that half after dongle
+  startup. Rows retain their paired source order; L is not necessarily the top row.
+  Key remapping does not affect detection. Turning an encoder alone does not identify
+  a half. No learned mapping is written to flash. Optional dongle battery uses `D`.
+- Keep all battery sources in each display snapshot so coalesced updates retain
+  both halves' readings and side labels. Labels keep the original six-character width.
 
 Only rebuild/flash `cornix_dongle_nosd.uf2` for this display-only change.
 No settings reset or half firmware update is needed for an already paired setup.
@@ -38,3 +46,9 @@ Host validation: `python scripts/test-dongle-cat.py --cc gcc` (or a Zig executab
 It compiles the real widget and image arrays with host stubs, checking initial
 rendering, WPM boundaries, stable animation, idle non-repetition and image metadata.
 It does not replace a full Zephyr build or hardware display verification.
+
+Battery host validation: `python scripts/test-dongle-battery.py --cc gcc`.
+This compiles the real widget with host stubs and checks both source orders,
+unknown-to-L/R identification, coalesced battery reports, invalid events and the
+optional dongle battery. On hardware, press a normal key on each half after dongle
+startup and verify its row changes from `?` to the correct letter without overlap.
