@@ -35,6 +35,9 @@ Local changes:
   presses/releases no longer queue updates when the displayed state is unchanged.
   Battery rendering compares each row with its last rendered state; an update to
   one half does not redraw the other. All LVGL calls remain on the display thread.
+- Run the dedicated display task every 20 ms. Salary Cat retains its 100 ms frame
+  duration and 50 ms activity timer; activity changes are applied on a subsequent
+  display tick without changing the 3-second typing / 1-second gap rules.
 
 Only rebuild/flash `cornix_dongle_nosd.uf2` for this display-only change.
 No settings reset or half firmware update is needed for an already paired setup.

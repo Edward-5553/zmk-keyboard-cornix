@@ -48,3 +48,17 @@ screen wake, long typing sessions and simultaneous modifier/layer animations.
 Look for display corruption, missing frames or I2C errors. If the physical bus
 is unreliable at 400 kHz, try `I2C_BITRATE_STANDARD` (100 kHz) while retaining DMA.
 Measure actual flush time before attributing a latency improvement to this change.
+
+## 4. Schedule display ticks every 20 ms
+
+`CONFIG_ZMK_DISPLAY_TICK_PERIOD_MS=20` reduces nominal periodic work submissions
+from 100 to 50 per second while the display is active. This is not a claim of
+halving CPU usage. The dedicated display queue and its 4096-byte stack are kept.
+Salary Cat retains 10 fps playback, the 50 ms activity timer and the existing
+3-second typing / 1-second inactivity thresholds. State changes become visible
+at the next eligible display tick.
+
+Run `python scripts/test-dongle-cat.py --cc gcc` (or a Zig executable) for the
+animation state machine. On hardware, check modifiers, Num/Nav and Fn/Symbol
+label scrolling, cat playback, idle blanking and screen wake while typing.
+The host test does not simulate LVGL's timing or the OLED bus.
