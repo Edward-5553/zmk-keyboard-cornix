@@ -31,6 +31,10 @@ Local changes:
   a half. No learned mapping is written to flash. Optional dongle battery uses `D`.
 - Keep all battery sources in each display snapshot so coalesced updates retain
   both halves' readings and side labels. Labels keep the original six-character width.
+- Compare battery and modifier state before queuing display work. Ordinary key
+  presses/releases no longer queue updates when the displayed state is unchanged.
+  Battery rendering compares each row with its last rendered state; an update to
+  one half does not redraw the other. All LVGL calls remain on the display thread.
 
 Only rebuild/flash `cornix_dongle_nosd.uf2` for this display-only change.
 No settings reset or half firmware update is needed for an already paired setup.
@@ -57,6 +61,7 @@ It does not replace a full Zephyr build or hardware display verification.
 
 Battery host validation: `python scripts/test-dongle-battery.py --cc gcc`.
 This compiles the real widget with host stubs and checks both source orders,
-unknown-to-L/R identification, coalesced battery reports, invalid events and the
-optional dongle battery. On hardware, press a normal key on each half after dongle
+unknown-to-L/R identification, unchanged-event filtering, per-row redraws,
+coalesced A/B/A updates, invalid events and the optional dongle battery.
+On hardware, press a normal key on each half after dongle
 startup and verify its row changes from `?` to the correct letter without overlap.

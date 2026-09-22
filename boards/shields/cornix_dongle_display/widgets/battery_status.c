@@ -21,6 +21,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #include <zmk/usb.h>
 
 #include "battery_status.h"
+#include "changed_listener.h"
 
 #if IS_ENABLED(CONFIG_ZMK_DONGLE_DISPLAY_DONGLE_BATTERY)
     #define SOURCE_OFFSET 1
@@ -52,9 +53,24 @@ struct battery_snapshot {
 struct battery_object {
     lv_obj_t *symbol;
     lv_obj_t *label;
+    struct battery_state rendered;
 } battery_objects[ZMK_SPLIT_BLE_PERIPHERAL_COUNT + SOURCE_OFFSET];
 
 static lv_color_t battery_image_buffer[ZMK_SPLIT_BLE_PERIPHERAL_COUNT + SOURCE_OFFSET][BUFFER_SIZE];
+
+static bool battery_state_equal(struct battery_state a, struct battery_state b) {
+    return a.source == b.source && a.level == b.level && a.usb_present == b.usb_present &&
+           a.valid == b.valid && a.side == b.side;
+}
+
+static bool battery_snapshot_equal(struct battery_snapshot a, struct battery_snapshot b) {
+    for (int i = 0; i < ARRAY_SIZE(a.sources); i++) {
+        if (!battery_state_equal(a.sources[i], b.sources[i])) {
+            return false;
+        }
+    }
+    return true;
+}
 
 static void draw_battery(lv_obj_t *canvas, uint8_t level, bool usb_present) {
     lv_canvas_fill_bg(canvas, lv_color_black(), LV_OPA_COVER);
@@ -100,7 +116,12 @@ static void draw_battery(lv_obj_t *canvas, uint8_t level, bool usb_present) {
 }
 
 static void set_battery_symbol(lv_obj_t *widget, struct battery_state state) {
+    (void)widget;
     if (state.source >= ZMK_SPLIT_BLE_PERIPHERAL_COUNT + SOURCE_OFFSET) {
+        return;
+    }
+    struct battery_object *object = &battery_objects[state.source];
+    if (battery_state_equal(object->rendered, state)) {
         return;
     }
     LOG_DBG("source: %d, level: %d, usb: %d", state.source, state.level, state.usb_present);
@@ -120,6 +141,7 @@ static void set_battery_symbol(lv_obj_t *widget, struct battery_state state) {
         lv_obj_add_flag(symbol, LV_OBJ_FLAG_HIDDEN);
         lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
     }
+    object->rendered = state;
 }
 
 void battery_status_update_cb(struct battery_snapshot snapshot) {
@@ -203,8 +225,9 @@ static struct battery_snapshot battery_status_get_state(const zmk_event_t *eh) {
     return snapshot;
 }
 
-ZMK_DISPLAY_WIDGET_LISTENER(widget_dongle_battery_status, struct battery_snapshot,
-                            battery_status_update_cb, battery_status_get_state)
+ZMK_DONGLE_DISPLAY_WIDGET_LISTENER(widget_dongle_battery_status, struct battery_snapshot,
+                                  battery_status_update_cb, battery_status_get_state,
+                                  battery_snapshot_equal)
 
 ZMK_SUBSCRIPTION(widget_dongle_battery_status, zmk_peripheral_battery_state_changed);
 ZMK_SUBSCRIPTION(widget_dongle_battery_status, zmk_position_state_changed);

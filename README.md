@@ -107,6 +107,8 @@ Use `cornix_dongle_eyelash` only when the dongle board does not already expose
 Salary Cat (月薪喵) animation. See [implementation and validation](boards/shields/cornix_dongle_display/UPSTREAM.md)
 and [artwork attribution](boards/shields/cornix_dongle_display/ASSETS.md).
 Display-only updates require flashing the dongle only, without a settings reset.
+See [performance tuning and hardware validation](docs/performance-validation.md)
+for the current optimizations and checks to run after flashing.
 
 ## RGB indicators
 

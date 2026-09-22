@@ -17,6 +17,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #include <dt-bindings/zmk/modifiers.h>
 
 #include "modifiers.h"
+#include "changed_listener.h"
 
 struct modifiers_state {
     uint8_t modifiers;
@@ -130,8 +131,13 @@ static struct modifiers_state modifiers_get_state(const zmk_event_t *eh) {
     };
 }
 
-ZMK_DISPLAY_WIDGET_LISTENER(widget_modifiers, struct modifiers_state,
-                            modifiers_update_cb, modifiers_get_state)
+static bool modifiers_state_equal(struct modifiers_state a, struct modifiers_state b) {
+    return a.modifiers == b.modifiers;
+}
+
+ZMK_DONGLE_DISPLAY_WIDGET_LISTENER(widget_modifiers, struct modifiers_state,
+                                  modifiers_update_cb, modifiers_get_state,
+                                  modifiers_state_equal)
 
 ZMK_SUBSCRIPTION(widget_modifiers, zmk_keycode_state_changed);
 
