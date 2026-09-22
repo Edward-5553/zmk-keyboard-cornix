@@ -18,7 +18,7 @@
 
 &lt {
     flavor = "balanced";
-    tapping-term-ms = <200>;
+    tapping-term-ms = <180>;
     quick-tap-ms = <150>;
 };
 
@@ -38,22 +38,22 @@
         pair_braces: pair_braces {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
-            wait-ms = <30>;
-            tap-ms = <30>;
+            wait-ms = <20>;
+            tap-ms = <20>;
             bindings = <&macro_tap &kp LBRC &kp RBRC &kp LEFT>;
         };
         pair_brackets: pair_brackets {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
-            wait-ms = <30>;
-            tap-ms = <30>;
+            wait-ms = <20>;
+            tap-ms = <20>;
             bindings = <&macro_tap &kp LBKT &kp RBKT &kp LEFT>;
         };
         pair_angles: pair_angles {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
-            wait-ms = <30>;
-            tap-ms = <30>;
+            wait-ms = <20>;
+            tap-ms = <20>;
             bindings = <&macro_tap &kp LT &kp GT &kp LEFT>;
         };
     };

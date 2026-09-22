@@ -62,3 +62,23 @@ Run `python scripts/test-dongle-cat.py --cc gcc` (or a Zig executable) for the
 animation state machine. On hardware, check modifiers, Num/Nav and Fn/Symbol
 label scrolling, cat playback, idle blanking and screen wake while typing.
 The host test does not simulate LVGL's timing or the OLED bus.
+
+## 5. Reduce behavior delays and align debounce across roles
+
+Space/Enter layer-taps retain the balanced flavor and 150 ms quick-tap window;
+their tapping term changes from 200 to 180 ms. The three bracket-pair macros
+use 20 ms tap and wait times instead of 30 ms. Encoder scroll pulse timing is
+unchanged. These are behavior timings, not a measured end-to-end latency result.
+
+The standard central left half now uses the same 3 ms press/release debounce
+as the left-for-dongle and right peripherals. This shared board default applies
+to qualified and legacy targets and remains overridable by user configuration.
+
+After compilation, check both debounce symbols are 3 in each half's `.config`.
+After flashing the central device, test quick Space/Enter taps, double taps,
+held-repeat, rolling between thumbs and letters, and deliberate layer holds.
+Test bracket macros over USB and BLE in the editors/input methods you use.
+Watch for missing characters or unintended layer activation. On both halves,
+test fast repeated presses and long holds for chatter; restore a larger debounce
+value if your switches need it. Firmware keymap defaults may be superseded by
+key bindings saved through Studio; do not clear Bluetooth bonds to change them.
