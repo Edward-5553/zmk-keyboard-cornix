@@ -82,3 +82,43 @@ Watch for missing characters or unintended layer activation. On both halves,
 test fast repeated presses and long holds for chatter; restore a larger debounce
 value if your switches need it. Firmware keymap defaults may be superseded by
 key bindings saved through Studio; do not clear Bluetooth bonds to change them.
+
+## 6. Deep-sleep battery-powered halves after 15 minutes
+
+Cornix left, left-for-dongle and right board defaults enable `CONFIG_ZMK_SLEEP`
+with `CONFIG_ZMK_IDLE_SLEEP_TIMEOUT=900000`. Builds with
+`CONFIG_ZMK_SETTINGS_RESET_ON_START=y` are excluded from these defaults.
+The nice!nano dongle does not use the Cornix board defaults. ZMK's activity
+manager prevents deep sleep while USB power is detected; the default indicator
+shield already enables USB power detection on the peripherals.
+
+The matrix already has `wakeup-source`. Wake a sleeping half with a matrix key;
+encoder rotation is not configured as a deep-sleep wake source. Expect a wake
+and Bluetooth reconnect delay, and do not assume the wake press is delivered as
+normal input. Each peripheral tracks its own activity, so one half can sleep
+while the other remains in use.
+
+Check each normal half's `.config` for `CONFIG_ZMK_SLEEP=y`, timeout 900000 and
+`CONFIG_PM_DEVICE=y`. Confirm settings-reset builds do not enable sleep through
+this board default. For a shorter hardware trial, override the timeout to 60000
+in a temporary build configuration, then restore 900000 for daily use.
+
+Measure battery current before/after timeout. Wake each half independently and
+both together; check reconnection, subsequent typing, RGB indicators and battery
+reporting. Repeat while USB-powered to confirm it stays awake. If reliable
+immediate input is more important than long-idle battery life, override with
+`CONFIG_ZMK_SLEEP=n`.
+
+## Firmware set and final checks
+
+For dongle mode, flash the newly built dongle, left-for-dongle and right firmware.
+For a standard split, flash the standard left and right firmware. Settings-reset
+firmware is not needed for this update. Retain qualified `//zmk` board names and
+the existing no-SoftDevice layout.
+
+Inspect the final `.config` files for `CONFIG_NVS=y`, `CONFIG_SETTINGS_NVS=y`
+and the absence of `CONFIG_SETTINGS_NONE=y`. Keep `.config`, `zephyr.dts`, size
+reports and the resolved west manifest with each build so comparisons use the
+same dependency revisions. Compile-time/host checks must be followed by the
+hardware checks above; no latency or battery-life improvement has been measured
+by the host tests.

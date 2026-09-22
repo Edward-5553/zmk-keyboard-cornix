@@ -52,6 +52,17 @@ config ZMK_KSCAN_DEBOUNCE_PRESS_MS
 config ZMK_KSCAN_DEBOUNCE_RELEASE_MS
     default 3
 
+# Battery-powered halves may sleep; reset firmware should stay awake.
+if !ZMK_SETTINGS_RESET_ON_START
+
+config ZMK_SLEEP
+    default y
+
+config ZMK_IDLE_SLEEP_TIMEOUT
+    default 900000
+
+endif # !ZMK_SETTINGS_RESET_ON_START
+
 
 #config BT_CTLR
 #    default BT
