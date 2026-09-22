@@ -1,4 +1,5 @@
 #include <dt-bindings/zmk/matrix_transform.h>
+#include <zephyr/dt-bindings/i2c/i2c.h>
 
 /{
     chosen {
@@ -26,9 +27,16 @@
 
 &i2c0 {
 	status = "okay";
-	compatible = "nordic,nrf-twi";
+    compatible = "nordic,nrf-twim";
+    clock-frequency = <I2C_BITRATE_FAST>;
+    /* SH1106 writes one 128-byte page plus its I2C control byte at a time.
+     * Keep the fragments together without an intervening repeated start.
+     * Zephyr shares one buffer for concatenation and flash-to-RAM copies. */
+    zephyr,concat-buf-size = <129>;
+    zephyr,flash-buf-max-size = <129>;
     pinctrl-0 = <&i2c0_default>;
     pinctrl-1 = <&i2c0_sleep>;
+    pinctrl-names = "default", "sleep";
 	oled: sh1106@3c {
         compatible = "sinowealth,sh1106";
         reg = <0x3c>;

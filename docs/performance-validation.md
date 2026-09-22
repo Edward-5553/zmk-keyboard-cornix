@@ -30,3 +30,21 @@ timestamps independently. Other modules may still select WPM if they need it.
 In the default dongle build, check that `.config` leaves `CONFIG_ZMK_WPM`
 disabled unless another enabled feature requires it. With the numeric widget
 enabled, check that both symbols are enabled and the value changes while typing.
+
+## 3. Transfer OLED pages with TWIM at 400 kHz
+
+The `cornix_dongle_eyelash` shield uses `nordic,nrf-twim` (EasyDMA) and
+`I2C_BITRATE_FAST` (400 kHz). Both the concatenation and flash-copy limits are
+129 bytes: the Zephyr 4.1 SH1106 driver sends at most one 128-byte page plus one
+control byte per data transaction. TWIM shares the same RAM buffer for both
+purposes. Changing the display controller/width requires revisiting this size.
+
+References: [Zephyr 4.1 TWIM binding](https://github.com/zephyrproject-rtos/zephyr/blob/v4.1.0/dts/bindings/i2c/nordic%2Cnrf-twim.yaml)
+and [SH1106 write implementation](https://github.com/zephyrproject-rtos/zephyr/blob/v4.1.0/drivers/display/ssd1306.c).
+
+Check the generated `zephyr.dts` for the TWIM compatible, 400000 Hz clock and both
+129-byte properties. Check `.config` for `CONFIG_I2C_NRFX_TWIM=y`. Test cold boot,
+screen wake, long typing sessions and simultaneous modifier/layer animations.
+Look for display corruption, missing frames or I2C errors. If the physical bus
+is unreliable at 400 kHz, try `I2C_BITRATE_STANDARD` (100 kHz) while retaining DMA.
+Measure actual flush time before attributing a latency improvement to this change.
