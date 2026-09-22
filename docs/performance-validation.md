@@ -20,3 +20,13 @@ coalesced changes that return to their previous state.
 On hardware, press a key on each half to learn L/R, type rapidly, hold/release
 modifiers and verify both battery rows continue updating. Compare display flush
 counts and input latency during rapid typing with the previous firmware.
+
+## 2. Enable WPM only with its numeric widget
+
+`CONFIG_ZMK_DONGLE_DISPLAY_WPM=y` selects `CONFIG_ZMK_WPM`. The default display
+does not need WPM counting or its periodic work; Salary Cat uses physical key
+timestamps independently. Other modules may still select WPM if they need it.
+
+In the default dongle build, check that `.config` leaves `CONFIG_ZMK_WPM`
+disabled unless another enabled feature requires it. With the numeric widget
+enabled, check that both symbols are enabled and the value changes while typing.

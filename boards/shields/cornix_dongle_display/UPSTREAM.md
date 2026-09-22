@@ -19,7 +19,7 @@ Local changes:
 - A shared LVGL timer checks activity every 50 ms while the display is running.
   Event callbacks only record timestamps under a spinlock; all LVGL calls stay
   on the display thread. Repeated states do not restart the current animation.
-  WPM remains available for the optional numeric widget but does not select animations.
+  WPM is selected only by the optional numeric widget; it does not select animations.
 - Image bounds on a 128×64 screen: x=96–127, y=22–53. Leave the top 20 pixels
   for the two battery rows and the bottom 8 pixels for the layer label.
 - Preserve output, battery, modifier, HID indicator, optional WPM and layer widgets.
