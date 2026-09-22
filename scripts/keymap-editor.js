@@ -2,6 +2,8 @@ const $ = id => document.getElementById(id);
 const names = ['L0 基础', 'L1 数字 / 导航', 'L2 功能 / 符号', 'L3 Scroll', 'L4 Snipe'];
 const layerIds = ['BASE', 'NUM_NAV', 'FN_SYMBOLS', 'SCROLL', 'SNIPE'];
 const labels = {TAB:'Tab',BACKSPACE:'Backspace',LEFT_SHIFT:'左 Shift',RIGHT_SHIFT:'右 Shift',LEFT_CONTROL:'左 Ctrl',RIGHT_CONTROL:'右 Ctrl',LEFT_ALT:'左 Alt',RIGHT_ALT:'右 Alt',LEFT_GUI:'左 Win',RIGHT_GUI:'右 Win',ESC:'Esc',SPACE:'Space',ENTER:'Enter',DELETE:'Delete',CAPSLOCK:'Caps',SEMI:';',SQT:"'",COMMA:',',DOT:'.',FSLH:'/',UP:'↑',LEFT:'←',DOWN:'↓',RIGHT:'→',TILDE:'~',EXCL:'!',AT:'@',HASH:'#',DLLR:'$',PRCNT:'%',CARET:'^',AMPS:'&',ASTRK:'*',LPAR:'(',RPAR:')',GRAVE:'`',BSLH:'\\',LBRC:'{',LBKT:'[',LT:'<',MINUS:'-',UNDER:'_',PLUS:'+',EQUAL:'=',GT:'>',RBKT:']',RBRC:'}',PIPE:'|',HOME:'Home',END:'End',PG_UP:'Page Up',PG_DN:'Page Down',INSERT:'Insert',C_VOL_UP:'音量 +',C_VOL_DN:'音量 −',C_MUTE:'静音',C_PLAY_PAUSE:'播放 / 暂停',C_NEXT:'下一曲',C_PREV:'上一曲'};
+const pairLabels = {'&pair_braces':'{|}', '&pair_brackets':'[|]', '&pair_angles':'<|>'};
+const shortcutLabels = {'&kp LC(LA(DELETE))':'Ctrl+Alt+Del', '&kp LA(SPACE)':'Alt+Space'};
 const options = new Map();
 function add(binding, text) { options.set(binding, text); }
 for (const c of 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') add('&kp '+c,c);
@@ -14,6 +16,8 @@ for(let i=0;i<5;i++) {
   add('&bt BT_SEL '+i,'蓝牙档位 '+(i+1));
 }
 add('&bt BT_CLR','清除当前主机配对');
+for (const [binding,label] of Object.entries(shortcutLabels)) add(binding,label);
+for (const [binding,label] of Object.entries(pairLabels)) add(binding,label+' 成对输入，光标居中');
 for(const layer of layerIds) for(const key of ['SPACE','ENTER','TAB','ESC']) add(`&lt ${layer} ${key}`,`${labels[key]} / 按住 L${layerIds.indexOf(layer)}`);
 for(const mod of ['LC','LS','LA','LG']) for(const key of 'ACVXZSY') add(`&kp ${mod}(${key})`,`${{LC:'Ctrl',LS:'Shift',LA:'Alt',LG:'Win'}[mod]} + ${key}`);
 for(const layer of DATA.layers) for(const binding of layer.keys) if(!options.has(binding)) add(binding,binding);
@@ -26,6 +30,8 @@ const hidden=new Set([30,31,38,39,40,47,48,49]);
 try { const saved=JSON.parse(localStorage.getItem(storageKey)); if(saved?.length===5 && saved.every((l,i)=>l.name===DATA.layers[i].name && l.keys?.length===50 && l.keys.every(k=>typeof k==='string' && valid(k)))) { DATA.layers=saved; dirty=true; cached=true; } } catch {}
 function valid(value) { let key=value.replace(/^&kp /,'');while(/^(LC|RC|LS|RS|LA|RA|LG|RG)\(.+\)$/.test(key))key=key.slice(3,-1);return options.has(value) || (value.startsWith('&kp ')&&/^[A-Z][A-Z0-9_]*$/.test(key)) || /^&lt (?:BASE|NUM_NAV|FN_SYMBOLS|SCROLL|SNIPE|[0-4]) [A-Z][A-Z0-9_]*$/.test(value); }
 function keyLabel(binding) {
+  if(shortcutLabels[binding]) return shortcutLabels[binding];
+  if(pairLabels[binding]) return pairLabels[binding];
   if(binding==='&none') return '—'; if(binding==='&trans') return '↧';
   const p=binding.split(' ');
   if(p[0]==='&lt') return labels[p[2]]||p[2];
@@ -47,7 +53,7 @@ function edit(i){selected=i;render();const raw=DATA.layers[active].keys[i];$('de
   $('search').oninput=filter;filter();$('apply').onclick=()=>{if($('choice').value)applyBinding($('choice').value)};$('apply-raw').onclick=()=>applyBinding($('binding').value);$('binding').onkeydown=e=>{if(e.key==='Enter')applyBinding(e.target.value)};$('capture-focus').onclick=()=>{$('capture-focus').focus();status('等待实体键盘输入…');};$('capture-focus').focus({preventScroll:true});
 }
 function render(){[...$('tabs').children].forEach((b,i)=>b.setAttribute('aria-pressed',i===active));$('hint').textContent=`${names[active]} · 拖动交换，或点选后按实体键盘录入。绿色为轻点 / 长按双功能键，— 为未绑定。`;$('board').replaceChildren();DATA.positions.forEach(([w,h,x,y,r,rx,ry],i)=>{const raw=DATA.layers[active].keys[i];if(hidden.has(i)&&!$('reserved').checked&&raw==='&none')return;const trans=raw==='&trans',effective=trans?DATA.layers[0].keys[i]:raw;
-  const g=node('g',{'data-index':i,class:'key '+(raw==='&none'?'ghost ':effective.startsWith('&lt')?'layer ':'')+(selected===i?'selected':''),tabindex:0,role:'button','aria-label':`位置 ${i} ${keyLabel(effective)}${trans?' 继承':''}`,transform:`rotate(${r} ${rx*100} ${ry*100})`});g.append(node('rect',{x:x*100+4,y:y*100+4,width:w*100-8,height:h*100-8,rx:12}));g.append(node('text',{x:x*100+50,y:y*100+19,class:'index'},String(i)));g.append(node('text',{x:x*100+50,y:y*100+48,'font-size':keyLabel(effective).length>9?'12':'16'},keyLabel(effective)));g.append(node('text',{x:x*100+50,y:y*100+72,class:'sub'},trans?'↧ 继承':effective.startsWith('&lt')?'按住 L'+layerNumber(effective):''));g.append(node('title',{},raw));g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();edit(i)}});$('board').append(g);
+  const g=node('g',{'data-index':i,class:'key '+(raw==='&none'?'ghost ':effective.startsWith('&lt')?'layer ':'')+(selected===i?'selected':''),tabindex:0,role:'button','aria-label':`位置 ${i} ${keyLabel(effective)}${trans?' 继承':''}`,transform:`rotate(${r} ${rx*100} ${ry*100})`});g.append(node('rect',{x:x*100+4,y:y*100+4,width:w*100-8,height:h*100-8,rx:12}));g.append(node('text',{x:x*100+50,y:y*100+19,class:'index'},String(i)));g.append(node('text',{x:x*100+50,y:y*100+48,style:'font-size:'+(keyLabel(effective).length>9?'11':'16')+'px'},keyLabel(effective)));g.append(node('text',{x:x*100+50,y:y*100+72,class:'sub'},trans?'↧ 继承':effective.startsWith('&lt')?'按住 L'+layerNumber(effective):''));g.append(node('title',{},raw));g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();edit(i)}});$('board').append(g);
 });}
 $('board').addEventListener('pointerdown',e=>{const g=e.target.closest('[data-index]');if(!g||e.button!==0)return;drag={index:Number(g.dataset.index),x:e.clientX,y:e.clientY,moved:false};$('board').setPointerCapture(e.pointerId);e.preventDefault();});
 $('board').addEventListener('pointermove',e=>{if(!drag)return;if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)>6)drag.moved=true;document.querySelectorAll('.target').forEach(n=>n.classList.remove('target'));const target=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-index]');if(drag.moved&&target)target.classList.add('target');});

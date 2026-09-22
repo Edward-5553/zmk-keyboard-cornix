@@ -31,8 +31,10 @@ The current preset uses 50 binding positions. The diagram below shows all positi
 on the three active layers, including unassigned keys:
 
 - **L0 Base:** Space held activates L1; Enter held activates L2.
-- **L1 Num/Nav:** arrows on E/S/D/F and numbers on the right; the six former Bluetooth controls are unassigned.
-- **L2 Fn/Symbol:** two rows of symbols, with F1–F12 on the third row.
+- **L1 Num/Nav:** arrows on E/S/D/F and Ctrl shortcuts on Z/X/C/V; the four former Bluetooth controls in the leftmost column are unassigned. Right-hand digits use 789 / 456 / 0123, with decimal above zero.
+- **L2 Fn/Symbol:** two rows of symbols; left Shift and F2–F12 on the third row, with F1 on the base-layer Caps thumb position. Left-hand A/S/D type `{}` / `[]` / `<>` and move the caret left once (`|` in the diagram denotes the caret). Punctuation depends on the active input method; editor auto-pairing may affect the result.
+
+Encoders are identical on every layer: left clockwise scrolls down, counter-clockwise scrolls up; right clockwise increases volume, counter-clockwise decreases it. Pressing the left encoder toggles Caps Lock; pressing the right toggles mute (positions 30/31). Base position 41 sends Ctrl+Alt+Delete and position 42 sends Alt+Space; Fn/Symbol position 41 remains F1, while transparent bindings inherit the base shortcuts. Scrolling uses mouse-wheel reports and follows host scroll settings. When first enabling pointing over BLE, refresh the host HID cache (usually by removing and re-pairing the device) if scrolling does not work.
 
 ![Cornix current keymap: Base, Num/Nav and Fn/Symbol, 50 positions per layer](keymap-drawer/cornix.svg)
 
@@ -41,8 +43,8 @@ on the three active layers, including unassigned keys:
 The editor supports physical-keyboard input, drag-to-swap and exporting an edited HTML.
 
 Green keys have tap/hold behavior; `from L0` indicates a transparent binding shown
-with its base-layer fallback; `—` is unassigned. Scroll and Snipe remain transparent
-reserved layers with no entry binding. This reflects `config/cornix.keymap`, not
+with its base-layer fallback; `—` is unassigned. Scroll and Snipe remain
+reserved layers with no entry binding and the same encoder click bindings. This reflects `config/cornix.keymap`, not
 the v3.0.0 release package or changes saved on a device through Studio.
 
 Regenerate the HTML and diagrams after keymap edits with
@@ -116,6 +118,24 @@ animation or static indicator remains active, the WS2812 power rail is turned
 off after 1000 ms to reduce idle consumption. LEDs that remain illuminated
 still consume power. RGB is opt-in and is not enabled in the default v3.0.0
 release artifacts.
+
+The current `build.yaml` enables `cornix_indicator` for all three half targets.
+The shared `boards/shields/cornix_indicator/cornix_indicator.conf` explicitly enables
+USB power detection, battery reporting and charging animations only for builds
+using that shield, leaving reset builds unaffected. Each half uses LED 0 for its own battery and LED 1 for
+connectivity. While USB-powered below 99%, the battery LED pulses green over a
+2-second cycle with 50 ms animation ticks. At 99% or above, it shows green for
+2 seconds before restoring other indications or turning off. Unplugging stops
+the charging pulse and briefly shows the ordinary battery indication.
+
+This uses USB power and estimated charge level, not a charger completion signal.
+USB power detection does not enable USB keyboard output on BLE peripherals.
+For dongle mode, flash newly built `cornix_left_for_dongle_nosd.uf2` and
+`cornix_right_nosd.uf2`; use `cornix_left_default_nosd.uf2` for a standard central
+left half. No dongle update or pairing reset is needed for this configuration.
+On hardware, check each half independently: plug/unplug below 99%, boot while
+plugged in, charge both halves, and verify the full-battery indication. Check
+both a computer USB port and a standalone charger.
 
 ## Flashing and recovery
 

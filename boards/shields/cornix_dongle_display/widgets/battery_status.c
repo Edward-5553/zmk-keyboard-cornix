@@ -14,6 +14,8 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #include <zmk/ble.h>
 #include <zmk/display.h>
 #include <zmk/events/battery_state_changed.h>
+#include <zmk/events/position_state_changed.h>
+#include <zmk/physical_layouts.h>
 #include <zmk/events/usb_conn_state_changed.h>
 #include <zmk/event_manager.h>
 #include <zmk/usb.h>
@@ -38,6 +40,13 @@ struct battery_state {
     uint8_t source;
     uint8_t level;
     bool usb_present;
+    bool valid;
+    char side;
+};
+
+/* Keep every source in the snapshot: display work may coalesce several events. */
+struct battery_snapshot {
+    struct battery_state sources[ZMK_SPLIT_BLE_PERIPHERAL_COUNT + SOURCE_OFFSET];
 };
 
 struct battery_object {
@@ -99,7 +108,8 @@ static void set_battery_symbol(lv_obj_t *widget, struct battery_state state) {
     lv_obj_t *label = battery_objects[state.source].label;
 
     draw_battery(symbol, state.level, state.usb_present);
-    lv_label_set_text_fmt(label, "%4u%% ", state.level);
+    lv_label_set_text_fmt(label, "%c%3u%% ", state.side ? state.side : '?', state.level);
+    lv_obj_align_to(label, symbol, LV_ALIGN_OUT_LEFT_MID, 0, 0);
 
     if (state.level > 0 || state.usb_present) {
         lv_obj_clear_flag(symbol, LV_OBJ_FLAG_HIDDEN);
@@ -112,9 +122,15 @@ static void set_battery_symbol(lv_obj_t *widget, struct battery_state state) {
     }
 }
 
-void battery_status_update_cb(struct battery_state state) {
+void battery_status_update_cb(struct battery_snapshot snapshot) {
     struct zmk_widget_dongle_battery_status *widget;
-    SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) { set_battery_symbol(widget->obj, state); }
+    SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) {
+        for (int i = 0; i < ARRAY_SIZE(snapshot.sources); i++) {
+            if (snapshot.sources[i].valid) {
+                set_battery_symbol(widget->obj, snapshot.sources[i]);
+            }
+        }
+    }
 }
 
 static struct battery_state peripheral_battery_status_get_state(const zmk_event_t *eh) {
@@ -122,13 +138,17 @@ static struct battery_state peripheral_battery_status_get_state(const zmk_event_
     return (struct battery_state){
         .source = ev->source + SOURCE_OFFSET,
         .level = ev->state_of_charge,
+        .valid = true,
     };
 }
 
+#if IS_ENABLED(CONFIG_ZMK_DONGLE_DISPLAY_DONGLE_BATTERY)
 static struct battery_state central_battery_status_get_state(const zmk_event_t *eh) {
-    const struct zmk_battery_state_changed *ev = as_zmk_battery_state_changed(eh);
+    const struct zmk_battery_state_changed *ev = eh ? as_zmk_battery_state_changed(eh) : NULL;
     return (struct battery_state) {
         .source = 0,
+        .side = 'D',
+        .valid = true,
         .level = (ev != NULL) ? ev->state_of_charge : zmk_battery_state_of_charge(),
 #if IS_ENABLED(CONFIG_USB_DEVICE_STACK)
         .usb_present = zmk_usb_is_powered(),
@@ -136,18 +156,58 @@ static struct battery_state central_battery_status_get_state(const zmk_event_t *
     };
 }
 
-static struct battery_state battery_status_get_state(const zmk_event_t *eh) {
-    if (as_zmk_peripheral_battery_state_changed(eh) != NULL) {
-        return peripheral_battery_status_get_state(eh);
-    } else {
-        return central_battery_status_get_state(eh);
+#endif
+
+static char side_for_position(uint32_t position) {
+    const struct zmk_physical_layout *const *layouts;
+    size_t count = zmk_physical_layouts_get_list(&layouts);
+    int selected = zmk_physical_layouts_get_selected();
+    if (selected < 0 || (size_t)selected >= count || !layouts[selected]->keys ||
+        position >= layouts[selected]->keys_len) {
+        return '?';
     }
+
+    /* Cornix coordinates (1/100 key unit): left x <= 600, right x >= 750.
+     * Use physical positions, so remapping keys in Studio does not change sides. */
+    int16_t x = layouts[selected]->keys[position].x;
+    return x <= 600 ? 'L' : (x >= 750 ? 'R' : '?');
 }
 
-ZMK_DISPLAY_WIDGET_LISTENER(widget_dongle_battery_status, struct battery_state,
+static struct battery_snapshot battery_status_get_state(const zmk_event_t *eh) {
+    static struct battery_snapshot snapshot;
+    const struct zmk_position_state_changed *position =
+        eh ? as_zmk_position_state_changed(eh) : NULL;
+    if (position) {
+        if (position->state && position->source < ZMK_SPLIT_BLE_PERIPHERAL_COUNT) {
+            char side = side_for_position(position->position);
+            if (side != '?') {
+                snapshot.sources[position->source + SOURCE_OFFSET].side = side;
+            }
+        }
+    } else if (eh && as_zmk_peripheral_battery_state_changed(eh)) {
+        if (as_zmk_peripheral_battery_state_changed(eh)->source >=
+            ZMK_SPLIT_BLE_PERIPHERAL_COUNT) {
+            return snapshot;
+        }
+        struct battery_state state = peripheral_battery_status_get_state(eh);
+        if (state.source < ARRAY_SIZE(snapshot.sources)) {
+            state.side = snapshot.sources[state.source].side;
+            snapshot.sources[state.source] = state;
+        }
+    }
+#if IS_ENABLED(CONFIG_ZMK_DONGLE_DISPLAY_DONGLE_BATTERY)
+    else {
+        snapshot.sources[0] = central_battery_status_get_state(eh);
+    }
+#endif
+    return snapshot;
+}
+
+ZMK_DISPLAY_WIDGET_LISTENER(widget_dongle_battery_status, struct battery_snapshot,
                             battery_status_update_cb, battery_status_get_state)
 
 ZMK_SUBSCRIPTION(widget_dongle_battery_status, zmk_peripheral_battery_state_changed);
+ZMK_SUBSCRIPTION(widget_dongle_battery_status, zmk_position_state_changed);
 
 #if IS_ENABLED(CONFIG_ZMK_DONGLE_DISPLAY_DONGLE_BATTERY)
 #if !IS_ENABLED(CONFIG_ZMK_SPLIT) || IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)

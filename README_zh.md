@@ -29,8 +29,10 @@ Cornix 采用紧凑的 3×6 列交错布局，每侧有三个拇指键。硬件�
 当前配置使用 **50 个绑定位置**。下图完整展示常用的三层，包含尚未分配功能的位置：
 
 - **L0 基础层**：轻点 Space / Enter 输入空格 / 回车，按住分别进入 L1 / L2。
-- **L1 数字 / 导航层**：E/S/D/F 对应方向键，右手数字区，原左下方六个蓝牙控制键留空。
-- **L2 功能 / 符号层**：上方两行符号，第三行为 F1–F12。
+- **L1 数字 / 导航层**：E/S/D/F 对应方向键，Z/X/C/V 为 Ctrl 快捷键；最左列原有的四个蓝牙控制键留空。右手数字为 789 / 456 / 0123，小数点在 0 上方。
+- **L2 功能 / 符号层**：上方两行符号，第三行保留左 Shift 并放置 F2–F12；F1 位于基础层 Caps 拇指键位置。 左手 A/S/D 位置一键输入 `{}` / `[]` / `<>` 并将光标左移一次，图中 `|` 表示光标。实际标点取决于输入法；编辑器自动补括号可能干扰结果。
+
+所有层旋钮功能一致：左旋钮顺时针向下滚动、逆时针向上滚动；右旋钮顺时针增大音量、逆时针减小音量。左旋钮按下切换 Caps Lock，右旋钮按下切换静音（键位 30/31）。基础层 41 号为 Ctrl+Alt+Delete，42 号为 Alt+Space；Fn/Symbol 层 41 号仍为 F1，透明绑定沿用基础层功能。左侧使用鼠标滚轮事件，滚动量受系统设置影响。首次启用鼠标功能后，若蓝牙连接不能滚动，需刷新主机的 HID 缓存（通常移除设备后重新配对）。
 
 ![Cornix 最新键位图：基础、数字导航、功能符号三层，每层完整显示 50 个位置](keymap-drawer/cornix.svg)
 
@@ -38,7 +40,7 @@ Cornix 采用紧凑的 3×6 列交错布局，每侧有三个拇指键。硬件�
 （下载 HTML 后在浏览器中打开）。编辑器支持实体键盘录入、拖动交换和导出修改后的 HTML。
 
 绿色键兼具轻点 / 长按功能；`from L0` 表示透明键并显示基础层回落值；`—` 表示未分配。
-Scroll、Snipe 仍为全透明的预留层，当前没有切入按键。图中数据来自当前
+Scroll、Snipe 为预留层，当前没有切入按键；两层也保留固定的旋钮按压功能。图中数据来自当前
 `config/cornix.keymap`，不代表 v3.0.0 发行包或设备上通过 Studio 保存的改键。
 
 修改键位后运行 `python scripts/generate-keymap-image.py`，同步生成 HTML、SVG 和 PNG
@@ -97,7 +99,8 @@ include:
 
 仅当 dongle 开发板尚未提供 `zephyr,display` 时，方需加入
 `cornix_dongle_eyelash`；本地 `cornix_dongle_display` shield 提供显示组件及月薪喵动画。
-低速敲键盘、高速吃零食打字，闲置显示睡觉静态帧；切换依据 ZMK 的 WPM 采样。
+默认循环播放 idle 动画；连续按键满 3 秒后切换为 error，停顿满 1 秒即回到 idle 并重新计时。
+依据左右手的实际按下事件判断，不依赖 WPM；单键长按和松键不延长连续输入时间。
 详见[实现与验证](boards/shields/cornix_dongle_display/UPSTREAM.md)及[素材署名](boards/shields/cornix_dongle_display/ASSETS.md)。
 仅更新动画时，只刷 dongle 固件，无需刷 reset 或重新刷左右手。
 
@@ -109,6 +112,23 @@ include:
 该 shield 设置 `CONFIG_RGBLED_WIDGET_EXT_POWER_TIMEOUT_MS=1000`。动画结束且无
 常亮指示后，WS2812 外部供电将在 1000 ms 后关闭，以降低空闲功耗；持续点亮的
 LED 仍会耗电。RGB 须主动启用，默认 v3.0.0 发布包并未开启。
+
+当前 `build.yaml` 的三种左右手构建均启用 `cornix_indicator`，其共用配置
+`boards/shields/cornix_indicator/cornix_indicator.conf` 明确启用 USB 供电检测、
+电量上报及充电呼吸动画。配置仅作用于带该 shield 的固件，不影响 reset 构建。
+每侧独立使用第 0 颗 RGB 灯指示自身电量，第 1 颗继续指示连接状态：
+
+- 插入 USB 且电量低于 99%：绿色呼吸，约 2 秒一个周期，50 ms 刷新一次。
+- 插着 USB 且电量达到 99%：绿色常亮提示 2 秒，随后恢复其他指示或熄灭。
+- 拔掉 USB：停止充电呼吸，短暂显示普通电量提示后恢复其他指示或熄灭。
+
+这里依据 USB 供电与估算电量判断，并非充电芯片的真实充满信号。
+分体的 USB 供电检测不需要启用 USB 键盘输出，dongle 模式仍通过蓝牙传输按键。
+请使用最新构建的 `cornix_left_for_dongle_nosd.uf2` 与
+`cornix_right_nosd.uf2` 分别更新左右手；标准分体模式左手使用
+`cornix_left_default_nosd.uf2`。本次灯效配置无需更新 dongle 或清除配对。
+实机验证时分别插拔两侧 USB，检查低于 99% 时持续呼吸、拔线后停止，以及
+插线启动和同时充电时两侧各自的灯效；电脑 USB 和普通充电器都应检查。
 
 ## 刷写与恢复
 
