@@ -52,14 +52,14 @@ config ZMK_KSCAN_DEBOUNCE_PRESS_MS
 config ZMK_KSCAN_DEBOUNCE_RELEASE_MS
     default 3
 
-# Keep the split link available after idle; deep sleep is an explicit opt-in.
+# Keep the split link through normal breaks; sleep after two hours of inactivity.
 if !ZMK_SETTINGS_RESET_ON_START
 
 config ZMK_SLEEP
-    default n
+    default y
 
 config ZMK_IDLE_SLEEP_TIMEOUT
-    default 900000
+    default 7200000
 
 endif # !ZMK_SETTINGS_RESET_ON_START
 

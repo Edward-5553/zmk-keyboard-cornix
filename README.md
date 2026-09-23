@@ -119,10 +119,10 @@ the default animation. See the [portrait layout](docs/dongle-portrait.md).
 See [performance tuning and hardware validation](docs/performance-validation.md)
 for the current optimizations and checks to run after flashing.
 
-Cornix halves keep their wireless link active during idle by default; automatic
-deep sleep is disabled to avoid a wake/reconnect delay on the next key. This uses
-more power during long idle periods than deep sleep. To apply this change in
-dongle mode, update both `cornix_left_for_dongle_nosd.uf2` and
+Cornix halves keep their wireless link active through normal breaks and enter
+deep sleep after two hours of inactivity on battery power. Each half has its own
+idle timer; waking from deep sleep still requires BLE reconnection. To apply this
+change in dongle mode, update both `cornix_left_for_dongle_nosd.uf2` and
 `cornix_right_nosd.uf2`; no dongle update or settings reset is needed.
 
 ## RGB indicators

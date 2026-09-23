@@ -88,7 +88,7 @@ test fast repeated presses and long holds for chatter; restore a larger debounce
 value if your switches need it. Firmware keymap defaults may be superseded by
 key bindings saved through Studio; do not clear Bluetooth bonds to change them.
 
-## 6. Keep halves connected after idle by default
+## 6. Deep sleep only after two hours of inactivity
 
 The earlier `3a866c2` optimization enabled deep sleep after 15 minutes on Cornix
 left, left-for-dongle and right. This caused a potential responsiveness regression:
@@ -97,28 +97,31 @@ had to wake the controller and reconnect BLE. The wake press and presses during
 reconnection are not guaranteed to reach the host. A USB-powered dongle cannot
 keep a battery-powered peripheral awake.
 
-The board default is now `CONFIG_ZMK_SLEEP=n`, restoring the previous connected
-idle behavior. Ordinary idle state, dongle screen blanking and RGB idle power
-control remain enabled as before. This removes the automatic deep-sleep wake and
-reconnect path; it does not guarantee delivery during an unrelated radio outage.
-Long-idle battery consumption will be higher than with deep sleep; no current
-draw or battery-life difference has been measured.
+The current board defaults enable `CONFIG_ZMK_SLEEP=y` with
+`CONFIG_ZMK_IDLE_SLEEP_TIMEOUT=7200000` (two hours), as requested after reviewing
+the wake behavior. Ordinary idle state, dongle screen blanking and RGB idle power
+control remain enabled as before. Each half stays connected through normal
+breaks, then may sleep independently after two hours without activity on that
+half. Its first key after deep sleep still needs wake/reconnection; this change
+postpones that transition rather than preserving wake presses. Battery use
+between 15 minutes and two hours idle will be higher than with the old timeout;
+no current draw or battery-life difference has been measured.
 
 For dongle use, flash both `cornix_left_for_dongle_nosd.uf2` and
 `cornix_right_nosd.uf2`. A dongle-only update cannot change the halves' sleep
 configuration. For standard split use, update the standard left and right halves.
 No settings reset, re-pairing or dongle update is required for this sleep change.
 
-Check each normal half's resolved `.config` has `CONFIG_ZMK_SLEEP` disabled and
-retains `CONFIG_NVS=y` and `CONFIG_SETTINGS_NVS=y`. On battery power, test the first
-ordinary letter after 30 seconds, 5 minutes and more than 15 minutes idle. Test
-each half independently, including leaving one idle while typing on the other.
-Also check RGB indications and repeat while the halves are USB-powered.
+Check each normal half's resolved `.config` has `CONFIG_ZMK_SLEEP=y`,
+`CONFIG_ZMK_IDLE_SLEEP_TIMEOUT=7200000`, `CONFIG_NVS=y` and `CONFIG_SETTINGS_NVS=y`.
+On battery power, test the first ordinary letter after 30 seconds, 5 minutes,
+more than 15 minutes, and just under two hours idle. Then leave a half inactive
+for over two hours and verify deep sleep and wake/reconnection. Test each half
+independently, including leaving one idle while typing on the other. Check RGB
+indications and repeat while the halves are USB-powered.
 
-Deep sleep remains available as an explicit user override with
-`CONFIG_ZMK_SLEEP=y` and `CONFIG_ZMK_IDLE_SLEEP_TIMEOUT=900000`. The matrix is a
-wakeup source, but encoder rotation is not a configured deep-sleep wake source.
-ZMK prevents automatic deep sleep while USB power is detected. See
+The matrix is a wakeup source, but encoder rotation is not a configured deep-sleep
+wake source. ZMK prevents automatic deep sleep while USB power is detected. See
 [ZMK power management configuration](https://zmk.dev/docs/config/power).
 
 ## Intermittent dongle input latency: display A/B check
@@ -169,7 +172,7 @@ dongle from the same Actions run.
    [ZMK documents metal enclosures as a wireless connection risk](https://zmk.dev/docs/troubleshooting/connection-issues#unreliableweak-connection).
 5. Space/Enter have balanced layer-tap behavior with a 180 ms tapping term; pauses
    tied to those keys need a separate behavior check. Older half firmware enabled
-   deep sleep after 15 minutes; the current default disables it (see section 6).
+   deep sleep after 15 minutes; the current default extends it to two hours (see section 6).
    A wake/reconnect pause differs from stutters during continuous typing. Apply
    any half firmware update before starting a new display comparison, then keep
    the half firmware fixed while comparing the two dongle builds.
