@@ -100,10 +100,13 @@ static unsigned dark(int x,int y,int w,int h){
   for(int j=y;j<y+h;j++)for(int i=x;i<x+w;i++)count+=!(pixels[j*8+i/8]&(0x80>>(i%8)));
   return count;
 }
-static void inside(lv_obj_t *obj,int x,int y,int w,int h){
+static void inside_impl(lv_obj_t *obj,int x,int y,int w,int h,const char *name){
   lv_area_t a;lv_obj_get_coords(obj,&a);
+  if(!(a.x1>=x && a.y1>=y && a.x2<x+w && a.y2<y+h))
+    fprintf(stderr,"%s bounds [%d,%d,%d,%d] expected within [%d,%d,%d,%d]\n",name,(int)a.x1,(int)a.y1,(int)a.x2,(int)a.y2,x,y,x+w-1,y+h-1);
   assert(a.x1>=x && a.y1>=y && a.x2<x+w && a.y2<y+h);
 }
+#define inside(obj,x,y,w,h) inside_impl(obj,x,y,w,h,#obj)
 static void snapshot(lv_display_t *display,const char *path){
   lv_obj_update_layout(lv_screen_active());
   inside(output_status_widget.obj,0,0,64,22);
