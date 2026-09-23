@@ -141,6 +141,8 @@ Host rendering tests verify correctness, not responsiveness on the nRF52840.
 `build.yaml` also produces `cornix_dongle_no_display_nosd.uf2` for diagnosis. It
 uses the same board, adapter, keymap and no-SoftDevice/Studio snippets as the
 normal dongle, omits both display shields, and explicitly disables ZMK display.
+It retains the normal system/key-event work queue's 3072-byte stack; disabling
+display would otherwise reduce that default to 2048 bytes.
 This is a comparison build, not a confirmed latency fix. Check its resolved
 configuration: display/LVGL/OLED must be disabled, while USB HID, both BLE
 peripherals, radio parameters, NVS and Studio remain consistent with the normal

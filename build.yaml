@@ -22,7 +22,8 @@ include:
   - board: nice_nano//zmk
     shield: cornix_dongle_adapter
     snippet: studio-rpc-usb-uart nrf52840-nosd
-    cmake-args: -DCONFIG_ZMK_DISPLAY=n
+    # Disabling display otherwise reduces the system/key-event queue stack.
+    cmake-args: -DCONFIG_ZMK_DISPLAY=n -DCONFIG_SYSTEM_WORKQUEUE_STACK_SIZE=3072
     artifact-name: cornix_dongle_no_display_nosd
   # dongle screen not yet supports zephyr4
   # - board: seeeduino_xiao_ble
