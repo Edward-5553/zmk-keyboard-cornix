@@ -8,15 +8,13 @@
 #include "salary_cat_images.h"
 
 static sys_slist_t widgets = SYS_SLIST_STATIC_INIT(&widgets);
-#define TYPING_START_MS 3000
-#define TYPING_GAP_MS 1000
-#define ACTIVITY_POLL_MS 50
+#define TYPING_IDLE_MS 3000
+#define ACTIVITY_POLL_MS 20
 
 /* Key events and LVGL run on different threads. Only timestamps cross that boundary. */
 static struct k_spinlock activity_lock;
 static struct {
     bool seen_press;
-    int64_t first_press;
     int64_t last_press;
 } activity;
 static lv_timer_t *activity_timer;
@@ -45,9 +43,6 @@ static int typing_activity_listener(const zmk_event_t *eh) {
 
     k_spinlock_key_t key = k_spin_lock(&activity_lock);
     int64_t now = k_uptime_get();
-    if (!activity.seen_press || now - activity.last_press >= TYPING_GAP_MS) {
-        activity.first_press = now;
-    }
     activity.last_press = now;
     activity.seen_press = true;
     k_spin_unlock(&activity_lock, key);
@@ -57,9 +52,8 @@ static int typing_activity_listener(const zmk_event_t *eh) {
 static bool typing_active(void) {
     k_spinlock_key_t key = k_spin_lock(&activity_lock);
     int64_t now = k_uptime_get();
-    /* Require actual presses spanning three seconds, not a timer after a short burst. */
-    bool active = activity.seen_press && now - activity.last_press < TYPING_GAP_MS &&
-                  activity.last_press - activity.first_press >= TYPING_START_MS;
+    /* The first press activates the animation; every press extends its deadline. */
+    bool active = activity.seen_press && now - activity.last_press < TYPING_IDLE_MS;
     k_spin_unlock(&activity_lock, key);
     return active;
 }

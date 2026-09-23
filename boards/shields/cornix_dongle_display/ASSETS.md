@@ -7,8 +7,8 @@
 
 | 用途 | 原始文件 |
 |---|---|
-| 默认、连续输入不足 3 秒或已停顿 1 秒 | `cat-idle.gif`（循环播放） |
-| 连续按键满 3 秒，期间每次间隔小于 1 秒 | `cat-error.gif`（循环播放） |
+| 启动后尚未输入，或最后一次按键后已满 3 秒 | `cat-idle.gif`（循环播放） |
+| 首次按键立即切换，后续每次按键延长至 3 秒后 | `cat-error.gif`（循环播放） |
 
 [上游署名说明](https://github.com/myunwang/LLMPET/blob/22e34036c53bdbfe169dccde015781470476bbb5/assets/cat/CREDITS.md)
 将原始出处标为[《最近很火的月薪喵表情包第1弹》](https://www.mfuns.net/article/120254)，

@@ -10,7 +10,9 @@ latency, RAM usage, current draw or display bus reliability.
 Battery and modifier events compare their semantic state before submitting work
 to the dedicated display queue. Battery snapshots still retain all sources when
 events coalesce. Rendering skips battery rows that have not changed. Key events
-never render LVGL objects directly.
+never render LVGL objects directly. The later portrait redesign keeps L/R rows
+fixed, with visible `--%` placeholders and bounded labels; see
+[dongle portrait validation](dongle-portrait.md).
 
 Run `python scripts/test-dongle-battery.py --cc gcc` (or a Zig executable).
 The test compiles the real battery and modifier widgets, covers both peripheral
@@ -54,8 +56,8 @@ Measure actual flush time before attributing a latency improvement to this chang
 `CONFIG_ZMK_DISPLAY_TICK_PERIOD_MS=20` reduces nominal periodic work submissions
 from 100 to 50 per second while the display is active. This is not a claim of
 halving CPU usage. The dedicated display queue and its 4096-byte stack are kept.
-Salary Cat retains 10 fps playback, the 50 ms activity timer and the existing
-3-second typing / 1-second inactivity thresholds. State changes become visible
+Salary Cat retains 10 fps playback, the 20 ms activity timer. A later UI change activates on the first physical
+press and returns to idle 3 seconds after the last press. State changes become visible
 at the next eligible display tick.
 
 Run `python scripts/test-dongle-cat.py --cc gcc` (or a Zig executable) for the

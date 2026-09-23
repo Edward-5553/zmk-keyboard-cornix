@@ -22,6 +22,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 #include "battery_status.h"
 #include "changed_listener.h"
+#include "../portrait_layout.h"
 
 #if IS_ENABLED(CONFIG_ZMK_DONGLE_DISPLAY_DONGLE_BATTERY)
     #define SOURCE_OFFSET 1
@@ -115,42 +116,45 @@ static void draw_battery(lv_obj_t *canvas, uint8_t level, bool usb_present) {
     lv_canvas_finish_layer(canvas, &layer);
 }
 
-static void set_battery_symbol(lv_obj_t *widget, struct battery_state state) {
+static void set_battery_symbol(lv_obj_t *widget, int row, struct battery_state state) {
     (void)widget;
-    if (state.source >= ZMK_SPLIT_BLE_PERIPHERAL_COUNT + SOURCE_OFFSET) {
-        return;
-    }
-    struct battery_object *object = &battery_objects[state.source];
+    struct battery_object *object = &battery_objects[row];
     if (battery_state_equal(object->rendered, state)) {
         return;
     }
     LOG_DBG("source: %d, level: %d, usb: %d", state.source, state.level, state.usb_present);
-    lv_obj_t *symbol = battery_objects[state.source].symbol;
-    lv_obj_t *label = battery_objects[state.source].label;
+    lv_obj_t *symbol = object->symbol;
+    lv_obj_t *label = object->label;
 
     draw_battery(symbol, state.level, state.usb_present);
-    lv_label_set_text_fmt(label, "%c%3u%% ", state.side ? state.side : '?', state.level);
-    lv_obj_align_to(label, symbol, LV_ALIGN_OUT_LEFT_MID, 0, 0);
-
-    if (state.level > 0 || state.usb_present) {
-        lv_obj_clear_flag(symbol, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_move_foreground(symbol);
-        lv_obj_clear_flag(label, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_move_foreground(label);
+    if (state.valid) {
+        lv_label_set_text_fmt(label, "%c %3u%%", state.side, state.level);
     } else {
-        lv_obj_add_flag(symbol, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
+        lv_label_set_text_fmt(label, "%c  --%%", state.side);
     }
     object->rendered = state;
 }
 
 void battery_status_update_cb(struct battery_snapshot snapshot) {
+    /* Source IDs follow pairing order, not handedness. Keep visible L/R rows
+     * fixed and leave unknown readings blank rather than assigning the wrong side. */
+    struct battery_state rows[ARRAY_SIZE(snapshot.sources)] = {0};
+    for (int i = 0; i < ARRAY_SIZE(rows); i++) {
+        rows[i].side = i < SOURCE_OFFSET ? 'D' : (i == SOURCE_OFFSET ? 'L' : 'R');
+    }
+    for (int i = 0; i < ARRAY_SIZE(snapshot.sources); i++) {
+        struct battery_state state = snapshot.sources[i];
+        int row = state.side == 'D' && SOURCE_OFFSET ? 0 :
+                  state.side == 'L' ? SOURCE_OFFSET :
+                  state.side == 'R' ? SOURCE_OFFSET + 1 : -1;
+        if (row >= 0 && row < ARRAY_SIZE(rows)) {
+            rows[row] = state;
+        }
+    }
     struct zmk_widget_dongle_battery_status *widget;
     SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) {
-        for (int i = 0; i < ARRAY_SIZE(snapshot.sources); i++) {
-            if (snapshot.sources[i].valid) {
-                set_battery_symbol(widget->obj, snapshot.sources[i]);
-            }
+        for (int i = 0; i < ARRAY_SIZE(rows); i++) {
+            set_battery_symbol(widget->obj, i, rows[i]);
         }
     }
 }
@@ -245,7 +249,10 @@ ZMK_SUBSCRIPTION(widget_dongle_battery_status, zmk_usb_conn_state_changed);
 int zmk_widget_dongle_battery_status_init(struct zmk_widget_dongle_battery_status *widget, lv_obj_t *parent) {
     widget->obj = lv_obj_create(parent);
 
-    lv_obj_set_size(widget->obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+    lv_obj_remove_style_all(widget->obj);
+    lv_obj_clear_flag(widget->obj, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_size(widget->obj, CORNIX_SCREEN_WIDTH,
+                    (ZMK_SPLIT_BLE_PERIPHERAL_COUNT + SOURCE_OFFSET) * CORNIX_BATTERY_ROW_HEIGHT);
 
     for (int i = 0; i < ZMK_SPLIT_BLE_PERIPHERAL_COUNT + SOURCE_OFFSET; i++) {
         lv_obj_t *image_canvas = lv_canvas_create(widget->obj);
@@ -253,11 +260,13 @@ int zmk_widget_dongle_battery_status_init(struct zmk_widget_dongle_battery_statu
 
         lv_canvas_set_buffer(image_canvas, battery_image_buffer[i], 5, 8, LV_COLOR_FORMAT_L8);
 
-        lv_obj_align(image_canvas, LV_ALIGN_TOP_RIGHT, 0, i * 10);
-        lv_obj_align_to(battery_label, image_canvas, LV_ALIGN_OUT_LEFT_MID, 0, 0);
-
-        lv_obj_add_flag(image_canvas, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_add_flag(battery_label, LV_OBJ_FLAG_HIDDEN);
+        /* Both children stay inside a fixed-width parent. Negative alignment
+         * beside an icon in LV_SIZE_CONTENT clipped the entire text column. */
+        lv_obj_set_pos(image_canvas, CORNIX_BATTERY_ICON_X, i * CORNIX_BATTERY_ROW_HEIGHT);
+        lv_obj_set_pos(battery_label, 0, i * CORNIX_BATTERY_ROW_HEIGHT);
+        lv_obj_set_size(battery_label, CORNIX_BATTERY_LABEL_WIDTH, 8);
+        lv_obj_set_style_text_letter_space(battery_label, 0, 0);
+        lv_label_set_long_mode(battery_label, LV_LABEL_LONG_CLIP);
 
         battery_objects[i] = (struct battery_object){
             .symbol = image_canvas,

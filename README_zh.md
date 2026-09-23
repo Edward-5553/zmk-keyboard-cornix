@@ -99,8 +99,12 @@ include:
 
 仅当 dongle 开发板尚未提供 `zephyr,display` 时，方需加入
 `cornix_dongle_eyelash`；本地 `cornix_dongle_display` shield 提供显示组件及月薪喵动画。
-默认循环播放 idle 动画；连续按键满 3 秒后切换为 error，停顿满 1 秒即回到 idle 并重新计时。
-依据左右手的实际按下事件判断，不依赖 WPM；单键长按和松键不延长连续输入时间。
+界面改为 64×128 竖屏，从上到下为连接状态、固定 L/R 电量、月薪喵、层名、锁定状态及修饰键。
+默认循环播放 idle 动画；任意一侧首次按键即切换为 error，最后一次按键后满 3 秒恢复 idle。
+依据实际按下事件判断，不依赖 WPM；单键长按、松键和旋钮旋转不会重新计时。
+电量的 L/R 标识始终显示，未知读数显示 `--%`，0% 也正常显示。每次 dongle 启动后，
+两边各按一次普通按键来识别电量来源；配对顺序不会改变 L 在上、R 在下的排列。
+详见[竖屏布局与验证](docs/dongle-portrait.md)。
 详见[实现与验证](boards/shields/cornix_dongle_display/UPSTREAM.md)及[素材署名](boards/shields/cornix_dongle_display/ASSETS.md)。
 仅更新动画时，只刷 dongle 固件，无需刷 reset 或重新刷左右手。
 

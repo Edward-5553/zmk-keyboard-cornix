@@ -71,42 +71,34 @@ int main(void) {
   assert(a.animation_state==0 && a.obj->starts==1 && a.obj->count==SALARY_IDLE_COUNT);
   assert(a.obj->src==(const void **)salary_idle_frames && a.obj->repeat==LV_ANIM_REPEAT_INFINITE);
   assert(SALARY_IDLE_COUNT>1 && a.obj->duration==SALARY_IDLE_COUNT*100);
-  assert(timer_count==1 && timer.period==50);
-  poll_at(0); assert(a.obj->starts==1);
-  event_at(0,true,0); /* Uptime zero is a real first press. */
-  event_at(500,true,1);event_at(1000,true,0);event_at(1500,true,1);
-  event_at(2000,true,0);event_at(2500,true,1);event_at(2999,true,0);
-  poll_at(2999);assert(a.animation_state==0 && a.obj->starts==1);
-  event_at(3000,true,1);poll_at(3000);
+  assert(timer_count==1 && timer.period==20);
+  poll_at(0);assert(a.obj->starts==1);
+  event_at(0,true,0);poll_at(0); /* A single press at uptime zero activates immediately. */
   assert(a.animation_state==1 && a.obj->starts==2);
   assert(a.obj->src==(const void **)salary_error_frames && a.obj->count==SALARY_ERROR_COUNT);
-  assert(SALARY_ERROR_COUNT>1 && a.obj->duration==SALARY_ERROR_COUNT*100 && a.obj->repeat==LV_ANIM_REPEAT_INFINITE);
+  assert(a.obj->duration==SALARY_ERROR_COUNT*100 && a.obj->repeat==LV_ANIM_REPEAT_INFINITE);
   unsigned starts=a.obj->starts;
-  event_at(3400,true,0);poll_at(3400);assert(a.obj->starts==starts);
   zmk_widget_bongo_cat_init(&b,0);assert(b.animation_state==1 && timer_count==1);
-  event_at(3800,false,1); /* Releases must not extend the inactivity deadline. */
-  poll_at(4399);assert(a.animation_state==1 && a.obj->starts==starts);
-  poll_at(4400);assert(a.animation_state==0 && b.animation_state==0 && a.obj->starts==starts+1);
-  assert(a.obj->src==(const void **)salary_idle_frames && a.obj->repeat==LV_ANIM_REPEAT_INFINITE);
-  starts=a.obj->starts;poll_at(4500);assert(a.obj->starts==starts);
-  /* A 2.9-second burst must not switch just because wall time reaches 3 seconds. */
-  for(int64_t t=5000;t<=7500;t+=500)event_at(t,true,0);
-  event_at(7900,true,1);poll_at(8000);assert(a.animation_state==0);
-  poll_at(8900);assert(!typing_active());
-  /* A held key and its later release never qualify as continuous typing. */
-  event_at(10000,true,0);poll_at(13000);assert(a.animation_state==0);
-  event_at(14000,false,0);poll_at(14000);assert(a.animation_state==0);
-  /* A gap of exactly 1s resets even if the display timer was delayed. */
-  event_at(15000,true,0);event_at(15999,true,1);event_at(16998,true,0);
-  event_at(17998,true,1);poll_at(18000);assert(a.animation_state==0);
-  assert(activity.first_press==17998);
-  /* Long uptimes and a new uninterrupted streak use 64-bit time correctly. */
+  event_at(100,false,0);poll_at(2999);assert(a.animation_state==1 && a.obj->starts==starts);
+  poll_at(3000);assert(a.animation_state==0 && b.animation_state==0 && a.obj->starts==starts+1);
+  starts=a.obj->starts;poll_at(4000);assert(a.obj->starts==starts);
+  event_at(5000,true,1);poll_at(5000);assert(a.animation_state==1 && b.animation_state==1);
+  starts=a.obj->starts;
+  event_at(7999,true,0);poll_at(8000);assert(a.animation_state==1 && a.obj->starts==starts);
+  event_at(9000,false,0);poll_at(10998);assert(a.animation_state==1);
+  poll_at(10999);assert(a.animation_state==0);
+  /* Holding a key does not manufacture new physical presses. */
+  event_at(12000,true,0);poll_at(12000);assert(a.animation_state==1);
+  poll_at(15000);assert(a.animation_state==0);
+  event_at(16000,false,0);poll_at(16000);assert(a.animation_state==0);
+  /* A delayed display tick still uses the most recent event time. */
+  event_at(17000,true,0);event_at(21000,true,1);poll_at(21000);assert(a.animation_state==1);
   int64_t base=INT64_C(1)<<33;
-  for(int i=0;i<=6;i++)event_at(base+i*500,true,i%2);
-  poll_at(base+3000);assert(a.animation_state==1 && b.animation_state==1);
-  zmk_event_t unrelated={0};test_now=base+3500;
+  event_at(base,true,0);poll_at(base);assert(a.animation_state==1 && b.animation_state==1);
+  zmk_event_t unrelated={0};test_now=base+2500;
   assert(widget_bongo_cat_listener(&unrelated)==ZMK_EV_EVENT_BUBBLE);
-  poll_at(base+4000);assert(a.animation_state==0 && b.animation_state==0);
+  poll_at(base+2999);assert(a.animation_state==1);
+  poll_at(base+3000);assert(a.animation_state==0 && b.animation_state==0);
   check_images(salary_idle_frames,SALARY_IDLE_COUNT);
   check_images(salary_error_frames,SALARY_ERROR_COUNT);
   return 0;
@@ -128,4 +120,4 @@ with tempfile.TemporaryDirectory(prefix='cornix-cat-', ignore_cleanup_errors=Tru
     command = [args.cc] + (['cc'] if Path(args.cc).stem == 'zig' else [])
     subprocess.run(command + ['-std=gnu11','-Wall','-Wextra','-Werror','-I',str(folder),'-I',str(WIDGETS),str(folder/'test.c'),'-o',str(exe)],check=True)
     subprocess.run([str(exe)],check=True)
-print('PASS: 3s continuous presses, 1s idle/reset, interrupted bursts, held keys/releases, both halves, stable looping, display-thread updates, shared timer, 64-bit uptime and image metadata.')
+print('PASS: immediate activation, 3s idle boundary and deadline extension, held keys/releases, both halves, stable looping, display-thread updates, shared timer, 64-bit uptime and image metadata.')

@@ -3,11 +3,24 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - "boards/*"
-      - "config/*"
+      - "boards/**"
+      - "config/**"
+      - "scripts/test-dongle-*.py"
+      - ".github/workflows/build.yml"
+      - "build.yaml"
     tags-ignore:
       - "*"
 
 jobs:
+  display-tests:
+    name: Check dongle display behavior
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check battery labels, animation and portrait pixels
+        run: |
+          python3 scripts/test-dongle-battery.py --cc gcc
+          python3 scripts/test-dongle-cat.py --cc gcc
+          python3 scripts/test-dongle-portrait.py --cc gcc
   build:
     uses: zmkfirmware/zmk/.github/workflows/build-user-config.yml@main

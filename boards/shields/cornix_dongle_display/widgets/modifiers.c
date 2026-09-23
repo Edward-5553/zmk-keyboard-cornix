@@ -143,8 +143,10 @@ ZMK_SUBSCRIPTION(widget_modifiers, zmk_keycode_state_changed);
 
 int zmk_widget_modifiers_init(struct zmk_widget_modifiers *widget, lv_obj_t *parent) {
     widget->obj = lv_obj_create(parent);
+    lv_obj_remove_style_all(widget->obj);
+    lv_obj_clear_flag(widget->obj, LV_OBJ_FLAG_SCROLLABLE);
 
-    lv_obj_set_size(widget->obj, NUM_SYMBOLS * (SIZE_SYMBOLS + 1) + 1, SIZE_SYMBOLS + 3);
+    lv_obj_set_size(widget->obj, NUM_SYMBOLS * (SIZE_SYMBOLS + 1) + 1, SIZE_SYMBOLS + 5);
 
     static lv_style_t style_line;
     lv_style_init(&style_line);

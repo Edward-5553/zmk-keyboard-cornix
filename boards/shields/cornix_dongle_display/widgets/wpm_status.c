@@ -79,14 +79,17 @@ ZMK_SUBSCRIPTION(widget_wpm_status, zmk_wpm_state_changed);
 int zmk_widget_wpm_status_init(struct zmk_widget_wpm_status *widget, lv_obj_t *parent)
 {
     widget->obj = lv_obj_create(parent);
-    lv_obj_set_size(widget->obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+    lv_obj_remove_style_all(widget->obj);
+    lv_obj_clear_flag(widget->obj, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_size(widget->obj, 28, 18);
 
-    lv_obj_t *speedometer = lv_img_create(widget->obj);
-    lv_obj_align(speedometer, LV_ALIGN_TOP_LEFT, 0, 0);
-    lv_img_set_src(speedometer, &sym_speedometer);
+    lv_obj_t *caption = lv_label_create(widget->obj);
+    lv_label_set_text(caption, "WPM");
+    lv_obj_set_pos(caption, 0, 10);
 
     widget->wpm_label = lv_label_create(widget->obj);
-    lv_obj_align_to(widget->wpm_label, speedometer, LV_ALIGN_OUT_RIGHT_MID, 2, 1);
+    lv_obj_set_pos(widget->wpm_label, 0, 0);
+    lv_label_set_text(widget->wpm_label, "0");
 
     sys_slist_append(&widgets, &widget->node);
 

@@ -26,7 +26,7 @@ typedef struct { sys_snode_t *head; } sys_slist_t;
 static void sys_slist_append(sys_slist_t *s,sys_snode_t *n){n->next=s->head;s->head=n;}
 #define SYS_SLIST_FOR_EACH_CONTAINER(s,w,m) for(sys_snode_t *n=(s)->head;n && ((w)=(void *)((char *)n - offsetof(__typeof__(*(w)),m)),1);n=n->next)
 typedef int lv_color_t;
-typedef struct {char text[32]; bool hidden;} lv_obj_t;
+typedef struct lv_obj {char text[32]; bool hidden; int x,y,w,h; struct lv_obj *parent;} lv_obj_t;
 typedef int lv_layer_t;
 typedef struct {int bg_color,bg_opa,border_color,border_width;} lv_draw_rect_dsc_t;
 typedef struct {int x1,y1,x2,y2;} lv_area_t;
@@ -34,6 +34,11 @@ typedef struct {int x1,y1,x2,y2;} lv_area_t;
 #define LV_OPA_COVER 255
 #define LV_OPA_TRANSP 0
 #define LV_OBJ_FLAG_HIDDEN 1
+#define LV_OBJ_FLAG_SCROLLABLE 2
+#define LV_LABEL_LONG_CLIP 0
+#define lv_obj_remove_style_all(...) ((void)0)
+#define lv_obj_set_style_text_letter_space(...) ((void)0)
+#define lv_label_set_long_mode(...) ((void)0)
 #define LV_SIZE_CONTENT 0
 #define LV_COLOR_FORMAT_L8 0
 #define LV_ALIGN_TOP_RIGHT 0
@@ -52,14 +57,15 @@ static void draw_record(void){assert(!event_context && !mutex_locked);draw_count
 #define lv_obj_move_foreground(...) ((void)0)
 #define lv_obj_align_to(...) ((void)0)
 #define lv_obj_align(...) ((void)0)
-#define lv_obj_set_size(...) ((void)0)
+static void lv_obj_set_size(lv_obj_t *o,int w,int h){o->w=w;o->h=h;}
+static void lv_obj_set_pos(lv_obj_t *o,int x,int y){o->x=x;o->y=y;}
 #define lv_canvas_set_buffer(...) ((void)0)
 static lv_obj_t objects[10];static int object_count;
-static lv_obj_t *lv_obj_create(lv_obj_t *p){return &objects[object_count++];}
+static lv_obj_t *lv_obj_create(lv_obj_t *p){lv_obj_t *o=&objects[object_count++];o->parent=p;return o;}
 #define lv_canvas_create lv_obj_create
 #define lv_label_create lv_obj_create
-static void lv_obj_clear_flag(lv_obj_t *o,int f){o->hidden=false;}
-static void lv_obj_add_flag(lv_obj_t *o,int f){o->hidden=true;}
+static void lv_obj_clear_flag(lv_obj_t *o,int f){if(f==LV_OBJ_FLAG_HIDDEN)o->hidden=false;}
+static void lv_obj_add_flag(lv_obj_t *o,int f){if(f==LV_OBJ_FLAG_HIDDEN)o->hidden=true;}
 static void lv_label_set_text_fmt(lv_obj_t *o,const char *f,...){assert(!event_context);label_count++;va_list a;va_start(a,f);vsnprintf(o->text,sizeof(o->text),f,a);va_end(a);}
 struct zmk_position_state_changed {uint8_t source;uint32_t position;bool state;};
 struct zmk_peripheral_battery_state_changed {uint8_t source,state_of_charge;};
@@ -101,60 +107,57 @@ TEST = r'''
 static void send(zmk_event_t e){event_context=true;assert(widget_dongle_battery_status_listener(&e)==ZMK_EV_EVENT_BUBBLE);event_context=false;}
 static void battery(int source,int level){send((zmk_event_t){.type=2,.bat={source,level}});}
 static void key(int source,int pos,bool down){send((zmk_event_t){.type=1,.pos={source,pos,down}});}
+static void labels(const char *left,const char *right){
+  assert(!strcmp(battery_objects[SOURCE_OFFSET].label->text,left));
+  assert(!strcmp(battery_objects[SOURCE_OFFSET+1].label->text,right));
+}
 int main(int argc,char **argv){
   int left=argc>1?1:0,right=1-left;
   battery(left,10);key(left,0,true);assert(!pending && submissions==0);
   struct zmk_widget_dongle_battery_status widget={0};
   zmk_widget_dongle_battery_status_init(&widget,NULL);
   display_initialized=true;
-  assert(battery_objects[SOURCE_OFFSET].label->hidden);
+  labels("L  --%","R  --%");
+  /* Regress the missing text: fixed parent and nonnegative, contained labels. */
+  assert(widget.obj->w==64 && widget.obj->h==(2+SOURCE_OFFSET)*10);
+  for(int i=0;i<2+SOURCE_OFFSET;i++){
+    lv_obj_t *l=battery_objects[i].label;
+    assert(!l->hidden && l->parent==widget.obj && l->x>=0 && l->y>=0);
+    assert(l->w>=6*8 && l->x+l->w<=widget.obj->w && l->y+l->h<=widget.obj->h);
+    assert(battery_objects[i].symbol->x>=l->x+l->w);
+    assert(battery_objects[i].symbol->x+5<=widget.obj->w);
+  }
   unsigned draws=draw_count;
-  battery(left,81);
-  battery(right,42);
-  assert(draw_count==draws); /* All rendering stays on the display queue. */
-  flush();assert(draw_count==draws+2);
-  assert(!strcmp(battery_objects[left+SOURCE_OFFSET].label->text,"? 81% "));
-  assert(!strcmp(battery_objects[right+SOURCE_OFFSET].label->text,"? 42% "));
+  battery(left,81);battery(right,42);flush();
+  labels("L  --%","R  --%");assert(draw_count==draws); /* Never guess pairing order. */
   unsigned submitted=submissions;
-  key(left,0,false); key(255,0,true);key(left,99,true);key(left,4,true);
-  struct battery_snapshot s=widget_dongle_battery_status_get_local_state();
-  assert(!s.sources[left+SOURCE_OFFSET].side && submissions==submitted);
-  key(left,1,true);key(right,2,true);flush();
-  assert(!strcmp(battery_objects[left+SOURCE_OFFSET].label->text,"L 81% "));
-  assert(!strcmp(battery_objects[right+SOURCE_OFFSET].label->text,"R 42% "));
-  draws=draw_count;submitted=submissions;unsigned labels=label_count;
+  key(left,0,false);key(255,0,true);key(left,99,true);key(left,4,true);
+  struct battery_snapshot state=widget_dongle_battery_status_get_local_state();
+  assert(!state.sources[left+SOURCE_OFFSET].side && submissions==submitted);
+  key(left,1,true);key(right,2,true);
+  assert(draw_count==draws); /* Event callbacks do not render. */
+  flush();assert(draw_count==draws+2);labels("L  81%","R  42%");
+  draws=draw_count;submitted=submissions;unsigned count=label_count;
   for(int i=0;i<1000;i++){key(left,0,true);key(left,0,false);key(right,3,true);key(right,3,false);}
   battery(left,81);battery(right,42);flush();
-  assert(submissions==submitted && draw_count==draws && label_count==labels);
-  battery_status_update_cb(widget_dongle_battery_status_get_local_state());
-  assert(draw_count==draws); /* A repeated work callback also avoids redraws. */
-  battery(left,100);flush();s=widget_dongle_battery_status_get_local_state();
-  assert(draw_count==draws+1); /* Only the changed row is drawn. */
-  assert(!strcmp(battery_objects[left+SOURCE_OFFSET].label->text,"L100% "));
-  assert(s.sources[right+SOURCE_OFFSET].level==42);
-  submitted=submissions;battery(9,20);battery(255,20);
-  s=widget_dongle_battery_status_get_local_state();
-  assert(submissions==submitted && s.sources[left+SOURCE_OFFSET].level==100);
-  assert(s.sources[0].level==(SOURCE_OFFSET?90:(left==0?100:42)));
-  /* A -> B -> A before rendering must retain A, not leave B pending. */
+  assert(submissions==submitted && draw_count==draws && label_count==count);
+  battery_status_update_cb(widget_dongle_battery_status_get_local_state());assert(draw_count==draws);
+  battery(left,100);flush();assert(draw_count==draws+1);labels("L 100%","R  42%");
+  submitted=submissions;battery(9,20);battery(255,20);assert(submissions==submitted);
   draws=draw_count;battery(left,20);battery(right,43);battery(left,100);flush();
-  assert(draw_count==draws+1);
-  assert(!strcmp(battery_objects[left+SOURCE_OFFSET].label->text,"L100% "));
-  assert(!strcmp(battery_objects[right+SOURCE_OFFSET].label->text,"R 43% "));
-  battery(left,0);flush();assert(battery_objects[left+SOURCE_OFFSET].label->hidden);
-  battery(left,99);flush();assert(!battery_objects[left+SOURCE_OFFSET].label->hidden);
-  /* A side change and a battery report must also survive coalescing. */
-  key(left,2,true);battery(left,98);flush();
-  assert(!strcmp(battery_objects[left+SOURCE_OFFSET].label->text,"R 98% "));
+  assert(draw_count==draws+1);labels("L 100%","R  43%");
+  battery(left,0);flush();labels("L   0%","R  43%");
+  assert(!battery_objects[SOURCE_OFFSET].label->hidden); /* 0% is a valid reading. */
+  /* Remapping both source identities must not leave a stale row behind. */
+  key(left,2,true);battery(left,98);key(right,0,true);flush();labels("L  43%","R  98%");
   assert(side_for_position(0)=='L' && side_for_position(3)=='R');
-  selected=-1;assert(side_for_position(0)=='?');selected=1;assert(side_for_position(0)=='?');
-  selected=0;
+  selected=-1;assert(side_for_position(0)=='?');selected=1;assert(side_for_position(0)=='?');selected=0;
 #if CONFIG_ZMK_DONGLE_DISPLAY_DONGLE_BATTERY
-  assert(!strcmp(battery_objects[0].label->text,"D 90% "));
+  assert(!strcmp(battery_objects[0].label->text,"D  90%"));
   draws=draw_count;usb_powered=false;send((zmk_event_t){.type=4});flush();
   assert(draw_count==draws+1 && !battery_objects[0].rendered.usb_present);
   send((zmk_event_t){.type=3,.own={75}});flush();
-  assert(!strcmp(battery_objects[0].label->text,"D 75% "));
+  assert(!strcmp(battery_objects[0].label->text,"D  75%"));
 #endif
   return 0;
 }
@@ -254,5 +257,5 @@ with tempfile.TemporaryDirectory(prefix='cornix-battery-', ignore_cleanup_errors
                         '-I', str(folder), '-I', str(ROOT / 'boards/shields/cornix_dongle_display/widgets'),
                         str(folder / 'test.c'), '-o', str(exe)], check=True)
         subprocess.run([str(exe)], check=True)
-print('PASS: both source orders, L/R labels, unchanged-event filtering, per-row redraws, coalesced A/B/A updates, display-thread rendering, invalid events and optional dongle battery')
+print('PASS: both source orders, fixed visible L/R rows and bounded labels, unknown/zero readings, unchanged-event filtering, per-row redraws, coalesced A/B/A updates, display-thread rendering, invalid events and optional dongle battery')
 print('PASS: Windows/Mac modifiers, unchanged key events, left/right modifiers and coalesced changes')

@@ -38,14 +38,14 @@ config ZMK_DONGLE_DISPLAY_LAYER
 
 config ZMK_DONGLE_DISPLAY_LAYER_NAME_SCROLL_WIDTH
     int "Width for layer name label (in pixels)"
-    default 50
+    default 60
     help
         Width in pixels for the layer name label. When the layer name
         exceeds this width, it will scroll horizontally in a circular pattern.
 
 config ZMK_DONGLE_DISPLAY_LAYER_TEXT_ALIGN
     string "Layer name text alignment"
-    default "left"
+    default "center"
     help
         Text alignment for the layer name label. Valid values: "left", "center", "right".
 
