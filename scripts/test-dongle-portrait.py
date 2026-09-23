@@ -57,52 +57,64 @@ static int display_write(const struct device *d,uint16_t x,uint16_t y,const stru
 TEST = r'''
 #include "portrait_display.c"
 static bool pattern(int x,int y){return ((x*17+y*11)%19)<7;}
-static void paint(int x,int y,int w,int h,bool value_pattern){
+enum {BLACK,WHITE,PATTERN};
+static void paint(int x,int y,int w,int h,int fill){
   uint8_t buffer[1032];memset(buffer,0xa5,sizeof(buffer));
   size_t stride=lv_draw_buf_width_to_stride(w,LV_COLOR_FORMAT_I1);
   memset(buffer+8,0,stride*h);
   for(int j=0;j<h;j++)for(int i=0;i<w;i++)
-    if(value_pattern ? pattern(x+i,y+j) : true)buffer[8+j*stride+i/8]|=0x80>>(i%8);
+    if(fill==PATTERN ? pattern(x+i,y+j) : fill==WHITE)buffer[8+j*stride+i/8]|=0x80>>(i%8);
   uint8_t original[sizeof(buffer)];memcpy(original,buffer,sizeof(buffer));
   lv_area_t area={x,y,x+w-1,y+h-1};
   unsigned before=ready;screen.flush(&screen,&area,buffer);
   assert(ready==before+1 && !memcmp(buffer,original,sizeof(buffer)));
-  assert(write_x==128-y-h && write_y==x && write_desc.width==h && write_desc.height==w);
+  assert(write_x==y && write_y==64-x-w && write_desc.width==h && write_desc.height==w);
 }
-static void check(bool mono10){
+static bool pixel_is_lit(int px,int py){
+  bool bit=(panel_pixels[px+128*(py/8)]>>(py%8))&1;
+  /* Model the SH1106 driver: MONO10 enables reverse display (zero lights a pixel),
+   * MONO01 enables normal display (one lights a pixel). Test visible light, not
+   * just the adapter's raw bytes, so inverted black backgrounds cannot pass. */
+  return capabilities.current_pixel_format==PIXEL_FORMAT_MONO10 ? !bit : bit;
+}
+static void check(int fill){
   for(int y=0;y<128;y++)for(int x=0;x<64;x++){
-    /* Independently sample the physical panel at the expected global coordinate. */
-    int px=127-y,py=x;
-    bool bit=(panel_pixels[px+128*(py/8)]>>(py%8))&1;
-    assert(bit==(mono10?pattern(x,y):!pattern(x,y)));
+    /* The new mounting direction must be exactly 180 degrees from the old UI. */
+    int old_px=127-y,old_py=x;
+    assert(pixel_is_lit(127-old_px,63-old_py)==(fill==PATTERN ? pattern(x,y) : fill==WHITE));
   }
 }
 int main(void){
   assert(cornix_portrait_display_init()==0 && screen.width==64 && screen.height==128);
   for(int mode=0;mode<2;mode++){
     bool mono10=mode==0;capabilities.current_pixel_format=mono10?PIXEL_FORMAT_MONO10:PIXEL_FORMAT_MONO01;
-    paint(0,0,64,128,true);check(mono10);
+    for(int fill=BLACK;fill<=PATTERN;fill++){
+      paint(0,0,64,128,fill);check(fill);
+    }
     /* Tile the entire display using differently sized, offset dirty rectangles.
      * A 24-pixel row requires padding, exercising the actual byte stride. */
     memset(panel_pixels,0x5a,sizeof(panel_pixels));
     for(int y=0;y<128;y+=8){
-      last=false;paint(0,y,24,8,true);assert(write_desc.frame_incomplete);
-      paint(24,y,24,8,true);
-      last=true;paint(48,y,16,8,true);assert(!write_desc.frame_incomplete);
+      last=false;paint(0,y,24,8,PATTERN);assert(write_desc.frame_incomplete);
+      paint(24,y,24,8,PATTERN);
+      last=true;paint(48,y,16,8,PATTERN);assert(!write_desc.frame_incomplete);
     }
-    check(mono10);
-    uint8_t before[1024];memcpy(before,panel_pixels,sizeof(before));
-    paint(16,48,32,32,false); /* Cat-sized update must preserve every outside pixel. */
-    for(int py=0;py<64;py++)for(int px=0;px<128;px++){
-      int bit=1<<(py%8),idx=px+128*(py/8);
-      if(px>=48 && px<80 && py>=16 && py<48)assert(!!(panel_pixels[idx]&bit)==mono10);
-      else assert((panel_pixels[idx]&bit)==(before[idx]&bit));
+    check(PATTERN);
+    for(int fill=BLACK;fill<=WHITE;fill++){
+      uint8_t before[1024];memcpy(before,panel_pixels,sizeof(before));
+      /* An off-center, non-square dirty rectangle catches origin/rotation errors. */
+      paint(8,24,24,40,fill);
+      for(int py=0;py<64;py++)for(int px=0;px<128;px++){
+        int bit=1<<(py%8),idx=px+128*(py/8);
+        if(px>=24 && px<64 && py>=32 && py<56)assert(pixel_is_lit(px,py)==(fill==WHITE));
+        else assert((panel_pixels[idx]&bit)==(before[idx]&bit));
+      }
     }
   }
   uint8_t buffer[1032]={0};unsigned before=writes;
   lv_area_t invalid={1,0,8,7};screen.flush(&screen,&invalid,buffer);assert(writes==before);
   invalid=(lv_area_t){0,0,71,7};screen.flush(&screen,&invalid,buffer);assert(writes==before);
-  write_error=-EIO;paint(0,0,8,8,true); /* Failed I/O still releases LVGL. */
+  write_error=-EIO;paint(0,0,8,8,PATTERN); /* Failed I/O still releases LVGL. */
   capabilities.x_resolution=64;assert(cornix_portrait_display_init()==-ENOTSUP);
   capabilities.x_resolution=128;capabilities.screen_info|=SCREEN_INFO_MONO_MSB_FIRST;
   assert(cornix_portrait_display_init()==-ENOTSUP);
@@ -128,4 +140,4 @@ with tempfile.TemporaryDirectory(prefix='cornix-portrait-', ignore_cleanup_error
                               '-I', str(folder), '-I', str(ROOT / 'boards/shields/cornix_dongle_display'),
                               str(folder / 'test.c'), '-o', str(exe)], check=True)
     subprocess.run([str(exe)], check=True)
-print('PASS: portrait flush, 90-degree mapping, both polarities, padded strides, partial updates, bounds and I/O errors')
+print('PASS: portrait flush, 180-degree mounting correction, black/white light output in both formats, padded strides, partial updates, bounds and I/O errors')

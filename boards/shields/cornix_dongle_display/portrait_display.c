@@ -38,7 +38,7 @@ static void portrait_flush(lv_display_t *display, const lv_area_t *area, uint8_t
         .height = width,
         .frame_incomplete = !lv_display_flush_is_last(display),
     };
-    int err = display_write(panel, CORNIX_SCREEN_HEIGHT - 1 - area->y2, area->x1,
+    int err = display_write(panel, area->y1, CORNIX_SCREEN_WIDTH - 1 - area->x2,
                             &desc, rotated);
     if (err) {
         LOG_ERR("Portrait display write failed: %d", err);
@@ -60,7 +60,8 @@ int cornix_portrait_display_init(void) {
     lv_display_t *display = lv_display_get_default();
     /* The SH1106 has no 90-degree hardware rotation. Merely setting LVGL's
      * rotation would leave Zephyr 4.1's monochrome flush coordinates unrotated.
-     * Keep the physical devicetree 128x64 and rotate every dirty rectangle here. */
+     * Keep the physical devicetree 128x64 and rotate every dirty rectangle here.
+     * Counterclockwise puts the magnetic-mount view 180 degrees from the old UI. */
     lv_display_set_resolution(display, CORNIX_SCREEN_WIDTH, CORNIX_SCREEN_HEIGHT);
     lv_display_set_flush_wait_cb(display, NULL);
     lv_display_set_flush_cb(display, portrait_flush);

@@ -27,7 +27,10 @@ Local changes:
   `scripts/generate-dongle-fonts.py` from the approved pixel design.
   See [layout and hardware checks](../../../docs/dongle-portrait.md).
 - SH1106 remains 128×64 in devicetree. A local flush adapter rotates each dirty
-  rectangle clockwise and converts I1 pixels to vertical, LSB-first pages.
+  rectangle counterclockwise and converts I1 pixels to vertical, LSB-first pages.
+  This turns the initial portrait UI by 180 degrees for the magnetic mount.
+  LVGL I1 white bits become zero for MONO10 and one for MONO01, matching the
+  SH1106 driver's reverse/normal display modes so black backgrounds stay unlit.
   It preserves partial updates and both pixel polarities, using a fixed 1 KiB
   buffer and synchronous writes on the display queue. Zephyr 4.1's stock mono
   flush does not rotate pixels when only LVGL's rotation setting is changed.
@@ -70,5 +73,7 @@ and `scripts/test-dongle-portrait.py` with a host compiler. They exercise real
 widget/flush code using stubs. Tests cover both source orders, bounded visible
 labels, unknown and zero readings, change filtering, coalesced updates, single
 press activation, deadline extension, long uptimes, rotation/polarity/stride,
-partial writes, bounds and error completion. Full ZMK builds and hardware display
-validation remain separate checks.
+black/white light output, asymmetric partial writes, bounds and error completion.
+The real LVGL render test also checks each frame through pixel conversion and
+the panel's light polarity. Full ZMK builds and hardware display validation remain
+separate checks.

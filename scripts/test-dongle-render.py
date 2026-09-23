@@ -82,8 +82,9 @@ TEST = r'''
 #include "widgets/salary_cat_images.c"
 #include "widgets/compact_fonts.c"
 #include "custom_status_screen.c"
+#include "portrait_pixels.h"
 
-/* Pixel rotation is exercised separately by test-dongle-portrait.py. */
+/* Flush coordinates/partial writes are exercised by test-dongle-portrait.py. */
 int cornix_portrait_display_init(void){return 0;}
 static uint8_t pixels[1024];
 static unsigned frames;
@@ -95,6 +96,19 @@ static unsigned ink(int x,int y,int w,int h){
   unsigned count=0;
   for(int j=y;j<y+h;j++)for(int i=x;i<x+w;i++)count+=!!(pixels[j*8+i/8]&(0x80>>(i%8)));
   return count;
+}
+static void check_panel_light(void){
+  uint8_t panel[1024];
+  for(int mode=0;mode<2;mode++){
+    bool mono10=mode==0;
+    cornix_rotate_mono(pixels,8,64,128,mono10,panel);
+    for(int py=0;py<64;py++)for(int px=0;px<128;px++){
+      bool raw=(panel[px+128*(py/8)]>>(py%8))&1;
+      /* SH1106 reverse display for MONO10, normal display for MONO01. */
+      bool lit=mono10 ? !raw : raw;
+      assert(lit==(ink(63-py,px,1,1)>0));
+    }
+  }
 }
 static void inside_impl(lv_obj_t *obj,int x,int y,int w,int h,const char *name){
   lv_area_t a;lv_obj_get_coords(obj,&a);
@@ -134,6 +148,7 @@ static void snapshot(lv_display_t *display,const char *path){
   assert(ink(0,0,64,3)==0 && ink(0,21,64,3)==0);
   assert(ink(0,108,64,7)==0 && ink(0,122,64,6)==0);
   assert(ink(0,34,64,64)>100); /* A successful image decode, not only object bounds. */
+  check_panel_light(); /* Real rendered black backgrounds must stay unlit on OLED. */
   FILE *file=fopen(path,"w");assert(file);
   fputs("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"256\" height=\"512\" viewBox=\"0 0 64 128\"><rect width=\"64\" height=\"128\" fill=\"black\"/><path fill=\"white\" d=\"",file);
   for(int y=0;y<128;y++)for(int x=0;x<64;x++)if(ink(x,y,1,1))fprintf(file,"M%d %dh1v1h-1z",x,y);
@@ -176,7 +191,7 @@ int main(void){
   assert(!strcmp(lv_label_get_text(battery_objects[1].label),"0%"));
   test_now=3020;activity_timer_cb(NULL);snapshot(display,"restored.svg");
   assert(bongo_cat_widget.animation_state==0);
-  puts("PASS: real LVGL aligned header, visible L/R and 0/100% pixels, USB/BT/offline, 64px cat, compact layer footer and idle restoration");
+  puts("PASS: real LVGL aligned header, visible L/R and 0/100% pixels, USB/BT/offline, 64px cat, compact layer footer, idle restoration and rotated OLED light output");
   return 0;
 }
 '''
