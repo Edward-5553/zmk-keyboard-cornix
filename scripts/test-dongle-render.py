@@ -108,13 +108,15 @@ static void inside_impl(lv_obj_t *obj,int x,int y,int w,int h,const char *name){
 }
 #define inside(obj,x,y,w,h) inside_impl(obj,x,y,w,h,#obj)
 static void snapshot(lv_display_t *display,const char *path){
+  /* Settle queued refreshes and widget animations before capturing the frame. */
+  lv_tick_inc(250);lv_timer_handler();
   lv_obj_update_layout(lv_screen_active());
   inside(output_status_widget.obj,0,0,64,22);
   inside(dongle_battery_status_widget.obj,0,22,64,20);
   inside(bongo_cat_widget.obj,16,46,32,32);
   inside(layer_status_widget.obj,2,81,60,9);
   inside(hid_indicators_widget.obj,0,100,64,9);
-  inside(modifiers_widget.obj,1,109,61,19);
+  inside(modifiers_widget.obj,1,109,61,17);
   for(int row=0;row<2;row++){
     inside(battery_objects[row].label,0,22+10*row,54,9);
     inside(battery_objects[row].symbol,58,22+10*row,5,8);
@@ -146,10 +148,13 @@ int main(void){
   assert(!strcmp(lv_label_get_text(battery_objects[0].label),"L  81%"));
   assert(!strcmp(lv_label_get_text(battery_objects[1].label),"R  42%"));
   snapshot(display,"idle.svg");
+  assert(dark(1,124,61,2)==0); /* No modifier is held: underline row stays clear. */
   test_now=20;widget_bongo_cat_listener(&left);activity_timer_cb(NULL);
   layer_index=1;layer_status_update_cb(layer_status_get_state(NULL));
   hid_indicators_update_cb((struct hid_indicators_state){.hid_indicators=2});
+  active_mods=MOD_LCTL;modifiers_update_cb((struct modifiers_state){.modifiers=active_mods});
   snapshot(display,"active.svg");
+  assert(dark(31,124,15,2)>5); /* Ctrl's underline appears after the transition. */
   puts("PASS: real LVGL portrait layout, visible L/R and percentage pixels, widget bounds, idle/active rendering");
   return 0;
 }
