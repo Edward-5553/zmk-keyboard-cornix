@@ -43,3 +43,6 @@ Zephyr 4.1 的 SH1106 驱动不提供 90° 旋转；仅设置 LVGL rotation 不�
 GitHub Actions 在固件构建之外运行 battery、cat、portrait 三组测试，覆盖文字边界、
 反向配对顺序、未知及 0% 电量、合并更新、首次按键、3 秒边界、长时间运行，以及整屏/局部
 旋转、两种单色极性、行填充、越界和写屏错误。自动测试不能代替以上实机显示检查。
+
+Actions 另用 Zephyr 4.1 对应版本的真实 LVGL 渲染全部界面组件，检查可见字符像素及边界，
+并将 startup、idle、active 三张 SVG 上传为 `dongle-display-preview` 产物。
