@@ -52,14 +52,12 @@ config ZMK_KSCAN_DEBOUNCE_PRESS_MS
 config ZMK_KSCAN_DEBOUNCE_RELEASE_MS
     default 3
 
-# Keep the split link through normal breaks; sleep after two hours of inactivity.
+# Enable sleep for normal halves; build.yaml explicitly sets the two-hour timeout.
+# ZMK's earlier timeout default takes precedence over board Kconfig defaults.
 if !ZMK_SETTINGS_RESET_ON_START
 
 config ZMK_SLEEP
     default y
-
-config ZMK_IDLE_SLEEP_TIMEOUT
-    default 7200000
 
 endif # !ZMK_SETTINGS_RESET_ON_START
 

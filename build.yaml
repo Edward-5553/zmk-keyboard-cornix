@@ -36,14 +36,18 @@ include:
   #   artifact-name: cornix_dongle_zds_nano
   - board: cornix_left//zmk
     shield: cornix_indicator
+    # Override ZMK's application default explicitly; keep reset targets untouched.
+    cmake-args: -DCONFIG_ZMK_IDLE_SLEEP_TIMEOUT=7200000
     artifact-name: cornix_left_default_nosd
 
   - board: cornix_ph_left//zmk
     shield: cornix_indicator
+    cmake-args: -DCONFIG_ZMK_IDLE_SLEEP_TIMEOUT=7200000
     artifact-name: cornix_left_for_dongle_nosd
 
   - board: cornix_right//zmk
     shield: cornix_indicator
+    cmake-args: -DCONFIG_ZMK_IDLE_SLEEP_TIMEOUT=7200000
     artifact-name: cornix_right_nosd
 
   - board: cornix_right//zmk

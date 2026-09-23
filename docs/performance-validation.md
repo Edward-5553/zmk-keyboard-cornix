@@ -97,9 +97,13 @@ had to wake the controller and reconnect BLE. The wake press and presses during
 reconnection are not guaranteed to reach the host. A USB-powered dongle cannot
 keep a battery-powered peripheral awake.
 
-The current board defaults enable `CONFIG_ZMK_SLEEP=y` with
-`CONFIG_ZMK_IDLE_SLEEP_TIMEOUT=7200000` (two hours), as requested after reviewing
-the wake behavior. Ordinary idle state, dongle screen blanking and RGB idle power
+The current board defaults enable `CONFIG_ZMK_SLEEP=y`. The three normal half
+targets in `build.yaml` explicitly set `CONFIG_ZMK_IDLE_SLEEP_TIMEOUT=7200000`
+(two hours), as requested after reviewing the wake behavior. ZMK's application
+defines its timeout default before the board Kconfig, so a board `default` alone
+does not override it. Custom builds outside this matrix should set the same
+timeout in their user `.conf`. Reset targets do not enable sleep or set a timeout.
+Ordinary idle state, dongle screen blanking and RGB idle power
 control remain enabled as before. Each half stays connected through normal
 breaks, then may sleep independently after two hours without activity on that
 half. Its first key after deep sleep still needs wake/reconnection; this change
