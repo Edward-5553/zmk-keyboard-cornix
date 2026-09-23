@@ -81,7 +81,7 @@ int zmk_widget_wpm_status_init(struct zmk_widget_wpm_status *widget, lv_obj_t *p
     widget->obj = lv_obj_create(parent);
     lv_obj_remove_style_all(widget->obj);
     lv_obj_clear_flag(widget->obj, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_set_size(widget->obj, 28, 18);
+    lv_obj_set_size(widget->obj, 28, 19);
 
     lv_obj_t *caption = lv_label_create(widget->obj);
     lv_label_set_text(caption, "WPM");

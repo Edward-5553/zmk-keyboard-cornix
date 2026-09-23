@@ -264,7 +264,7 @@ int zmk_widget_dongle_battery_status_init(struct zmk_widget_dongle_battery_statu
          * beside an icon in LV_SIZE_CONTENT clipped the entire text column. */
         lv_obj_set_pos(image_canvas, CORNIX_BATTERY_ICON_X, i * CORNIX_BATTERY_ROW_HEIGHT);
         lv_obj_set_pos(battery_label, 0, i * CORNIX_BATTERY_ROW_HEIGHT);
-        lv_obj_set_size(battery_label, CORNIX_BATTERY_LABEL_WIDTH, 8);
+        lv_obj_set_size(battery_label, CORNIX_BATTERY_LABEL_WIDTH, CORNIX_TEXT_HEIGHT);
         lv_obj_set_style_text_letter_space(battery_label, 0, 0);
         lv_label_set_long_mode(battery_label, LV_LABEL_LONG_CLIP);
 

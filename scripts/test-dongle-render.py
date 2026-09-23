@@ -112,11 +112,11 @@ static void snapshot(lv_display_t *display,const char *path){
   inside(output_status_widget.obj,0,0,64,22);
   inside(dongle_battery_status_widget.obj,0,22,64,20);
   inside(bongo_cat_widget.obj,16,46,32,32);
-  inside(layer_status_widget.obj,2,82,60,8);
-  inside(hid_indicators_widget.obj,0,100,64,8);
+  inside(layer_status_widget.obj,2,81,60,9);
+  inside(hid_indicators_widget.obj,0,100,64,9);
   inside(modifiers_widget.obj,1,109,61,19);
   for(int row=0;row<2;row++){
-    inside(battery_objects[row].label,0,22+10*row,54,8);
+    inside(battery_objects[row].label,0,22+10*row,54,9);
     inside(battery_objects[row].symbol,58,22+10*row,5,8);
   }
   unsigned before=frames;lv_obj_invalidate(lv_screen_active());lv_refr_now(display);assert(frames>before);
