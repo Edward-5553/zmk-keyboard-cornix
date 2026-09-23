@@ -185,6 +185,9 @@ with tempfile.TemporaryDirectory(prefix='cornix-render-') as tmp:
     config = re.sub(r'(#define LV_COLOR_DEPTH)\s+\d+', r'\1 1', config)
     config = re.sub(r'(#define LV_FONT_UNSCII_8)\s+\d+', r'\1 1', config)
     config = re.sub(r'(#define LV_DRAW_SW_SUPPORT_I1)\s+\d+', r'\1 1', config)
+    # Match the custom-screen firmware: no stock theme, UNSCII as default font.
+    config = re.sub(r'(#define LV_USE_THEME_(?:DEFAULT|SIMPLE|MONO))\s+\d+', r'\1 0', config)
+    config = re.sub(r'(#define LV_FONT_DEFAULT)\s+.*', r'\1 &lv_font_unscii_8', config)
     (folder / 'lv_conf.h').write_text(config)
     (folder / 'test.c').write_text(TEST)
     (folder / 'CMakeLists.txt').write_text(f'''cmake_minimum_required(VERSION 3.16)

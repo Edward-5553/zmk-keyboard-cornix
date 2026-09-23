@@ -22,11 +22,11 @@ jobs:
           python3 scripts/test-dongle-battery.py --cc gcc
           python3 scripts/test-dongle-cat.py --cc gcc
           python3 scripts/test-dongle-portrait.py --cc gcc
-      - name: Fetch LVGL revision used by Zephyr 4.1
+      - name: Fetch LVGL revision used by ZMK
         uses: actions/checkout@v4
         with:
-          repository: zephyrproject-rtos/lvgl
-          ref: 1ed1ddd881c3784049a92bb9fe37c38c6c74d998
+          repository: zmkfirmware/lvgl
+          ref: f1db87ee98f1810328a8419572fa42a3b5f352ae
           path: .build/lvgl
       - name: Render the real widgets and check visible text
         run: python3 scripts/test-dongle-render.py --lvgl-dir .build/lvgl --output-dir .build/dongle-preview
