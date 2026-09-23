@@ -109,6 +109,11 @@ include:
 详见[实现与验证](boards/shields/cornix_dongle_display/UPSTREAM.md)及[素材署名](boards/shields/cornix_dongle_display/ASSETS.md)。
 仅更新动画时，只刷 dongle 固件，无需刷 reset 或重新刷左右手。
 
+左右手现在默认关闭自动深度休眠，闲置时保持无线连接，避免再次输入前先唤醒、重连。
+相比深度休眠，长时间闲置时会更耗电。此前启用过闲置 15 分钟休眠的固件，需要分别刷写
+`cornix_left_for_dongle_nosd.uf2` 和 `cornix_right_nosd.uf2` 才能应用此调整；
+无需更新 dongle、刷 reset 或重新配对。详见[性能与实机验证](docs/performance-validation.md)。
+
 ## RGB 指示灯
 
 3.0.0 已使可选的 `cornix_indicator` shield 达到生产可用状态。它通过

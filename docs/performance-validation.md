@@ -88,31 +88,38 @@ test fast repeated presses and long holds for chatter; restore a larger debounce
 value if your switches need it. Firmware keymap defaults may be superseded by
 key bindings saved through Studio; do not clear Bluetooth bonds to change them.
 
-## 6. Deep-sleep battery-powered halves after 15 minutes
+## 6. Keep halves connected after idle by default
 
-Cornix left, left-for-dongle and right board defaults enable `CONFIG_ZMK_SLEEP`
-with `CONFIG_ZMK_IDLE_SLEEP_TIMEOUT=900000`. Builds with
-`CONFIG_ZMK_SETTINGS_RESET_ON_START=y` are excluded from these defaults.
-The nice!nano dongle does not use the Cornix board defaults. ZMK's activity
-manager prevents deep sleep while USB power is detected; the default indicator
-shield already enables USB power detection on the peripherals.
+The earlier `3a866c2` optimization enabled deep sleep after 15 minutes on Cornix
+left, left-for-dongle and right. This caused a potential responsiveness regression:
+each battery-powered half could power off independently, and its next key first
+had to wake the controller and reconnect BLE. The wake press and presses during
+reconnection are not guaranteed to reach the host. A USB-powered dongle cannot
+keep a battery-powered peripheral awake.
 
-The matrix already has `wakeup-source`. Wake a sleeping half with a matrix key;
-encoder rotation is not configured as a deep-sleep wake source. Expect a wake
-and Bluetooth reconnect delay, and do not assume the wake press is delivered as
-normal input. Each peripheral tracks its own activity, so one half can sleep
-while the other remains in use.
+The board default is now `CONFIG_ZMK_SLEEP=n`, restoring the previous connected
+idle behavior. Ordinary idle state, dongle screen blanking and RGB idle power
+control remain enabled as before. This removes the automatic deep-sleep wake and
+reconnect path; it does not guarantee delivery during an unrelated radio outage.
+Long-idle battery consumption will be higher than with deep sleep; no current
+draw or battery-life difference has been measured.
 
-Check each normal half's `.config` for `CONFIG_ZMK_SLEEP=y`, timeout 900000 and
-`CONFIG_PM_DEVICE=y`. Confirm settings-reset builds do not enable sleep through
-this board default. For a shorter hardware trial, override the timeout to 60000
-in a temporary build configuration, then restore 900000 for daily use.
+For dongle use, flash both `cornix_left_for_dongle_nosd.uf2` and
+`cornix_right_nosd.uf2`. A dongle-only update cannot change the halves' sleep
+configuration. For standard split use, update the standard left and right halves.
+No settings reset, re-pairing or dongle update is required for this sleep change.
 
-Measure battery current before/after timeout. Wake each half independently and
-both together; check reconnection, subsequent typing, RGB indicators and battery
-reporting. Repeat while USB-powered to confirm it stays awake. If reliable
-immediate input is more important than long-idle battery life, override with
-`CONFIG_ZMK_SLEEP=n`.
+Check each normal half's resolved `.config` has `CONFIG_ZMK_SLEEP` disabled and
+retains `CONFIG_NVS=y` and `CONFIG_SETTINGS_NVS=y`. On battery power, test the first
+ordinary letter after 30 seconds, 5 minutes and more than 15 minutes idle. Test
+each half independently, including leaving one idle while typing on the other.
+Also check RGB indications and repeat while the halves are USB-powered.
+
+Deep sleep remains available as an explicit user override with
+`CONFIG_ZMK_SLEEP=y` and `CONFIG_ZMK_IDLE_SLEEP_TIMEOUT=900000`. The matrix is a
+wakeup source, but encoder rotation is not a configured deep-sleep wake source.
+ZMK prevents automatic deep sleep while USB power is detected. See
+[ZMK power management configuration](https://zmk.dev/docs/config/power).
 
 ## Intermittent dongle input latency: display A/B check
 
@@ -161,9 +168,11 @@ dongle from the same Actions run.
    keeping the USB port unchanged by using an extension cable if available.
    [ZMK documents metal enclosures as a wireless connection risk](https://zmk.dev/docs/troubleshooting/connection-issues#unreliableweak-connection).
 5. Space/Enter have balanced layer-tap behavior with a 180 ms tapping term; pauses
-   tied to those keys need a separate behavior check. Each half can also sleep
-   after 15 minutes idle; a wake/reconnect pause is different from stutters during
-   continuous typing. Do not change these settings during the display comparison.
+   tied to those keys need a separate behavior check. Older half firmware enabled
+   deep sleep after 15 minutes; the current default disables it (see section 6).
+   A wake/reconnect pause differs from stutters during continuous typing. Apply
+   any half firmware update before starting a new display comparison, then keep
+   the half firmware fixed while comparing the two dongle builds.
 
 Record which half, ordinary keys versus layer-taps, time since idle, firmware and
 mounting position when a stall occurs. A successful build alone cannot establish

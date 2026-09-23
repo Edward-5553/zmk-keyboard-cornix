@@ -52,11 +52,11 @@ config ZMK_KSCAN_DEBOUNCE_PRESS_MS
 config ZMK_KSCAN_DEBOUNCE_RELEASE_MS
     default 3
 
-# Battery-powered halves may sleep; reset firmware should stay awake.
+# Keep the split link available after idle; deep sleep is an explicit opt-in.
 if !ZMK_SETTINGS_RESET_ON_START
 
 config ZMK_SLEEP
-    default y
+    default n
 
 config ZMK_IDLE_SLEEP_TIMEOUT
     default 900000
