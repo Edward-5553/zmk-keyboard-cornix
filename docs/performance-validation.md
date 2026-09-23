@@ -13,6 +13,9 @@ events coalesce. Rendering skips battery rows that have not changed. Key events
 never render LVGL objects directly. The later portrait redesign keeps L/R rows
 fixed, with visible `--%` placeholders and bounded labels; see
 [dongle portrait validation](dongle-portrait.md).
+The compact header redesign disables modifier/lock widgets by default and uses
+pre-scaled 64×64 cat frames. Test the legacy modifier widget only when explicitly
+enabled; its previous change filtering remains available.
 
 Run `python scripts/test-dongle-battery.py --cc gcc` (or a Zig executable).
 The test compiles the real battery and modifier widgets, covers both peripheral

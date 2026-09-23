@@ -5,12 +5,14 @@
  */
 
 #include <string.h>
+#include <ctype.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 #include <zmk/display.h>
 #include "layer_status.h"
+#include "compact_fonts.h"
 #include <zmk/events/layer_state_changed.h>
 #include <zmk/event_manager.h>
 #include <zmk/endpoints.h>
@@ -24,19 +26,16 @@ struct layer_status_state {
 };
 
 static void set_layer_symbol(lv_obj_t *label, struct layer_status_state state) {
+    char text[13] = {};
     if (state.label == NULL) {
-        char text[7] = {};
-
-        sprintf(text, "%i", state.index);
-
-        lv_label_set_text(label, text);
+        snprintf(text, sizeof(text), "%u", state.index);
     } else {
-        char text[13] = {};
-
         snprintf(text, sizeof(text), "%s", state.label);
-
-        lv_label_set_text(label, text);
     }
+    for (size_t i = 0; text[i]; i++) text[i] = toupper((unsigned char)text[i]);
+    lv_obj_set_style_text_font(label, strlen(text) > 5 ? &cornix_font_small : &cornix_font_layer, 0);
+    lv_obj_set_style_text_letter_space(label, 1, 0);
+    lv_label_set_text(label, text);
 }
 
 static void layer_status_update_cb(struct layer_status_state state) {

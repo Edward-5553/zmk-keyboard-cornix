@@ -53,8 +53,12 @@ static void check_images(const lv_image_dsc_t **frames,unsigned count) {
   for(unsigned i=0;i<count;i++) {
     const lv_image_dsc_t *f=frames[i];
     assert(f->header.magic==LV_IMAGE_HEADER_MAGIC && f->header.cf==LV_COLOR_FORMAT_I1);
-    assert(f->header.w==32 && f->header.h==32 && f->header.stride==4);
-    assert(f->data_size==136 && f->data[0]==255 && f->data[3]==255 && f->data[4]==0 && f->data[7]==255);
+    assert(f->header.w==64 && f->header.h==64 && f->header.stride==8);
+    assert(f->data_size==520 && f->data[0]==0 && f->data[3]==255 && f->data[4]==255 && f->data[7]==255);
+    for(unsigned y=0;y<64;y+=2)for(unsigned x=0;x<64;x+=2){
+      uint8_t a=f->data[8+y*8+x/8], b=f->data[8+(y+1)*8+x/8];
+      assert(a==b && !!(a&(128>>(x%8)))==!!(a&(64>>(x%8))));
+    }
   }
 }
 static void event_at(int64_t now,bool down,unsigned source){

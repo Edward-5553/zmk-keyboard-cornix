@@ -11,7 +11,8 @@ from PIL import Image, ImageSequence
 ROOT = Path(__file__).resolve().parents[1]
 DEST = ROOT / 'boards/shields/cornix_dongle_display/widgets'
 SOURCES = {'idle': 'cat-idle.gif', 'error': 'cat-error.gif'}
-SIZE = 32
+SOURCE_SIZE = 32
+SIZE = 64
 
 
 def main():
@@ -34,8 +35,9 @@ def main():
                 rgba = frame.convert('RGBA')
                 white = Image.new('RGBA', rgba.size, 'white')
                 white.alpha_composite(rgba)
-                mono = white.convert('L').resize((SIZE, SIZE), Image.Resampling.LANCZOS)
-                frames.append(mono.point(lambda p: 0 if p < 150 else 255, mode='1'))
+                mono = white.convert('L').resize((SOURCE_SIZE, SOURCE_SIZE), Image.Resampling.LANCZOS)
+                frames.append(mono.point(lambda p: 0 if p < 150 else 255, mode='1').resize(
+                    (SIZE, SIZE), Image.Resampling.NEAREST))
                 elapsed += max(20, frame.info.get('duration', 100))
                 ends.append(elapsed)
         selected = [frames[next(i for i, end in enumerate(ends) if end > t)] for t in range(0, elapsed, 100)]
@@ -43,8 +45,8 @@ def main():
         count = len(selected)
         h.extend([f'#define SALARY_{name.upper()}_COUNT {count}', f'extern const lv_image_dsc_t *salary_{name}_frames[{count}];'])
         for i, frame in enumerate(selected):
-            # LVGL I1: opaque white palette index 0, opaque black index 1.
-            packed = bytes([255, 255, 255, 255, 0, 0, 0, 255]) + bytes(v ^ 255 for v in frame.tobytes())
+            # LVGL I1: black background at index 0, white artwork at index 1.
+            packed = bytes([0, 0, 0, 255, 255, 255, 255, 255]) + bytes(v ^ 255 for v in frame.tobytes())
             assert len(packed) == 8 + SIZE * SIZE // 8
             c.append(f'static const uint8_t salary_{name}_{i}_data[] = {{')
             for off in range(0, len(packed), 16):
@@ -56,7 +58,7 @@ def main():
                       f'    .data_size = sizeof(salary_{name}_{i}_data), .data = salary_{name}_{i}_data,', '};'])
         c.append(f'const lv_image_dsc_t *salary_{name}_frames[{count}] = {{' + ', '.join(f'&salary_{name}_{i}' for i in range(count)) + '};')
         # Decode the same packed representation before making the scaled preview.
-        decoded = [Image.frombytes('1', (SIZE, SIZE), bytes(v ^ 255 for v in bytes(v ^ 255 for v in f.tobytes()))) for f in selected]
+        decoded = [Image.frombytes('1', (SIZE, SIZE), bytes(v ^ 255 for v in f.tobytes())) for f in selected]
         scaled = [f.convert('RGB').resize((240, 240), Image.Resampling.NEAREST) for f in decoded]
         scaled[0].save(preview / f'{name}.gif', save_all=True, append_images=scaled[1:], duration=100, loop=0)
         print(f'{name}: {count} frames, {count * (8 + SIZE * SIZE // 8)} bytes image payload')

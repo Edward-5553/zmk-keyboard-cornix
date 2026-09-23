@@ -15,7 +15,6 @@ config ZMK_DISPLAY_STATUS_SCREEN_CUSTOM
     select LV_USE_ANIMATION
     select LV_USE_LINE
     select LV_FONT_UNSCII_8
-    imply ZMK_HID_INDICATORS
 
 config ZMK_DONGLE_DISPLAY_DONGLE_BATTERY
     bool "Show also the battery level of the dongle"
@@ -29,8 +28,9 @@ config ZMK_DONGLE_DISPLAY_BONGO_CAT
     default y
 
 config ZMK_DONGLE_DISPLAY_MODIFIERS
-    bool "Display the modifiers widget"
-    default y
+    bool "Replace the layer footer with legacy modifier/lock indicators"
+    default n
+    imply ZMK_HID_INDICATORS
 
 config ZMK_DONGLE_DISPLAY_LAYER
     bool "Display the highest layer widget"

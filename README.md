@@ -107,8 +107,11 @@ Use `cornix_dongle_eyelash` only when the dongle board does not already expose
 Salary Cat (月薪喵) animation. See [implementation and validation](boards/shields/cornix_dongle_display/UPSTREAM.md)
 and [artwork attribution](boards/shields/cornix_dongle_display/ASSETS.md).
 Display-only updates require flashing the dongle only, without a settings reset.
-The dongle now uses a 64×128 portrait layout: connection status, fixed L/R battery
-rows, Salary Cat, layer name, lock indicators and modifiers. After each dongle
+The dongle uses a black 64×128 portrait layout: compact connection status at the
+top left, fixed L/R battery rows at the top right, a 64×64 Salary Cat in an
+84-pixel animation region, and the layer name at the bottom. Both header columns
+share an 18-pixel height and aligned top/bottom edges. Modifier and lock widgets
+are disabled by default. After each dongle
 restart, press a normal key on each half to associate its battery source; unknown
 readings show `--%`, and a genuine 0% reading remains visible. A physical key press
 immediately selects the active animation; 3 seconds without another press restores

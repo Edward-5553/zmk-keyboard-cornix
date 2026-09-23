@@ -26,6 +26,7 @@ typedef struct { sys_snode_t *head; } sys_slist_t;
 static void sys_slist_append(sys_slist_t *s,sys_snode_t *n){n->next=s->head;s->head=n;}
 #define SYS_SLIST_FOR_EACH_CONTAINER(s,w,m) for(sys_snode_t *n=(s)->head;n && ((w)=(void *)((char *)n - offsetof(__typeof__(*(w)),m)),1);n=n->next)
 typedef int lv_color_t;
+typedef int lv_font_t;
 typedef struct lv_obj {char text[32]; bool hidden; int x,y,w,h; struct lv_obj *parent;} lv_obj_t;
 typedef int lv_layer_t;
 typedef struct {int bg_color,bg_opa,border_color,border_width;} lv_draw_rect_dsc_t;
@@ -38,6 +39,8 @@ typedef struct {int x1,y1,x2,y2;} lv_area_t;
 #define LV_LABEL_LONG_CLIP 0
 #define lv_obj_remove_style_all(...) ((void)0)
 #define lv_obj_set_style_text_letter_space(...) ((void)0)
+#define lv_obj_set_style_text_font(...) ((void)0)
+#define lv_obj_set_style_text_align(...) ((void)0)
 #define lv_label_set_long_mode(...) ((void)0)
 #define LV_SIZE_CONTENT 0
 #define LV_COLOR_FORMAT_L8 0
@@ -108,8 +111,11 @@ static void send(zmk_event_t e){event_context=true;assert(widget_dongle_battery_
 static void battery(int source,int level){send((zmk_event_t){.type=2,.bat={source,level}});}
 static void key(int source,int pos,bool down){send((zmk_event_t){.type=1,.pos={source,pos,down}});}
 static void labels(const char *left,const char *right){
-  assert(!strcmp(battery_objects[SOURCE_OFFSET].label->text,left));
-  assert(!strcmp(battery_objects[SOURCE_OFFSET+1].label->text,right));
+  char text[32];
+  snprintf(text,sizeof(text),"%s %4s",battery_objects[SOURCE_OFFSET].side_label->text,battery_objects[SOURCE_OFFSET].label->text);
+  assert(!strcmp(text,left));
+  snprintf(text,sizeof(text),"%s %4s",battery_objects[SOURCE_OFFSET+1].side_label->text,battery_objects[SOURCE_OFFSET+1].label->text);
+  assert(!strcmp(text,right));
 }
 int main(int argc,char **argv){
   int left=argc>1?1:0,right=1-left;
@@ -119,14 +125,16 @@ int main(int argc,char **argv){
   display_initialized=true;
   labels("L  --%","R  --%");
   /* Regress the missing text: fixed parent and nonnegative, contained labels. */
-  assert(widget.obj->w==64 && widget.obj->h==(2+SOURCE_OFFSET)*10);
+  assert(widget.obj->w==39 && widget.obj->h==18+SOURCE_OFFSET*12);
   for(int i=0;i<2+SOURCE_OFFSET;i++){
     lv_obj_t *l=battery_objects[i].label;
     assert(!l->hidden && l->parent==widget.obj && l->x>=0 && l->y>=0);
-    assert(l->w>=6*8 && l->x+l->w<=widget.obj->w && l->y+l->h<=widget.obj->h);
-    assert(battery_objects[i].symbol->x>=l->x+l->w);
-    assert(battery_objects[i].symbol->x+5<=widget.obj->w);
+    assert(l->w>=19 && l->x+l->w<=widget.obj->w && l->y+l->h<=widget.obj->h);
+    assert(battery_objects[i].symbol->x+8<=l->x);
+    assert(battery_objects[i].side_label->x+4<=battery_objects[i].symbol->x);
   }
+  assert(battery_objects[SOURCE_OFFSET].label->y==0);
+  assert(battery_objects[SOURCE_OFFSET+1].label->y==12);
   unsigned draws=draw_count;
   battery(left,81);battery(right,42);flush();
   labels("L  --%","R  --%");assert(draw_count==draws); /* Never guess pairing order. */
@@ -153,11 +161,13 @@ int main(int argc,char **argv){
   assert(side_for_position(0)=='L' && side_for_position(3)=='R');
   selected=-1;assert(side_for_position(0)=='?');selected=1;assert(side_for_position(0)=='?');selected=0;
 #if CONFIG_ZMK_DONGLE_DISPLAY_DONGLE_BATTERY
-  assert(!strcmp(battery_objects[0].label->text,"D  90%"));
+  assert(!strcmp(battery_objects[0].side_label->text,"D"));
+  assert(!strcmp(battery_objects[0].label->text,"90%"));
+  assert(battery_objects[0].label->y==24);
   draws=draw_count;usb_powered=false;send((zmk_event_t){.type=4});flush();
   assert(draw_count==draws+1 && !battery_objects[0].rendered.usb_present);
   send((zmk_event_t){.type=3,.own={75}});flush();
-  assert(!strcmp(battery_objects[0].label->text,"D  75%"));
+  assert(!strcmp(battery_objects[0].label->text,"75%"));
 #endif
   return 0;
 }
