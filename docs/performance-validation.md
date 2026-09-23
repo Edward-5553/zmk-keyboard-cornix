@@ -114,6 +114,59 @@ reporting. Repeat while USB-powered to confirm it stays awake. If reliable
 immediate input is more important than long-idle battery life, override with
 `CONFIG_ZMK_SLEEP=n`.
 
+## Intermittent dongle input latency: display A/B check
+
+The dongle path is peripheral halves -> BLE (2.4 GHz) -> dongle -> USB HID.
+USB output does not bypass the wireless connection from the halves.
+
+Review of the `03b0794` build found no display rendering or I2C writes on the key
+event path. The cat listener only records an activity timestamp under a short
+spinlock; battery listeners copy state under a mutex and release it before any
+LVGL work. Display writes run on the dedicated display queue. The TWIM driver
+waits on a semaphore for DMA completion, allowing other threads to run.
+
+Do not compare `CONFIG_BT_RX_PRIO=8` directly with the display priority of 5:
+the Bluetooth host creates its receive queue with `K_PRIO_COOP(8)`, which resolves
+to -8 with this build's 16 cooperative priorities. Bluetooth RX, system key
+processing (-1), and the USB queue (-1) run ahead of the preemptible display queue
+(5). The BLE command queue also uses 5. The display queue therefore does not
+outrank Bluetooth RX, key processing or USB; this does not measure interrupt load
+or end-to-end latency.
+
+The 64x64 cat has four times the pixels of the earlier 32x32 cat at the same
+10 fps. Rotation and decoding add display work; the polarity/180-degree fix does
+not change the image dimensions, refresh rate, keymap or radio configuration.
+Host rendering tests verify correctness, not responsiveness on the nRF52840.
+
+`build.yaml` also produces `cornix_dongle_no_display_nosd.uf2` for diagnosis. It
+uses the same board, adapter, keymap and no-SoftDevice/Studio snippets as the
+normal dongle, omits both display shields, and explicitly disables ZMK display.
+This is a comparison build, not a confirmed latency fix. Check its resolved
+configuration: display/LVGL/OLED must be disabled, while USB HID, both BLE
+peripherals, radio parameters, NVS and Studio remain consistent with the normal
+dongle from the same Actions run.
+
+1. Keep both halves' firmware, the USB port, dongle position and typing workload
+   unchanged. First reproduce with that run's normal `cornix_dongle_nosd.uf2`.
+2. Flash only the dongle with `cornix_dongle_no_display_nosd.uf2`, then unplug and
+   reconnect USB. The power cycle clears any image retained by the OLED controller.
+   Do not reset settings or re-pair either half.
+3. Compare continuous ordinary letters on each half and alternating halves;
+   separately test Space/Enter rolls and the first input after idle. Switch back
+   to the normal firmware and repeat to check that any difference is reproducible.
+4. If the no-display build also stutters, display work is less likely to explain
+   it. Next test the same firmware with the dongle away from the metal chassis,
+   keeping the USB port unchanged by using an extension cable if available.
+   [ZMK documents metal enclosures as a wireless connection risk](https://zmk.dev/docs/troubleshooting/connection-issues#unreliableweak-connection).
+5. Space/Enter have balanced layer-tap behavior with a 180 ms tapping term; pauses
+   tied to those keys need a separate behavior check. Each half can also sleep
+   after 15 minutes idle; a wake/reconnect pause is different from stutters during
+   continuous typing. Do not change these settings during the display comparison.
+
+Record which half, ordinary keys versus layer-taps, time since idle, firmware and
+mounting position when a stall occurs. A successful build alone cannot establish
+or exclude a hardware latency regression.
+
 ## Firmware set and final checks
 
 For dongle mode, flash the newly built dongle, left-for-dongle and right firmware.
