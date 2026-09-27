@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // ZMK split service UUID / packet ABI: see README.md Protocol section.
 #include "dongle.h"
+#include "ble_output.h"
 #include "display_status.h"
 #include "nimble/nimble_port.h"
 #include "nimble/nimble_port_freertos.h"
@@ -152,9 +153,9 @@ static void scan(struct ble_npl_event *event) {
     if (rc) { ESP_LOGW(TAG,"scan: %d",rc); scan_later(); }
 }
 static bool bonded(const ble_addr_t *address) {
-    ble_addr_t bonds[2]; int count=0;
-    if (ble_store_util_bonded_peers(bonds,&count,2)) return false;
-    for (int i=0;i<count;i++) if (!ble_addr_cmp(address,&bonds[i])) return true;
+    ble_addr_t bonds[3]; int count=0;
+    if (ble_store_util_bonded_peers(bonds,&count,3)) return false;
+    for (int i=0;i<count;i++) if (!ble_output_is_host(&bonds[i]) && !ble_addr_cmp(address,&bonds[i])) return true;
     return false;
 }
 
@@ -269,11 +270,13 @@ static int gap_event(struct ble_gap_event *event,void *arg) {
 static void synced(void) {
     ESP_ERROR_CHECK(ble_hs_util_ensure_addr(0));
     ESP_ERROR_CHECK(ble_hs_id_infer_auto(0,&own_addr_type));
-    ble_addr_t bonds[2]; int count=0;
-    ESP_ERROR_CHECK(ble_store_util_bonded_peers(bonds,&count,2));
+    ble_addr_t bonds[3]; int count=0;
+    ESP_ERROR_CHECK(ble_store_util_bonded_peers(bonds,&count,3));
+    for(int i=0;i<count;i++)if(ble_output_is_host(&bonds[i])){count--;break;}
     pairing_deadline=count<2 ? esp_timer_get_time()+60000000 : 0;
     display_status_pairing(pairing_deadline?(uint32_t)(pairing_deadline/1000):0);
     ESP_LOGI(TAG,"%d saved peers; new pairing %s",count,count<2?"open for 60s":"disabled");
+    ble_output_sync(own_addr_type);
     scan_later();
     ble_npl_callout_reset(&battery_timer,ble_npl_time_ms_to_ticks32(30000));
 }
@@ -288,6 +291,7 @@ void split_start(void) {
     ble_hs_cfg.sm_our_key_dist=BLE_SM_PAIR_KEY_DIST_ENC|BLE_SM_PAIR_KEY_DIST_ID;
     ble_hs_cfg.sm_their_key_dist=BLE_SM_PAIR_KEY_DIST_ENC|BLE_SM_PAIR_KEY_DIST_ID;
     ble_store_config_init();
+    ble_output_init();
     ble_npl_callout_init(&scan_timer,nimble_port_get_dflt_eventq(),scan,NULL);
     ble_npl_callout_init(&battery_timer,nimble_port_get_dflt_eventq(),battery_poll,NULL);
     nimble_port_freertos_init(host);

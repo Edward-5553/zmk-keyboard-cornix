@@ -20,7 +20,9 @@ extern const lv_font_t stopwatch_font_16;
 extern const uint8_t cat_work_start[] asm("_binary_cat_work_bin_start");
 extern const uint8_t cat_sleep_start[] asm("_binary_cat_sleep_bin_start");
 static lv_image_dsc_t work_frames[CAT_WORK_FRAMES],sleep_frames[CAT_SLEEP_FRAMES];
-static lv_obj_t *usb_label,*battery_labels[2],*battery_bars[2],*wpm_label,*cat_image,*layer_label,*message,*layer_dots[5];
+static lv_obj_t *battery_labels[2],*battery_bars[2],*wpm_label,*cat_image,*layer_label,*message,*layer_dots[5];
+static lv_obj_t *connection_icons[4];
+static int shown_connection_icon=-1;
 static bool display_fault;
 static uint16_t *rotation_canvas;
 static uint8_t *rotation_dma;
@@ -130,6 +132,50 @@ static void init_frames(lv_image_dsc_t *images,const uint8_t *bytes,unsigned cou
             .w=CAT_WIDTH,.h=CAT_HEIGHT,.stride=CAT_WIDTH*2},
         .data_size=CAT_FRAME_BYTES,.data=bytes+i*CAT_FRAME_BYTES};
 }
+// Small native primitives match the HTML SVGs; no image decoding or animation timer.
+static void icon_line(lv_obj_t *parent,const lv_point_precise_t *points,unsigned count,lv_color_t color) {
+    lv_obj_t *line=lv_line_create(parent);
+    lv_line_set_points(line,points,count);
+    lv_obj_set_pos(line,1,1);
+    lv_obj_set_style_line_width(line,2,0);
+    lv_obj_set_style_line_rounded(line,true,0);
+    lv_obj_set_style_line_color(line,color,0);
+}
+static void icon_shape(lv_obj_t *parent,int x,int y,int size,bool round,bool filled,lv_color_t color) {
+    lv_obj_t *obj=lv_obj_create(parent);lv_obj_remove_style_all(obj);
+    lv_obj_set_pos(obj,x+1,y+1);lv_obj_set_size(obj,size,size);
+    lv_obj_set_style_radius(obj,round?LV_RADIUS_CIRCLE:0,0);
+    if(filled){lv_obj_set_style_bg_opa(obj,LV_OPA_COVER,0);lv_obj_set_style_bg_color(obj,color,0);}
+    else {lv_obj_set_style_border_width(obj,2,0);lv_obj_set_style_border_color(obj,color,0);}
+}
+static void create_connection_icons(void) {
+    for(unsigned i=0;i<4;i++) {
+        connection_icons[i]=lv_obj_create(lv_screen_active());lv_obj_remove_style_all(connection_icons[i]);
+        lv_obj_set_pos(connection_icons[i],216,40);lv_obj_set_size(connection_icons[i],34,34);
+        lv_obj_remove_flag(connection_icons[i],LV_OBJ_FLAG_SCROLLABLE);
+        lv_obj_add_flag(connection_icons[i],LV_OBJ_FLAG_HIDDEN);
+    }
+    static const lv_point_precise_t cross1[]={{10,10},{22,22}},cross2[]={{22,10},{10,22}};
+    icon_line(connection_icons[DISPLAY_ICON_OFF],cross1,2,muted());
+    icon_line(connection_icons[DISPLAY_ICON_OFF],cross2,2,muted());
+    static const lv_point_precise_t stem[]={{16,28},{16,5}},arrow[]={{12,9},{16,4},{20,9}};
+    static const lv_point_precise_t left[]={{16,21},{9,16},{9,12}},right[]={{16,17},{23,13},{23,9}};
+    lv_obj_t *usb=connection_icons[DISPLAY_ICON_USB];
+    icon_line(usb,stem,2,green());icon_line(usb,arrow,3,green());
+    icon_line(usb,left,3,green());icon_line(usb,right,3,green());
+    icon_shape(usb,14,26,4,true,true,green());icon_shape(usb,7,8,4,true,false,green());
+    icon_shape(usb,21,5,4,false,false,green());
+    static const lv_point_precise_t bluetooth[]={{9,9},{23,23},{16,29},{16,3},{23,9},{9,23}};
+    icon_line(connection_icons[DISPLAY_ICON_BLE],bluetooth,6,lv_color_hex(0x83bfff));
+    for(unsigned i=0;i<3;i++)icon_shape(connection_icons[DISPLAY_ICON_WAITING],5+i*9,14,4,true,true,muted());
+}
+static void update_connection_icon(const struct display_model *m) {
+    int icon=display_model_connection_icon(m);
+    if(icon==shown_connection_icon)return;
+    if(shown_connection_icon>=0)lv_obj_add_flag(connection_icons[shown_connection_icon],LV_OBJ_FLAG_HIDDEN);
+    lv_obj_remove_flag(connection_icons[icon],LV_OBJ_FLAG_HIDDEN);
+    shown_connection_icon=icon;
+}
 static void create_ui(void) {
     lv_obj_t *screen=lv_screen_active();
     lv_obj_set_style_bg_color(screen,lv_color_black(),0);
@@ -139,8 +185,7 @@ static void create_ui(void) {
     lv_obj_set_pos(ring,16,16);lv_obj_set_size(ring,434,434);
     lv_obj_set_style_radius(ring,LV_RADIUS_CIRCLE,0);
     lv_obj_set_style_border_width(ring,1,0);lv_obj_set_style_border_color(ring,lv_color_hex(0x26372e),0);
-    usb_label=label(83,40,300,&lv_font_montserrat_14,LV_TEXT_ALIGN_CENTER,green());
-    lv_label_set_text(usb_label,"USB / WAITING");
+    create_connection_icons();
     wpm_label=label(173,104,68,&lv_font_montserrat_28,LV_TEXT_ALIGN_RIGHT,lv_color_hex(0xe7ece8));
     lv_label_set_text(wpm_label,"0");
     lv_obj_t *wpm_unit=label(247,115,46,&lv_font_montserrat_14,LV_TEXT_ALIGN_LEFT,muted());
@@ -172,9 +217,7 @@ static void create_ui(void) {
     for(unsigned i=0;i<5;i++)layer_dots[i]=dot(206+i*12,428,5,i==0?green():lv_color_hex(0x334138));
 }
 static void update_ui(const struct display_model *m,uint32_t now) {
-    set_text(usb_label,m->usb==DISPLAY_USB_READY?"USB / READY":
-                       m->usb==DISPLAY_USB_SUSPENDED?"USB / SUSPENDED":"USB / NOT CONNECTED");
-    lv_obj_set_style_text_color(usb_label,m->usb==DISPLAY_USB_READY?green():muted(),0);
+    update_connection_icon(m);
     bool unknown=false;unsigned ready=0;
     for(unsigned i=0;i<2;i++) {if(m->peers[i].ready)ready++;if(m->peers[i].connected && m->peers[i].side<0)unknown=true;}
     int peers[2]={display_model_find_side(m,0),display_model_find_side(m,1)};
@@ -202,8 +245,7 @@ static void update_ui(const struct display_model *m,uint32_t now) {
     set_text(layer_label,text);
     for(unsigned i=0;i<5;i++)lv_obj_set_style_bg_color(layer_dots[i],i==m->layer?green():lv_color_hex(0x334138),0);
     unsigned pairing=display_model_pairing_seconds(m,now);
-    if(m->usb==DISPLAY_USB_SUSPENDED)snprintf(text,sizeof(text),"等待电脑唤醒");
-    else if(m->usb!=DISPLAY_USB_READY)snprintf(text,sizeof(text),"请连接电脑 USB");
+    if(!display_model_output_ready(m))text[0]=0;
     else if((pairing && ready<2) || unknown || peers[0]<0 || peers[1]<0 ||
             m->peers[peers[0]].low || m->peers[peers[1]].low) {
         text[0]=0;

@@ -88,5 +88,22 @@ int main(void) {
     display_model_keyboard(&m,0,key,600);
     assert(display_model_wpm(&m,600)==2);
     m.usb=DISPLAY_USB_SUSPENDED;assert(display_model_wpm(&m,600)==0);
+    display_model_usb(&m,DISPLAY_BLE_READY,1000000);
+    assert(display_model_brightness(&m,1000000)==35);
+    display_model_keyboard(&m,0,key,1000001);
+    assert(display_model_wpm(&m,1000001)==1);
+    m.has_activity=true;m.last_activity=1000001;
+    assert(display_model_working(&m,1000002));
+    assert(display_model_brightness(&m,1060001)==20);
+    assert(display_model_brightness(&m,1120001)==0);
+    display_model_usb(&m,DISPLAY_USB_READY,1200000);
+    assert(display_model_wpm(&m,1200000)==0 && display_model_brightness(&m,1200000)==35);
+    // Actual output wins over Bluetooth pairing/reconnect activity.
+    display_model_init(&m);assert(display_model_connection_icon(&m)==DISPLAY_ICON_OFF);
+    m.ble_waiting=true;assert(display_model_connection_icon(&m)==DISPLAY_ICON_WAITING);
+    m.usb=DISPLAY_USB_READY;assert(display_model_connection_icon(&m)==DISPLAY_ICON_USB);
+    m.usb=DISPLAY_BLE_READY;assert(display_model_connection_icon(&m)==DISPLAY_ICON_BLE);
+    m.usb=DISPLAY_USB_SUSPENDED;assert(display_model_connection_icon(&m)==DISPLAY_ICON_OFF);
+    m.usb=DISPLAY_USB_OFF;m.ble_waiting=false;assert(display_model_connection_icon(&m)==DISPLAY_ICON_OFF);
     puts("Display identity, battery, disconnect, activity and timer tests passed");
 }

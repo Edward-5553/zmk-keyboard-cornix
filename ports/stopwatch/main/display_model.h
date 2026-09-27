@@ -6,7 +6,8 @@
 #define DISPLAY_DIM_MS 60000u
 #define DISPLAY_OFF_MS 120000u
 
-enum display_usb { DISPLAY_USB_OFF, DISPLAY_USB_READY, DISPLAY_USB_SUSPENDED };
+enum display_usb { DISPLAY_USB_OFF, DISPLAY_USB_READY, DISPLAY_USB_SUSPENDED, DISPLAY_BLE_READY };
+enum display_connection_icon { DISPLAY_ICON_OFF, DISPLAY_ICON_USB, DISPLAY_ICON_BLE, DISPLAY_ICON_WAITING };
 enum display_hint { DISPLAY_HINT_NONE, DISPLAY_HINT_VOL_UP, DISPLAY_HINT_VOL_DOWN,
                     DISPLAY_HINT_SCROLL_UP, DISPLAY_HINT_SCROLL_DOWN };
 struct display_peer {
@@ -24,6 +25,7 @@ struct display_model {
     uint8_t known_identity[2][7];
     bool known[2], has_activity;
     enum display_usb usb;
+    bool ble_waiting;
     enum display_hint hint;
     uint8_t layer;
     uint32_t last_activity, hint_at, pairing_until;
@@ -44,3 +46,6 @@ unsigned display_model_wpm(const struct display_model *m, uint32_t now);
 void display_model_wpm_reset(struct display_model *m);
 
 void display_model_usb(struct display_model *m, enum display_usb usb, uint32_t now);
+
+bool display_model_output_ready(const struct display_model *m);
+enum display_connection_icon display_model_connection_icon(const struct display_model *m);

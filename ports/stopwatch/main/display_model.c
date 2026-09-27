@@ -49,12 +49,12 @@ int display_model_find_side(const struct display_model *m, unsigned side) {
     return -1;
 }
 bool display_model_working(const struct display_model *m, uint32_t now) {
-    return m->usb==DISPLAY_USB_READY && m->has_activity && (uint32_t)(now-m->last_activity)<3000;
+    return display_model_output_ready(m) && m->has_activity && (uint32_t)(now-m->last_activity)<3000;
 }
 unsigned display_model_brightness(const struct display_model *m, uint32_t now) {
     uint32_t idle=now-m->last_activity;
     if (m->usb==DISPLAY_USB_SUSPENDED || idle>=DISPLAY_OFF_MS) return 0;
-    if (m->usb!=DISPLAY_USB_READY) return 5;
+    if (!display_model_output_ready(m)) return 5;
     return idle>=DISPLAY_DIM_MS ? 20 : 35;
 }
 unsigned display_model_pairing_seconds(const struct display_model *m, uint32_t now) {
@@ -77,7 +77,7 @@ void display_model_keyboard(struct display_model *m,uint8_t mods,const uint8_t k
         if(!existing && printable && !(mods&0xdd))count++; // Shift allowed; Ctrl/Alt/GUI excluded.
     }
     memcpy(m->wpm_keys,keys,6);
-    if(m->usb!=DISPLAY_USB_READY || !count)return;
+    if(!display_model_output_ready(m) || !count)return;
     if(!m->wpm_active || (uint32_t)(now-m->wpm_last)>=3000) {
         memset(m->wpm_counts,0,sizeof(m->wpm_counts));m->wpm_slot=0;m->wpm_epoch=now;m->wpm_active=true;
     }
@@ -88,7 +88,7 @@ void display_model_keyboard(struct display_model *m,uint8_t mods,const uint8_t k
     m->wpm_counts[m->wpm_slot]=value>UINT16_MAX?UINT16_MAX:value;m->wpm_last=now;
 }
 unsigned display_model_wpm(const struct display_model *m,uint32_t now) {
-    if(m->usb!=DISPLAY_USB_READY || !m->wpm_active || (uint32_t)(now-m->wpm_last)>=3000)return 0;
+    if(!display_model_output_ready(m) || !m->wpm_active || (uint32_t)(now-m->wpm_last)>=3000)return 0;
     unsigned elapsed=(uint32_t)(now-m->wpm_epoch)/1000,total=0;
     for(unsigned age=0;age<10 && age+elapsed<10;age++)total+=m->wpm_counts[(m->wpm_slot+10-age)%10];
     unsigned result=(total*6+2)/5; // 10 seconds -> per minute, then five characters per word.
@@ -99,6 +99,16 @@ void display_model_usb(struct display_model *m,enum display_usb usb,uint32_t now
     if(m->usb==usb)return;
     display_model_wpm_reset(m);
     // USB re-enumeration/resume wakes the display without pretending to type.
-    if(usb==DISPLAY_USB_READY){m->last_activity=now;m->has_activity=false;}
+    if(usb==DISPLAY_USB_READY || usb==DISPLAY_BLE_READY){m->last_activity=now;m->has_activity=false;}
     m->usb=usb;
+}
+
+bool display_model_output_ready(const struct display_model *m) {
+    return m->usb==DISPLAY_USB_READY || m->usb==DISPLAY_BLE_READY;
+}
+enum display_connection_icon display_model_connection_icon(const struct display_model *m) {
+    if(m->usb==DISPLAY_USB_READY)return DISPLAY_ICON_USB;
+    if(m->usb==DISPLAY_BLE_READY)return DISPLAY_ICON_BLE;
+    if(m->usb==DISPLAY_USB_SUSPENDED)return DISPLAY_ICON_OFF;
+    return m->ble_waiting?DISPLAY_ICON_WAITING:DISPLAY_ICON_OFF;
 }

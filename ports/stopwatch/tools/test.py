@@ -37,6 +37,13 @@ with tempfile.TemporaryDirectory(prefix='stopwatch-',ignore_cleanup_errors=True)
     subprocess.run(command,check=True)
     subprocess.run([str(path/'engine-test.exe')],check=True)
     command=[cc]+(['cc'] if Path(cc).stem=='zig' else [])
+    command+=['-std=c11','-Wall','-Wextra','-Werror','-Wno-unused-parameter',
+              '-I'+str(PORT/'main'),'-I'+str(path),str(PORT/'main/engine.c'),
+              str(PORT/'main/output_route.c'),str(PORT/'tests/output_route_test.c'),
+              '-o',str(path/'output-route-test.exe')]
+    subprocess.run(command,check=True)
+    subprocess.run([str(path/'output-route-test.exe')],check=True)
+    command=[cc]+(['cc'] if Path(cc).stem=='zig' else [])
     command+=['-std=c11','-Wall','-Wextra','-Werror','-I'+str(PORT/'main'),
               str(PORT/'main/display_model.c'),str(PORT/'tests/display_test.c'),
               '-o',str(path/'display-test.exe')]

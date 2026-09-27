@@ -10,6 +10,7 @@ void display_status_side(unsigned peer, unsigned side);
 void display_status_battery(unsigned peer, int battery);
 void display_status_pairing(uint32_t until);
 void display_status_usb(enum display_usb usb);
+void display_status_ble_waiting(bool waiting);
 void display_status_layer(uint8_t layer);
 void display_status_activity(enum display_hint hint);
 void display_status_snapshot(struct display_model *out);

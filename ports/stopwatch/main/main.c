@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
 #include "dongle.h"
+#include "ble_output.h"
+#include "output_route.h"
 #include "display_status.h"
 #include "keymap_config.h"
 #include "freertos/FreeRTOS.h"
@@ -26,7 +28,8 @@ void app_main(void) {
     configASSERT(inputs);
     display_status_init();
     usb_start();
-    engine_init(usb_output,NULL);
+    struct output_router router={.usb=usb_output,.ble=ble_output_send};
+    engine_init(output_router_send,&router);
     keymap_config_init();
     split_start();
     display_start();
@@ -35,13 +38,17 @@ void app_main(void) {
     while (true) {
         struct input_event e;
         bool now_mounted=tud_mounted() && !tud_suspended();
-        display_status_usb(tud_suspended()?DISPLAY_USB_SUSPENDED:
-                           now_mounted?DISPLAY_USB_READY:DISPLAY_USB_OFF);
+        uint32_t ble_session=ble_output_session();
+        display_status_ble_waiting(ble_output_waiting());
+        enum output_route next=output_route_select(tud_mounted(),tud_suspended(),ble_session);
+        display_status_usb(next==OUTPUT_BLE?DISPLAY_BLE_READY:
+                           next==OUTPUT_USB?DISPLAY_USB_READY:
+                           tud_suspended()?DISPLAY_USB_SUSPENDED:DISPLAY_USB_OFF);
         display_status_layer(engine_layer());
-        if (now_mounted!=mounted || atomic_exchange(&overflow,false)) {
-            if(!now_mounted)keymap_config_disconnect();
-            mounted=now_mounted;
-            engine_cancel();
+        if(mounted && !now_mounted)keymap_config_disconnect();
+        mounted=now_mounted;
+        if (output_router_update(&router,tud_mounted(),tud_suspended(),ble_session,
+                                 atomic_exchange(&overflow,false))) {
             memset(states,0,sizeof(states));
             memset(merged,0,sizeof(merged));
             xQueueReset(inputs);
@@ -54,7 +61,7 @@ void app_main(void) {
             engine_tick(millis());
             continue;
         }
-        if (!mounted) continue;
+        if (router.route==OUTPUT_OFF) continue;
         if (e.peer>=2) continue;
         if (e.kind==INPUT_DISCONNECT) {
             // Clear both sources to avoid a held layer/queued macro leaving stuck keys.

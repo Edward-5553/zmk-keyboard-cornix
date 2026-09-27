@@ -21,12 +21,16 @@
 .orientation-controls input[type=checkbox]{accent-color:#b3dec0;margin-right:7px}
 .orientation-status{font-size:12px;color:#b7d6c2;line-height:1.8;min-height:5.4em;margin-top:12px}
 .dim .orientation-content{visibility:hidden}
+.usb{top:8.6%;left:calc(50% - 3.65%);width:7.3%;height:7.3%;color:#96d8aa}
+.usb::before{display:none}.screen .usb svg{position:static;display:block;width:100%;height:100%;overflow:visible}
+.screen .usb svg *{position:static}
+.connection-summary{padding:12px;border:1px solid #39443d;border-radius:8px;margin-top:12px!important;font-size:12px}
 </style>
 <main>
-<header><div><div class="eyebrow">CORNIX / STOPWATCH</div><h1>桌面上的月薪喵</h1><p>连接状态一眼可见，让猫占据屏幕中央。</p></div><div class="version">四向显示 · 04</div></header>
+<header><div><div class="eyebrow">CORNIX / STOPWATCH</div><h1>桌面上的月薪喵</h1><p>连接状态一眼可见，让猫占据屏幕中央。</p></div><div class="version">图标状态 · 06</div></header>
 <section class="layout">
 <div class="stage"><div class="gravity-guide">↑ 现实中的上方 · 水平参考线 ───</div><div class="watch" id="watch"><div class="screen" role="img" aria-label="StopWatch 圆屏预览" id="screen">
-<div class="orientation-content" id="orientationContent"><div class="rail"></div><div class="usb" id="usb">USB · READY</div>
+<div class="orientation-content" id="orientationContent"><div class="rail"></div><div class="usb" id="usb" role="img" aria-label="USB 输出"></div>
 <div class="wpm" aria-label="输入速度"><strong id="wpmValue">68</strong><span>WPM</span></div>
 <div class="battery left" id="left" aria-label="左手电量"><strong id="leftValue">82%</strong><div class="track"><i class="fill"></i></div></div>
 <div class="battery right" id="right" aria-label="右手电量"><strong id="rightValue">76%</strong><div class="track"><i class="fill"></i></div></div>
@@ -35,6 +39,12 @@
 <div class="message" id="message"></div><div class="ticks" aria-hidden="true"><i class="active"></i><i></i><i></i><i></i><i></i></div>
 </div></div></div><div class="stage-caption">橙色刻度代表机身顶部，随机身旋转；屏幕内容按四向切换。<br>466 × 466 圆屏比例 · 演示数据 · 非设备实时画面</div></div>
 <aside class="controls"><h2>看看不同状态</h2><p>主屏布局固定，状态变化时只更新需要关注的内容。</p>
+<fieldset><legend>电脑连接状态</legend><select id="connection" aria-label="电脑连接状态">
+<option value="usb">USB 输出 · 蓝牙未配对</option><option value="both" selected>USB 输出 · 蓝牙已连接待用</option>
+<option value="ble">蓝牙输出 · USB 仅供电或未接</option><option value="pair">未连接 · 蓝牙配对中</option>
+<option value="link">未连接 · 蓝牙连接中</option><option value="reconnect">未连接 · 等待电脑重连</option>
+<option value="none">未连接 · 配对窗口已结束</option><option value="sleep">USB 电脑休眠 · 暂停输出</option>
+</select><p class="connection-summary" id="connectionSummary" aria-live="polite"></p></fieldset>
 <fieldset class="orientation-controls"><legend>磁吸方向模拟</legend>
 <label for="bodyAngle">机身方向（四档）：<output id="angleValue">0°</output><input id="bodyAngle" type="range" min="0" max="270" step="90" value="0"></label>
 <div class="buttons" id="anglePresets"><button type="button" data-angle="0">正放</button><button type="button" data-angle="90">侧放 90°</button><button type="button" data-angle="180">倒放 180°</button><button type="button" data-angle="270">侧放 270°</button></div>
@@ -53,32 +63,60 @@
 </aside></section>
 <section class="details"><div><h3>WPM 两侧 · 左右电量</h3><p>横向电量条放在 WPM 两侧，左右镜像填充：左条从右侧消退，右条从左侧消退，百分比在上方；左条代表左手，右条代表右手。断连明确写出。未读到电量显示 --%，不会用 0% 代替。</p></div><div><h3>中央 · 月薪喵</h3><p>默认 180 × 180 px，保持动画中心位置不变，可切换尺寸比较。输入时播放 cat-sad.gif，闲置后保留原来的睡觉动画；动画不参与键盘事件处理。</p></div><div><h3>下方 · 层与提示</h3><p>仅显示居中的层名称，去掉 Lx 前缀。输入、闲置、断连、首次配对和低电量均不显示底部文字；音量和滚轮操作可短暂提示。</p></div></section>
 <section class="gallery"><h2>换一批月薪喵</h2><p>下方是现有素材来源中的其他动图，点击“试放到屏幕”即可比较。在线图片需要联网；加载失败时可打开原图来源。名称参考上游素材说明。</p><div class="gallery-grid" id="gallery"></div><p>正常输入已选用：<a href="https://github.com/myunwang/LLMPET/blob/main/assets/cat/cat-sad.gif" target="_blank" rel="noreferrer">cat-sad.gif</a>，本地素材已同步到设备动画。<a href="https://github.com/myunwang/LLMPET/blob/main/assets/cat/CREDITS.md" target="_blank" rel="noreferrer">候选素材来源与署名</a> · 原作者 @月薪喵。</p></section>
-<footer>第三版布局已同步到固件；重力自动转正已接入实验固件，安装方向与性能待实机验证。已移除麦克风采音及两侧装饰柱条。本页仍为交互模拟。<br>月薪喵素材 © @月薪喵 · 原图沿用项目已使用素材，<a href="../../../boards/shields/cornix_dongle_display/ASSETS.md">来源与署名</a>。</footer>
+<footer>连接图标设计已应用到实验固件，等待实机验证。顶部仅用 USB / 蓝牙图标表示当前输出，省略号表示等待连接，× 表示未连接；重力自动转正已接入实验固件，安装方向与性能待实机验证。已移除麦克风采音及两侧装饰柱条。本页仍为交互模拟。<br>月薪喵素材 © @月薪喵 · 原图沿用项目已使用素材，<a href="../../../boards/shields/cornix_dongle_display/ASSETS.md">来源与署名</a>。</footer>
 </main>
 <script>
 (()=>{
 const q=s=>document.querySelector(s);let scene='typing',unknown=false,chosen=null;
+const links={
+usb:['USB OUTPUT','USB ACTIVE','BLE UNPAIRED','USB 正在输出；蓝牙尚未配对。'],
+both:['USB OUTPUT','USB ACTIVE','BLE STANDBY','两种连接都在，但当前只向 USB 发送按键；蓝牙待用。'],
+ble:['BLE OUTPUT','USB OFF','BLE ACTIVE','当前通过蓝牙向电脑输入。USB OFF 指没有 USB 数据连接，充电器供电也属于此状态。'],
+pair:['NO OUTPUT','USB OFF','BLE PAIR 120s','电脑尚未连接。请在电脑蓝牙设置中添加 Cornix StopWatch BLE。'],
+link:['NO OUTPUT','USB OFF','BLE LINKING','蓝牙正在建立加密连接并等待电脑订阅键盘报告，暂时不能输入。'],
+reconnect:['NO OUTPUT','USB OFF','BLE RECONNECT','已有电脑配对，正在等待该电脑重新连接。'],
+none:['NO OUTPUT','USB OFF','BLE UNPAIRED','配对窗口已结束；接数据 USB 可以输入，重启可重新开放配对。'],
+sleep:['NO OUTPUT','USB SLEEP','BLE STANDBY','USB 电脑休眠，暂停输出并息屏；不会自动向另一台蓝牙电脑输入。']};
+const iconPaths={
+usb:'<path d="M16 28V5m-4 4 4-5 4 5M16 21l-7-5v-4m7 5 7-4V9"/><circle cx="16" cy="28" r="2" fill="currentColor" stroke="none"/><circle cx="9" cy="10" r="2"/><rect x="21" y="5" width="4" height="4" rx=".4"/>',
+ble:'<path d="m9 9 14 14-7 6V3l7 6L9 23"/>',
+waiting:'<circle cx="7" cy="16" r="2" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="2" fill="currentColor" stroke="none"/><circle cx="25" cy="16" r="2" fill="currentColor" stroke="none"/>',
+off:'<path d="m10 10 12 12m0-12L10 22"/>'};
+let pairSeconds=120;
 const descriptions={typing:'正常输入：月薪喵播放 cat-sad.gif，当前层固定显示在下方。',idle:'闲置：切换睡觉动画；实机在 60 秒无输入后降低亮度，120 秒自动息屏。',lost:'断连：保留当前层，明确指出右半未连接；左半仍可使用。',pairing:'首次配对：未确认左右身份前显示待识别，不按连接先后分配左右。',low:'低电量：仅标记需要充电的一侧，不用整屏闪烁打断输入。',suspend:'电脑休眠：屏幕息屏；不将 USB 供电误显示为可以输入。'};
 function render(){
-q('#watch').classList.toggle('dim',scene==='suspend');
-const wpm=(scene==='typing'||scene==='low')?q('#wpmInput').value:'0';q('#wpmValue').textContent=wpm;q('.wpm').setAttribute('aria-label','输入速度 '+wpm+' WPM');
-q('#usb').textContent=scene==='suspend'?'USB · SUSPENDED':'USB · READY';
+const mode=scene==='suspend'?'sleep':q('#connection').value,link=links[mode];
+const active=mode==='usb'||mode==='both'||mode==='ble';
+q('#watch').classList.toggle('dim',mode==='sleep');
+const icon=mode==='usb'||mode==='both'?'usb':mode==='ble'?'ble':['pair','link','reconnect'].includes(mode)?'waiting':'off';
+const name={usb:'USB 输出',ble:'蓝牙输出',waiting:'等待连接',off:'未连接 / 暂停输出'}[icon];
+if(q('#usb').dataset.icon!==icon){
+q('#usb').innerHTML='<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+iconPaths[icon]+'</svg>';
+q('#usb').dataset.icon=icon;
+}
+q('#usb').setAttribute('aria-label',name);q('#usb').title=link[3];
+q('#usb').style.color=mode==='ble'?'#83bfff':active?'#96d8aa':'#96a69a';
+q('#connectionSummary').textContent=link[3]+(mode==='pair'?' 配对窗口剩余 '+pairSeconds+' 秒。':'');
+const wpm=active&&(scene==='typing'||scene==='low')?q('#wpmInput').value:'0';q('#wpmValue').textContent=wpm;q('.wpm').setAttribute('aria-label','输入速度 '+wpm+' WPM');
+
 for(const [side,level] of [['left',scene==='low'?12:82],['right',76]]){
 const disconnected=side==='right'&&scene==='lost',unidentified=scene==='pairing',missing=unknown||disconnected||unidentified;
 q('#'+side).className='battery '+side+(level<20?' low':'')+(disconnected?' off':'')+(missing?' unknown':'')+(unidentified?' unidentified':'');
 q('#'+side).style.setProperty('--level',missing?'0%':level+'%');
 q('#'+side+'Value').textContent=disconnected?'未连接':unidentified?'待识别':unknown?'--%':level+'%';
 }
-const sleeping=scene!=='typing'&&scene!=='low';
+const sleeping=!active||(scene!=='typing'&&scene!=='low');
 const src=chosen?chosen.src:sleeping?'assets/sleep.gif':'assets/work.gif';
 if(q('#cat').getAttribute('src')!==src)q('#cat').src=src;
 q('#cat').alt=chosen?chosen.name:sleeping?'月薪喵睡觉动画':'月薪喵 cat-sad 动画';
 q('#assetNote').textContent=chosen?'当前试看：'+chosen.name:sleeping?'当前：闲置原有睡觉动画':'当前：正常输入 · cat-sad.gif（本地素材）';
-q('#message').textContent={typing:'',idle:'',lost:'',pairing:'',low:'',suspend:'等待电脑唤醒'}[scene];
+q('#message').textContent='';
 q('#message').classList.toggle('alert',scene==='lost'||scene==='low');
 q('#explanation').textContent=descriptions[scene];
-q('#screen').setAttribute('aria-label',`StopWatch 预览：${wpm} WPM，${q('#leftValue').textContent}，${q('#rightValue').textContent}，${q('#layerName').textContent}，${q('#message').textContent}`);
+q('#screen').setAttribute('aria-label',`StopWatch 预览：${link[0]}，${link[1]}，${link[2]}，${wpm} WPM，${q('#leftValue').textContent}，${q('#rightValue').textContent}，${q('#layerName').textContent}，${q('#message').textContent}`);
 }
+q('#connection').addEventListener('change',()=>{pairSeconds=120;render()});
+setInterval(()=>{if(q('#connection').value!=='pair'||scene==='suspend')return;if(pairSeconds>0)pairSeconds--;else q('#connection').value='none';render()},1000);
 q('#scenes').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;scene=b.dataset.scene;for(const x of q('#scenes').querySelectorAll('button'))x.setAttribute('aria-pressed',String(x===b));render()});
 q('#batteryModes').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;unknown=b.dataset.mode==='unknown';for(const x of q('#batteryModes').querySelectorAll('button'))x.setAttribute('aria-pressed',String(x===b));render()});
 q('#layerSelect').addEventListener('change',e=>{const i=Number(e.target.value);q('#layerName').textContent=['BASE','NUM / NAV','FN / SYMBOL','SCROLL','SNIPE'][i];document.querySelectorAll('.ticks i').forEach((x,n)=>x.classList.toggle('active',i===n));render()});

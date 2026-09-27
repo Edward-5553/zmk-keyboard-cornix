@@ -19,6 +19,7 @@ void display_status_usb(enum display_usb usb) {
     LOCK(); display_model_usb(&state,usb,now); UNLOCK();
 }
 void display_status_layer(uint8_t layer) { LOCK(); state.layer=layer; UNLOCK(); }
+void display_status_ble_waiting(bool waiting) { LOCK();state.ble_waiting=waiting;UNLOCK(); }
 void display_status_activity(enum display_hint hint) {
     uint32_t now=esp_timer_get_time()/1000;
     LOCK(); state.has_activity=true; state.last_activity=now;

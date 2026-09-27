@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 #include "dongle.h"
+#include "ble_output.h"
 #include "display_status.h"
 #include "keymap_config.h"
 #include "keymap_protocol.h"
@@ -20,7 +21,9 @@ static const uint8_t report_descriptor[] = {
     // WebHID accesses only this vendor collection; standard input reports are protected.
     0x06,0x50,0xff,0x09,0x01,0xa1,0x01,0x85,KM_REPORT_ID,
     0x15,0x00,0x26,0xff,0x00,0x75,0x08,0x95,KM_REPORT_SIZE,
-    0x09,0x01,0xb1,0x02,0xc0,
+    0x09,0x01,0xb1,0x02,
+    // Same feature length as the editor for Windows HID compatibility; first eight bytes used.
+    0x85,0x07,0x95,KM_REPORT_SIZE,0x09,0x02,0xb1,0x02,0xc0,
 };
 _Static_assert(CFG_TUD_HID_EP_BUFSIZE>=KM_REPORT_SIZE+1,"HID feature report buffer too small");
 static const uint8_t config_descriptor[] = {
@@ -34,9 +37,14 @@ static bool keyboard_dirty, consumer_dirty;
 static const char *strings[] = {(char[]){9,4},"Cornix", "StopWatch Dongle (experimental)",serial,"Keyboard / media / wheel"};
 uint8_t const *tud_hid_descriptor_report_cb(uint8_t instance) { return report_descriptor; }
 uint16_t tud_hid_get_report_cb(uint8_t instance,uint8_t report_id,hid_report_type_t type,uint8_t *buffer,uint16_t len) {
+    if(report_id==7 && type==HID_REPORT_TYPE_FEATURE && len>=KM_REPORT_SIZE){
+        memset(buffer,0,KM_REPORT_SIZE);ble_output_status(buffer);return KM_REPORT_SIZE;
+    }
     return report_id==KM_REPORT_ID && type==HID_REPORT_TYPE_FEATURE?keymap_config_report(buffer,len):0;
 }
 void tud_hid_set_report_cb(uint8_t instance,uint8_t report_id,hid_report_type_t type,const uint8_t *buffer,uint16_t len) {
+    if(report_id==7 && type==HID_REPORT_TYPE_FEATURE && len==KM_REPORT_SIZE && !memcmp(buffer,"SWBT\x01\x01\x00\x00",8))
+        ble_output_forget();
     if(report_id==KM_REPORT_ID && type==HID_REPORT_TYPE_FEATURE)keymap_config_receive(buffer,len);
 }
 
