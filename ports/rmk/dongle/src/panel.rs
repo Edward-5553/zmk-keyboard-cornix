@@ -63,15 +63,21 @@ impl Panel {
 
     pub async fn init(&mut self) -> Result<()> {
         esp_println::println!("LCD: probing M5IOE1");
-        // A sleeping M5IOE1 may NACK its first transaction. Retry both official addresses.
-        'probe: for address in [0x4f, 0x6f] {
-            for _ in 0..3 {
+        // Cold power-up and IOE wake-up can outlast the old three 10 ms retries.
+        // Let the bus settle, then alternate addresses so neither one is abandoned
+        // before the expander is ready. Each read is bounded to 100 ms: at most
+        // 6.1 seconds including delays, without blocking keyboard/BLE tasks.
+        self.address = 0;
+        Timer::after_millis(100).await;
+        'probe: for attempt in 0..20 {
+            for address in [0x4f, 0x6f] {
                 if self.read(address, 0x05).await.is_ok() {
                     self.address = address;
+                    esp_println::println!("IOE: ready on probe round {}", attempt + 1);
                     break 'probe;
                 }
-                Timer::after_millis(10).await;
             }
+            Timer::after_millis(100).await;
         }
         if self.address == 0 { return Err("M5IOE1 not found"); }
         esp_println::println!("LCD: IOE at {:#x}, I2C {} Hz", self.address, I2C_HZ);

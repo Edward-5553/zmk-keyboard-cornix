@@ -82,6 +82,7 @@ async fn run(panel: &mut Panel, buffer: &mut Stripe) -> Result<()> {
         if previous.is_none() || off {
             panel.brightness(0).await?;
             region(panel,buffer,(0,0,WIDTH,HEIGHT),&v,working,frame).await?;
+            esp_println::println!("LCD: full frame drawn");
             if off {panel.command(0x29,&[]).await?;off=false;}
             brightness=0;
         } else {
