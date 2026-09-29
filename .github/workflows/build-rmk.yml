@@ -1,0 +1,143 @@
+name: Build RMK Cornix StopWatch
+
+on:
+  workflow_dispatch:
+    inputs:
+      reset_storage:
+        description: 'Build temporary reset images (erase RMK bonds/keymap at EVERY boot)'
+        type: boolean
+        default: false
+  push:
+    branches: ['codex/rmk-stopwatch-dongle']
+    paths:
+      - 'ports/rmk/**'
+      - '.github/workflows/build-rmk.yml'
+  pull_request:
+    paths:
+      - 'ports/rmk/**'
+      - '.github/workflows/build-rmk.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rmk-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  config:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate topology, keymap, memory layout and dependency pins
+        run: python ports/rmk/tools/check.py
+
+  peripherals:
+    needs: config
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: ports/rmk/peripherals
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: thumbv7em-none-eabihf
+          components: llvm-tools
+      - name: Install native build dependencies
+        run: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi libclang-dev libudev-dev liblzma-dev
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: flip-link,cargo-binutils,cargo-hex-to-uf2
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ports/rmk/peripherals
+      - name: Prepare temporary reset configuration
+        if: inputs.reset_storage == true
+        run: python3 ../tools/generate.py --reset-storage
+      - name: Compile both Cornix halves
+        run: cargo build --release --bins
+      - name: Package UF2 and resolved dependencies
+        run: |
+          mkdir -p ../dist/peripherals
+          for side in left right; do
+            cargo objcopy --release --bin "cornix-$side" -- -O ihex "../dist/peripherals/cornix-$side.hex"
+            cargo hex-to-uf2 --input-path "../dist/peripherals/cornix-$side.hex" --output-path "../dist/peripherals/cornix-$side.uf2" --family nrf52840
+          done
+          cp Cargo.lock keyboard.toml memory.x ../dist/peripherals/
+          cp ../README.md ../dist/peripherals/README.md
+          printf '%s\n' "$GITHUB_SHA" > ../dist/peripherals/COMMIT.txt
+          cd ../dist/peripherals
+          sha256sum *.uf2 > SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: cornix-rmk-peripherals${{ inputs.reset_storage && '-reset' || '' }}
+          path: ports/rmk/dist/peripherals/
+          if-no-files-found: error
+      - name: Keep lockfile even when compilation fails
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: rmk-peripherals-dependencies
+          path: ports/rmk/peripherals/Cargo.lock
+
+  dongle:
+    needs: config
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: ports/rmk/dongle
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install native build dependencies
+        run: sudo apt-get update && sudo apt-get install -y libudev-dev liblzma-dev pkg-config
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: espup,espflash
+      - name: Install Xtensa Rust toolchain
+        run: espup install --targets esp32s3
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ports/rmk/dongle
+      - name: Prepare temporary reset configuration
+        if: inputs.reset_storage == true
+        run: python3 ../tools/generate.py --reset-storage
+      - name: Compile ESP32-S3 receiver
+        shell: bash
+        run: |
+          source "$HOME/export-esp.sh"
+          cargo +esp build --release
+      - name: Package merged flash image and ELF
+        shell: bash
+        run: |
+          mkdir -p ../dist/dongle
+          cp target/xtensa-esp32s3-none-elf/release/cornix-rmk-stopwatch ../dist/dongle/cornix-rmk-stopwatch.elf
+          espflash save-image --chip esp32s3 --flash-size 4mb --merge --partition-table partitions.csv \
+            ../dist/dongle/cornix-rmk-stopwatch.elf ../dist/dongle/cornix-rmk-stopwatch-merged.bin
+          cp Cargo.lock keyboard.toml vial.json partitions.csv ../dist/dongle/
+          cp ../README.md ../dist/dongle/README.md
+          printf '%s\n' "$GITHUB_SHA" > ../dist/dongle/COMMIT.txt
+          cd ../dist/dongle
+          sha256sum *.bin *.elf > SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: cornix-rmk-stopwatch${{ inputs.reset_storage && '-reset' || '' }}
+          path: ports/rmk/dist/dongle/
+          if-no-files-found: error
+      - name: Keep lockfile even when compilation fails
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: rmk-dongle-dependencies
+          path: ports/rmk/dongle/Cargo.lock
