@@ -9,6 +9,34 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def vial_keymap(positions):
+    # Share the measured geometry with ZMK, but retain RMK's matrix labels.
+    source = ROOT.parents[1] / "boards/jzf/cornix/cornix-layouts.dtsi"
+    geometry = [
+        [int(value) / 100 for value in re.findall(r"-?\d+", attrs)]
+        for attrs in re.findall(r"<&key_physical_attrs\s+([^>]+)>", source.read_text(encoding="utf-8"))
+    ]
+    assert len(geometry) == len(positions) == 50
+    keys = []
+    for (row, col), (w, h, x, y, angle, rx, ry) in zip(positions, geometry):
+        # KLE offsets are relative to the rotation origin. Reset the cluster
+        # on every row so column stagger and rotated thumbs cannot accumulate.
+        keys.append([
+            {"r": angle, "rx": rx, "ry": ry,
+             "x": round(x - rx, 2), "y": round(y - ry, 2), "w": w, "h": h},
+            f"{row},{col}",
+        ])
+    # Turning a knob has no separate physical switch. Put full-size virtual
+    # direction controls below each thumb cluster; the clicks stay in place.
+    for encoder, xs in enumerate(((4.5, 5.6), (8, 9.1))):
+        for direction, x in enumerate(xs):
+            keys.append([
+                {"r": 0, "rx": 0, "ry": 0, "x": x, "y": 5.3},
+                f"{encoder},{direction}" + "\n" * 9 + "e",
+            ])
+    return keys
+
+
 def outputs(reset_storage=False):
     shared = (ROOT / "config/layout.toml").read_text(encoding="utf-8")
     layout = tomllib.loads(shared)
@@ -65,13 +93,8 @@ clear_storage = {str(reset_storage).lower()}
                 ("Output", "Switch USB / BLE output"), ("Clear Peer", "Hold 5 seconds to clear split pairing"),
             ]
         ],
-        "layouts": {"keymap": [[f"{r},{c}" for r, c in row] for row in rows]},
+        "layouts": {"keymap": vial_keymap(positions)},
     }
-    # The extra row exposes encoder directions in Vial without consuming matrix keys.
-    vial["layouts"]["keymap"].append([
-        {"x": 2}, "0,0\n\n\n\n\n\n\n\n\ne", "0,1\n\n\n\n\n\n\n\n\ne",
-        {"x": 4}, "1,0\n\n\n\n\n\n\n\n\ne", "1,1\n\n\n\n\n\n\n\n\ne",
-    ])
     result[ROOT / "dongle/vial.json"] = json.dumps(vial, indent=2) + "\n"
     result[ROOT / "peripherals/vial.json"] = result[ROOT / "dongle/vial.json"]
     return result

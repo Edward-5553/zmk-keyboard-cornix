@@ -15,11 +15,13 @@ on:
     branches: ['codex/rmk-stopwatch-dongle']
     paths:
       - 'ports/rmk/**'
+      - 'boards/jzf/cornix/cornix-layouts.dtsi'
       - 'ports/stopwatch/main/assets/**'
       - '.github/workflows/build-rmk.yml'
   pull_request:
     paths:
       - 'ports/rmk/**'
+      - 'boards/jzf/cornix/cornix-layouts.dtsi'
       - 'ports/stopwatch/main/assets/**'
       - '.github/workflows/build-rmk.yml'
 

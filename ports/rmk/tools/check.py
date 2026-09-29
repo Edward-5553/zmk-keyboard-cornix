@@ -63,7 +63,11 @@ def main():
     vial = json.loads((ROOT / "dongle/vial.json").read_text())
     assert vial["matrix"] == {"rows": 8, "cols": 7}
     assert len(vial["customKeycodes"]) == 8
-    encoders = [key for key in vial["layouts"]["keymap"][-1] if isinstance(key, str)]
+    labels = [key for row in vial["layouts"]["keymap"] for key in row if isinstance(key, str)]
+    matrix_keys = [key for key in labels if "\n" not in key]
+    assert matrix_keys == [f"{r},{c}" for r, c in coords], "Vial matrix order changed"
+    assert len(set(matrix_keys)) == 50
+    encoders = [key for key in labels if "\n" in key]
     assert [key.split("\n")[0] for key in encoders] == ["0,0", "0,1", "1,0", "1,1"]
     assert all(key.split("\n")[-1] == "e" for key in encoders)
     # All tracked TOML and JSON files must parse, including target/toolchain configs.

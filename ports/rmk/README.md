@@ -18,6 +18,10 @@ Cornix 右半 nRF52840 ── RMK BLE split ──┘
   `config/layout.toml`，运行 `python tools/generate.py` 同步两个构建配置。
 - USB 键盘、媒体键、鼠标滚轮和 Vial 改键。RMK 自带 BLE 主机输出也保留，
   首轮验收以 USB 输出为准。
+- Vial 外形复用 `boards/jzf/cornix/cornix-layouts.dtsi` 的实际键位坐标，包含
+  左右间距、列错位和拇指键角度；旋钮按压位于实际位置，四个旋转方向控件
+  放在对应拇指区下方。修改坐标后重新运行生成器。仅更新外形时只需升级
+  StopWatch 并重新连接 Vial，矩阵编号和已保存的改键保持不变。
 - 从机电量 ADC、配对存储。RGB 电源默认关闭。
 - StopWatch CO5300 AMOLED，沿用 `ports/stopwatch` 的圆屏 UI：双侧电量、
   USB/BLE 图标、WPM、猫动画、层名、五层圆点和音量/滚轮提示。
