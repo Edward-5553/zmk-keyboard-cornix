@@ -25,6 +25,10 @@ Cornix 右半 nRF52840 ── RMK BLE split ──┘
 - 从机电量 ADC、配对存储。两侧 RGB 仅提示与 dongle 的连接状态：未连接时
   每 3 秒蓝灯闪 300 ms，连接成功后绿灯亮 2 秒，随后关闭灯及其电源。
   不显示电量、层或大写锁定。此功能需要更新左右两半 UF2，dongle 无需重刷。
+  灯数据使用 PWM0、16 MHz / 20 计数周期及高驱动强度；逻辑 0/1 高电平
+  分别为 375/812.5 ns，帧末低电平保持 320 µs。引脚及 PWM 参数对照
+  [Cornix RMK 灯驱动](https://github.com/cffnpwr/cornix-prospector-rmk/blob/main/src/ws2812.rs)。
+  初版 SPI 实现实测两侧均不亮；此 PWM 修正版仍需实机确认。
 - StopWatch CO5300 AMOLED，沿用 `ports/stopwatch` 的圆屏 UI：双侧电量、
   USB/BLE 图标、WPM、猫动画、层名、五层圆点和音量/滚轮提示。
 - **暂未接入触摸、IMU 自动旋转和旧版 WebHID 编辑器。** 当前屏幕方向固定，

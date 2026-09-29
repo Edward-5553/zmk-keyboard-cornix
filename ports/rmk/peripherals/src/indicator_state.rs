@@ -26,19 +26,16 @@ impl State {
     }
 }
 
-// Two GRB pixels, 5 SPI bits per WS2812 bit at 4 MHz (1.25 us).
-// 0 = 10000 (0.25 us high); 1 = 11100 (0.75 us high).
-// Trailing zero bytes hold DIN low for 320 us, including newer WS2812 resets.
-pub fn encode(rgb: [u8; 3]) -> [u8; 190] {
-    let mut frame = [0; 190];
+// PWM runs at 16 MHz with a 20-tick period (1.25 us).
+// Falling-edge polarity starts high; 6/13 ticks give 375/812.5 ns pulses.
+// The final zero-duty word is held low by the driver's reset end delay.
+pub fn encode(rgb: [u8; 3]) -> [u16; 49] {
+    let mut frame = [0x8000; 49];
     let mut index = 0;
     for value in [rgb[1], rgb[0], rgb[2], rgb[1], rgb[0], rgb[2]] {
         for bit in (0..8).rev() {
-            let symbol = if value & (1 << bit) != 0 { 0b11100 } else { 0b10000 };
-            for shift in (0..5).rev() {
-                frame[index / 8] |= ((symbol >> shift) & 1) << (7 - index % 8);
-                index += 1;
-            }
+            frame[index] = 0x8000 | if value & (1 << bit) != 0 { 13 } else { 6 };
+            index += 1;
         }
     }
     frame
@@ -67,14 +64,11 @@ mod tests {
         let frame = encode([0x12, 0x34, 0x56]);
         let mut decoded = [0u8; 6];
         for bit in 0..48 {
-            let mut symbol = 0;
-            for i in bit*5..bit*5+5 {
-                symbol = (symbol << 1) | ((frame[i/8] >> (7-i%8)) & 1);
-            }
-            assert!(symbol == 0b10000 || symbol == 0b11100);
-            decoded[bit/8] = (decoded[bit/8] << 1) | u8::from(symbol == 0b11100);
+            let word = frame[bit];
+            assert!(word == 0x8006 || word == 0x800d);
+            decoded[bit/8] = (decoded[bit/8] << 1) | u8::from(word == 0x800d);
         }
         assert_eq!(decoded, [0x34, 0x12, 0x56, 0x34, 0x12, 0x56]);
-        assert!(frame[30..].iter().all(|&v| v == 0));
+        assert_eq!(frame[48], 0x8000);
     }
 }

@@ -9,11 +9,13 @@ mod indicator_state;
 mod keyboard_peripheral {
     #[register_processor(poll)]
     fn connection_indicator() -> crate::indicator::ConnectionIndicator {
-        use embassy_nrf::{gpio::{Output, Level, OutputDrive}, spim::{Spim, Config, Frequency}};
+        use embassy_nrf::{gpio::{Output, Level, OutputDrive}, pwm::{SequencePwm, Config, Prescaler}};
         let mut config = Config::default();
-        config.frequency = Frequency::M4;
+        config.prescaler = Prescaler::Div1;
+        config.max_duty = 20;
+        config.ch0_drive = OutputDrive::HighDrive;
         let power = Output::new(p.P0_13, Level::Low, OutputDrive::Standard);
-        let spi = Spim::new_txonly_nosck(p.SPI3, crate::indicator::LedIrqs, p.P0_24, config);
-        crate::indicator::ConnectionIndicator::new(spi, power)
+        let pwm = SequencePwm::new_1ch(p.PWM0, p.P0_24, config).ok();
+        crate::indicator::ConnectionIndicator::new(pwm, power)
     }
 }
