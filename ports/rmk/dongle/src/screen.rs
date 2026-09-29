@@ -99,8 +99,14 @@ async fn run(panel: &mut Panel, buffer: &mut Stripe) -> Result<()> {
 
 #[embassy_executor::task]
 pub async fn display_task(mut panel: Panel) {
+    esp_println::println!("LCD: display task running");
     let mut buffer=Stripe([0;WIDTH*STRIPE_ROWS*2]);
     if let Err(error)=run(&mut panel,&mut buffer).await {
         esp_println::println!("LCD disabled: {}; keyboard BLE/USB remain active",error);
+        #[cfg(feature = "diagnostic-usb")]
+        loop {
+            Timer::after_secs(3).await;
+            esp_println::println!("LCD diagnostic failure: {}",error);
+        }
     }
 }

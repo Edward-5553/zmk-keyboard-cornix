@@ -13,6 +13,7 @@ mod screen;
 mod keyboard_central {
     #[register_processor(event)]
     fn screen_events() -> crate::screen::ScreenEvents {
+        esp_println::println!("LCD: configuring buses and spawning display task");
         use esp_hal::{i2c::master::{I2c, Config as I2cConfig}, spi::master::{Spi, Config as SpiConfig}, time::Rate};
         // The IO expander requires standard-mode timing. Do not use 400 kHz here.
         let i2c=I2c::new(p.I2C0,I2cConfig::default().with_frequency(Rate::from_hz(crate::panel::I2C_HZ)));

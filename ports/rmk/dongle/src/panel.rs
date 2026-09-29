@@ -26,7 +26,13 @@ impl Panel {
     async fn read(&mut self, address: u8, reg: u8) -> Result<u8> {
         let mut value = [0];
         with_timeout(Duration::from_millis(100), self.i2c.write_read_async(address, &[reg], &mut value))
-            .await.map_err(|_| "IOE read timeout")?.map_err(|_| "IOE read")?;
+            .await.map_err(|_| {
+                esp_println::println!("IOE {:#x} reg {:#x}: read timeout", address, reg);
+                "IOE read timeout"
+            })?.map_err(|error| {
+                esp_println::println!("IOE {:#x} reg {:#x}: {:?}", address, reg, error);
+                "IOE read"
+            })?;
         Ok(value[0])
     }
 
@@ -56,6 +62,7 @@ impl Panel {
     }
 
     pub async fn init(&mut self) -> Result<()> {
+        esp_println::println!("LCD: probing M5IOE1");
         // A sleeping M5IOE1 may NACK its first transaction. Retry both official addresses.
         'probe: for address in [0x4f, 0x6f] {
             for _ in 0..3 {
@@ -71,6 +78,8 @@ impl Panel {
         self.update(0x23, 0x0f, 0).await?;
         if let Err(error) = self.quiet_peripherals().await {
             esp_println::println!("IOE audio/motor shutdown failed: {}", error);
+        } else {
+            esp_println::println!("IOE: audio and motor disabled");
         }
         // Read-modify-write PYG5 (reset) and PYG8 (power); retain USB mux/charging.
         self.update(0x09, 0x90, 0).await?;
@@ -84,6 +93,7 @@ impl Panel {
         if self.read(self.address, 0x05).await? & 0x90 != 0x90 {
             return Err("LCD power/reset readback");
         }
+        esp_println::println!("LCD: power/reset verified; starting CO5300 commands");
         self.command(0x36, &[0]).await?;
         self.command(0x3a, &[0x55]).await?; // RGB565, as esp_lcd_panel_init does.
         self.command(0x11, &[]).await?;
@@ -92,6 +102,7 @@ impl Panel {
             (0xc4, &[0x80][..]), (0x35, &[0x80]), (0x44, &[0x01, 0xd2]),
             (0x53, &[0x20]), (0x20, &[]), (0x36, &[0]), (0x51, &[0]), (0x29, &[]),
         ] { self.command(cmd, data).await?; }
+        esp_println::println!("LCD: CO5300 initialization complete");
         Ok(())
     }
 

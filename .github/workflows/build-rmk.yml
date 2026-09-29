@@ -3,6 +3,10 @@ name: Build RMK Cornix StopWatch
 on:
   workflow_dispatch:
     inputs:
+      diagnostic_usb:
+        description: 'Temporary USB Serial/JTAG diagnostics; disables USB keyboard, preserves storage'
+        type: boolean
+        default: false
       reset_storage:
         description: 'Build temporary reset images (erase RMK bonds/keymap at EVERY boot)'
         type: boolean
@@ -136,7 +140,12 @@ jobs:
         shell: bash
         run: |
           source "$HOME/export-esp.sh"
-          cargo +esp build --locked --release
+          if [ "${{ inputs.diagnostic_usb }}" = "true" ]; then
+            python3 -c 'from pathlib import Path; p=Path("keyboard.toml"); s=p.read_text(); assert "usb_enable = true" in s; p.write_text(s.replace("usb_enable = true", "usb_enable = false"))'
+            cargo +esp build --locked --release --no-default-features --features diagnostic-usb
+          else
+            cargo +esp build --locked --release
+          fi
       - name: Record dependency resolution changes
         if: always()
         run: git diff -- Cargo.lock
@@ -159,7 +168,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: success()
         with:
-          name: cornix-rmk-stopwatch${{ inputs.reset_storage && '-reset' || '' }}
+          name: cornix-rmk-stopwatch${{ inputs.reset_storage && '-reset' || '' }}${{ inputs.diagnostic_usb && '-diagnostic' || '' }}
           path: ports/rmk/dist/dongle/
           if-no-files-found: error
       - name: Keep lockfile even when compilation fails

@@ -140,3 +140,10 @@ Cargo、构建脚本和平台启动方式改编自 [RMK 官方示例](https://gi
 沿用其 MIT 许可（`LICENSE-RMK-MIT`）。三设备角色和 Cornix 硬件配置参考
 [cornix-prospector-rmk](https://github.com/cffnpwr/cornix-prospector-rmk)，并与本仓库
 Cornix DTS 核对。这里没有使用或声称拥有 Cornix 原厂完整源码。
+
+## USB 诊断固件
+
+Actions 手动运行时可选 `diagnostic_usb`，下载带 `-diagnostic` 后缀的 StopWatch 包。
+它保留 RMK 存储，但临时关闭 USB HID/Vial，将 USB 留给 Serial/JTAG 日志；蓝牙仍运行。
+不要勾选 `reset_storage`。用串口终端读取日志中的 LCD/IOE 探测、初始化阶段和错误。
+诊断结束后刷回普通包恢复 USB 键盘。默认构建仍使用 UART0 日志。
