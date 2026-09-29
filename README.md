@@ -1,7 +1,7 @@
 # ZMK Keyboard for Cornix
 
 > **RMK 实验分支：** [Cornix + ESP32-S3 StopWatch 原生 RMK](ports/rmk/README.md)。
-> 三设备独立固件，通过 **Build RMK Cornix StopWatch** Actions 构建；第一阶段验证输入，屏幕尚未接入。
+> 三设备独立固件，通过 **Build RMK Cornix StopWatch** Actions 构建；已接入 StopWatch 圆屏 UI，等待实机验证。
 
 ZMK board definitions and shields for the Cornix split ergonomic keyboard.
 

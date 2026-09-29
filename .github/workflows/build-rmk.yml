@@ -11,10 +11,12 @@ on:
     branches: ['codex/rmk-stopwatch-dongle']
     paths:
       - 'ports/rmk/**'
+      - 'ports/stopwatch/main/assets/**'
       - '.github/workflows/build-rmk.yml'
   pull_request:
     paths:
       - 'ports/rmk/**'
+      - 'ports/stopwatch/main/assets/**'
       - '.github/workflows/build-rmk.yml'
 
 permissions:
@@ -37,6 +39,18 @@ jobs:
           python-version: '3.12'
       - name: Validate topology, keymap, memory layout and dependency pins
         run: python ports/rmk/tools/check.py
+      - name: Verify inherited UI assets
+        run: python ports/rmk/tools/display_assets.py --check
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Test UI state, partial redraws and every animation row on the CI host
+        run: |
+          rustc --edition=2024 --test ports/rmk/dongle/src/ui_tests.rs -o /tmp/rmk-ui-tests
+          /tmp/rmk-ui-tests
+          python ports/rmk/tools/ui_preview.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cornix-rmk-screen-preview
+          path: ui-preview/*.png
 
   peripherals:
     needs: config
@@ -136,6 +150,9 @@ jobs:
           python3 ../tools/check_images.py ../dist/dongle
           cp Cargo.lock keyboard.toml vial.json partitions.csv ../dist/dongle/
           cp ../README.md ../dist/dongle/README.md
+          mkdir -p ../dist/dongle/licenses
+          cp assets/source/LVGL-LICENSE.txt assets/NotoSansSC-OFL.txt assets/M5Stack-NOTICES.md ../dist/dongle/licenses/
+          cp ../../../boards/shields/cornix_dongle_display/ASSETS.md ../dist/dongle/licenses/ARTWORK.md
           printf '%s\n' "$GITHUB_SHA" > ../dist/dongle/COMMIT.txt
           cd ../dist/dongle
           sha256sum *.bin *.elf > SHA256SUMS.txt

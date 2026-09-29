@@ -41,7 +41,17 @@ num_sectors = {sectors}
 clear_storage = {str(reset_storage).lower()}
 
 '''
-        result[ROOT / target / "keyboard.toml"] = header + shared
+        # Extra subscribers belong only to the receiver UI, not the BLE wire protocol.
+        events = ""
+        if target == "dongle":
+            for name, slots in {"keyboard": 5, "connection_status_change": 2,
+                                "peripheral_connected": 2, "peripheral_battery": 3,
+                                "layer_change": 2, "wpm_update": 2, "action": 1}.items():
+                events += f"[event.{name}]\nsubs = {slots}\n"
+                if name == "peripheral_connected":
+                    events += "channel_size = 4\n"
+                events += "\n"
+        result[ROOT / target / "keyboard.toml"] = header + events + shared
     # Vial coordinates use the same 8x7 logical matrix as RMK (not ZMK's 4x14).
     vial = {
         "name": "Cornix RMK StopWatch", "vendorId": "0x4C4B", "productId": "0x4643",
