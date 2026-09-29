@@ -2,7 +2,7 @@
 // Power/reset sequence ported from ports/stopwatch/main/display_hw.c.
 // Copyright (c) 2026 M5Stack Technology CO LTD (initialization sequence).
 use embassy_time::{Duration, Timer, with_timeout};
-use esp_hal::{Async, i2c::master::I2c, spi::{DataMode, master::{Address, Command, SpiDma}}};
+use esp_hal::{Async, i2c::master::I2c, spi::master::{DataMode, Address, Command, SpiDma}};
 
 pub const WIDTH: usize = 466;
 pub const HEIGHT: usize = 466;

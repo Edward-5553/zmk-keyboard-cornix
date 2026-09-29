@@ -23,6 +23,6 @@ includes kerning from the Montserrat sources.
 
 The cat artwork is **not MIT-licensed code**. Attribution and usage restrictions
 remain those in [the original artwork notice](../../../../../boards/shields/cornix_dongle_display/ASSETS.md)
-and [the StopWatch assets](../../../../stopwatch/main/assets/README.md).
+and [the StopWatch assets](../../../stopwatch/main/assets/README.md).
 The M5Stack panel initialization attribution is retained in
 `M5Stack-NOTICES.md`. These notices accompany the firmware artifact.
