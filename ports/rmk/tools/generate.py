@@ -79,6 +79,9 @@ clear_storage = {str(reset_storage).lower()}
                 if name == "peripheral_connected":
                     events += "channel_size = 4\n"
                 events += "\n"
+        else:
+            # Connection indicator adds one consumer to the default capacity.
+            events = "[event.central_connected]\nsubs = 2\nchannel_size = 4\n\n"
         result[ROOT / target / "keyboard.toml"] = header + events + shared
     # Vial coordinates use the same 8x7 logical matrix as RMK (not ZMK's 4x14).
     vial = {

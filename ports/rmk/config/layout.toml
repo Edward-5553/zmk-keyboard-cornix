@@ -47,10 +47,6 @@ internal_pullup = true
 phase = "resolution"
 resolution = 4
 
-[[split.peripheral.output]]
-pin = "P0_13"
-initial_state_active = false
-
 [[split.peripheral]]
 rows = 4
 cols = 7
@@ -71,10 +67,6 @@ pin_b = "P1_06"
 internal_pullup = true
 phase = "resolution"
 resolution = 4
-
-[[split.peripheral.output]]
-pin = "P0_24"
-initial_state_active = false
 
 [layout]
 rows = 8

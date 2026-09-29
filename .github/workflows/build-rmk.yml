@@ -52,6 +52,8 @@ jobs:
         run: |
           rustc --edition=2024 --test ports/rmk/dongle/src/ui_tests.rs -o /tmp/rmk-ui-tests
           /tmp/rmk-ui-tests
+          rustc --edition=2024 --test ports/rmk/peripherals/src/indicator_state.rs -o /tmp/rmk-indicator-tests
+          /tmp/rmk-indicator-tests
           python ports/rmk/tools/ui_preview.py
       - uses: actions/upload-artifact@v4
         with:
