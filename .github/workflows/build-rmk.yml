@@ -151,7 +151,7 @@ jobs:
           cp Cargo.lock keyboard.toml vial.json partitions.csv ../dist/dongle/
           cp ../README.md ../dist/dongle/README.md
           mkdir -p ../dist/dongle/licenses
-          cp assets/source/LVGL-LICENSE.txt assets/NotoSansSC-OFL.txt assets/M5Stack-NOTICES.md ../dist/dongle/licenses/
+          cp assets/source/*.txt assets/NotoSansSC-OFL.txt assets/M5Stack-NOTICES.md ../dist/dongle/licenses/
           cp ../../../boards/shields/cornix_dongle_display/ASSETS.md ../dist/dongle/licenses/ARTWORK.md
           printf '%s\n' "$GITHUB_SHA" > ../dist/dongle/COMMIT.txt
           cd ../dist/dongle

@@ -18,8 +18,10 @@ python ports/rmk/tools/display_assets.py --check
 
 Source fonts in `source/` are LVGL **v9.2.2** (matching the ESP-IDF port), from
 https://github.com/lvgl/lvgl/tree/v9.2.2/src/font. Retain `source/LVGL-LICENSE.txt`.
-The Noto subset retains the SIL OFL in `NotoSansSC-OFL.txt`. Generated font data
-includes kerning from the Montserrat sources.
+The Noto subset retains the SIL OFL in `NotoSansSC-OFL.txt`. Montserrat and the
+Font Awesome glyphs included in LVGL's source fonts retain the notices in
+`source/Montserrat-OFL.txt` and `source/FontAwesome-LICENSE.txt`. Generated font
+data includes kerning from the Montserrat sources.
 
 The cat artwork is **not MIT-licensed code**. Attribution and usage restrictions
 remain those in [the original artwork notice](../../../../../boards/shields/cornix_dongle_display/ASSETS.md)
