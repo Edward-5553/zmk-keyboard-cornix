@@ -64,7 +64,7 @@ jobs:
         if: inputs.reset_storage == true
         run: python3 ../tools/generate.py --reset-storage
       - name: Compile both Cornix halves
-        run: cargo build --release --bins
+        run: cargo build --locked --release --bins
       - name: Record dependency resolution changes
         if: always()
         run: git diff -- Cargo.lock
@@ -72,9 +72,10 @@ jobs:
         run: |
           mkdir -p ../dist/peripherals
           for side in left right; do
-            cargo objcopy --release --bin "cornix-$side" -- -O ihex "../dist/peripherals/cornix-$side.hex"
+            cargo objcopy --locked --release --bin "cornix-$side" -- -O ihex "../dist/peripherals/cornix-$side.hex"
             cargo hex-to-uf2 --input-path "../dist/peripherals/cornix-$side.hex" --output-path "../dist/peripherals/cornix-$side.uf2" --family nrf52840
           done
+          python3 ../tools/check_images.py ../dist/peripherals
           cp Cargo.lock keyboard.toml memory.x ../dist/peripherals/
           cp ../README.md ../dist/peripherals/README.md
           printf '%s\n' "$GITHUB_SHA" > ../dist/peripherals/COMMIT.txt
@@ -121,7 +122,7 @@ jobs:
         shell: bash
         run: |
           source "$HOME/export-esp.sh"
-          cargo +esp build --release
+          cargo +esp build --locked --release
       - name: Record dependency resolution changes
         if: always()
         run: git diff -- Cargo.lock
@@ -130,8 +131,9 @@ jobs:
         run: |
           mkdir -p ../dist/dongle
           cp target/xtensa-esp32s3-none-elf/release/cornix-rmk-stopwatch ../dist/dongle/cornix-rmk-stopwatch.elf
-          espflash save-image --chip esp32s3 --flash-size 4mb --merge --partition-table partitions.csv \
+          espflash save-image --chip esp32s3 --flash-size 4mb --merge --skip-padding --partition-table partitions.csv \
             ../dist/dongle/cornix-rmk-stopwatch.elf ../dist/dongle/cornix-rmk-stopwatch-merged.bin
+          python3 ../tools/check_images.py ../dist/dongle
           cp Cargo.lock keyboard.toml vial.json partitions.csv ../dist/dongle/
           cp ../README.md ../dist/dongle/README.md
           printf '%s\n' "$GITHUB_SHA" > ../dist/dongle/COMMIT.txt

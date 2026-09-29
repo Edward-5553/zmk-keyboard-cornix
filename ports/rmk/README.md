@@ -31,8 +31,9 @@ Cornix 右半 nRF52840 ── RMK BLE split ──┘
 - RMK：`f12257e89e9d07c461f4c774626b04af5b10600b`，三个目标保持一致。
 - ESP Rust HAL：`5363c4c493f5f11654696ff192028cf45f04ba72`，与上述 RMK 的 S3 示例一致。
 - 两个 Cargo 工程分别管理依赖，避免 ARM / Xtensa 平台 feature 相互影响。
-- 初始 `Cargo.lock` 以对应上游示例为种子；CI 首次解析新工程依赖后会随产物保存
-  完整 lockfile。固件按 commit 固定 RMK，但在回收 CI lockfile 前不宣称完全可复现。
+- 两份 `Cargo.lock` 已回收 Actions 成功构建时解析的依赖；CI 使用 `--locked`
+  防止静默更新依赖，并随产物保存 lockfile。构建工具链目前由 Actions 安装，
+  尚未保证固件二进制逐字节可复现。
 
 ## GitHub Actions 构建
 
@@ -70,6 +71,9 @@ python -m esptool --chip esp32s3 --port COM5 write-flash 0x0 cornix-rmk-stopwatc
 替换实际串口。合并镜像包含启动程序和分区表，不是旧 ESP-IDF 工程的 app-only bin。
 使用前 4 MiB 的保守布局；RMK 存储为 `0x3F0000..0x400000`，与镜像中的应用不重叠。
 镜像不依赖 PSRAM。不支持从旧编辑器升级到这个固件。
+打包使用 `--skip-padding`，不会填充整个 Flash 后覆盖 RMK 存储；CI 还检查实际
+UF2 地址和合并镜像长度。正常升级保留 RMK 存储，改键不会被编译默认值自动替换。
+日志固定输出 UART0，原生 USB 只承担 HID/Vial，不作为 Serial/JTAG 日志接口。
 
 ### 配对与清理
 
