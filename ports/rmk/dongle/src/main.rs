@@ -16,7 +16,11 @@ mod keyboard_central {
         use esp_hal::{i2c::master::{I2c, Config as I2cConfig}, spi::master::{Spi, Config as SpiConfig}, time::Rate};
         // The IO expander requires standard-mode timing. Do not use 400 kHz here.
         let i2c=I2c::new(p.I2C0,I2cConfig::default().with_frequency(Rate::from_hz(crate::panel::I2C_HZ)));
-        let spi=Spi::new(p.SPI2,SpiConfig::default().with_frequency(Rate::from_hz(crate::panel::QSPI_HZ)));
+        // Constant command parameters live in flash, which S3 DMA cannot read.
+        // Send short parameters via the FIFO; keep the RAM pixel stripes on DMA.
+        let spi=Spi::new(p.SPI2,SpiConfig::default()
+            .with_frequency(Rate::from_hz(crate::panel::QSPI_HZ))
+            .with_min_async_transfer_size(8));
         match (i2c,spi) {
             (Ok(i2c),Ok(spi))=>{
                 let i2c=i2c.with_sda(p.GPIO47).with_scl(p.GPIO48).into_async();

@@ -36,6 +36,25 @@ impl Panel {
             .await.map_err(|_| "IOE write timeout")?.map_err(|_| "IOE write")
     }
 
+    async fn quiet_peripherals(&mut self) -> Result<()> {
+        // IOE state can survive an ESP reset. PYG9 = motor (PWM1),
+        // PYG10 = AW8737A enable (PWM4), PYG3 = codec/microphone power.
+        // Disable PWM overrides before driving the motor and amplifier low.
+        self.update(0x1c, 0x80, 0).await?;
+        self.update(0x22, 0x80, 0).await?;
+        self.update(0x06, 0x03, 0).await?;
+        self.update(0x0a, 0x03, 0).await?;
+        self.update(0x0c, 0x03, 0).await?;
+        self.update(0x14, 0x03, 0).await?;
+        self.update(0x04, 0, 0x03).await?;
+        self.update(0x05, 0x04, 0).await?;
+        self.update(0x09, 0x04, 0).await?;
+        self.update(0x0b, 0x04, 0).await?;
+        self.update(0x13, 0x04, 0).await?;
+        self.update(0x03, 0, 0x04).await?;
+        Ok(())
+    }
+
     pub async fn init(&mut self) -> Result<()> {
         // A sleeping M5IOE1 may NACK its first transaction. Retry both official addresses.
         'probe: for address in [0x4f, 0x6f] {
@@ -49,8 +68,11 @@ impl Panel {
         }
         if self.address == 0 { return Err("M5IOE1 not found"); }
         esp_println::println!("LCD: IOE at {:#x}, I2C {} Hz", self.address, I2C_HZ);
-        // Read-modify-write only PYG5 (reset) and PYG8 (power); retain USB mux/charging.
         self.update(0x23, 0x0f, 0).await?;
+        if let Err(error) = self.quiet_peripherals().await {
+            esp_println::println!("IOE audio/motor shutdown failed: {}", error);
+        }
+        // Read-modify-write PYG5 (reset) and PYG8 (power); retain USB mux/charging.
         self.update(0x09, 0x90, 0).await?;
         self.update(0x0b, 0x90, 0).await?;
         self.update(0x13, 0x90, 0).await?;
@@ -76,10 +98,21 @@ impl Panel {
     async fn transfer(&mut self, opcode: u16, cmd: u8, mode: DataMode, data: &[u8]) -> Result<()> {
         // CO5300: single-line opcode + 24-bit address (00, command, 00).
         // Parameters are single-line; pixel payload uses all four data pins.
-        with_timeout(Duration::from_millis(100), self.spi.half_duplex_write_async(
+        let result = with_timeout(Duration::from_millis(100), self.spi.half_duplex_write_async(
             mode, Command::_8Bit(opcode, DataMode::Single),
             Address::_24Bit((cmd as u32) << 8, DataMode::Single), 0, data,
-        )).await.map_err(|_| "LCD DMA timeout")?.map_err(|_| "LCD SPI transfer")
+        )).await;
+        match result {
+            Ok(Ok(())) => Ok(()),
+            Ok(Err(error)) => {
+                esp_println::println!("LCD command {:#04x}, {} bytes: {:?}", cmd, data.len(), error);
+                Err("LCD SPI transfer")
+            }
+            Err(_) => {
+                esp_println::println!("LCD command {:#04x}, {} bytes: timeout", cmd, data.len());
+                Err("LCD DMA timeout")
+            }
+        }
     }
 
     pub async fn command(&mut self, cmd: u8, data: &[u8]) -> Result<()> {
