@@ -1,13 +1,11 @@
 [package]
 name = "cornix-rmk-stopwatch"
 version = "0.2.0"
-authors = ["Haobo Gu <haobogu@outlook.com>"]
-description = "Keyboard firmware written in Rust"
-homepage = "https://github.com/rmk-rs/rmk"
-repository = "https://github.com/rmk-rs/rmk"
-readme = "../../README.md"
+description = "Native RMK split central for Cornix and M5Stack StopWatch"
+repository = "https://github.com/Edward-5553/zmk-keyboard-cornix"
+readme = "../README.md"
 edition = "2024"
-license = "MIT OR Apache-2.0"
+license = "MIT"
 
 [dependencies]
 rmk = { git = "https://github.com/rmk-rs/rmk", rev = "f12257e89e9d07c461f4c774626b04af5b10600b", default-features = false, features = [
@@ -25,7 +23,8 @@ esp-backtrace = { version = "0.20", features = [
 esp-hal = { version = "1.2.0-rc.0", features = ["esp32s3", "unstable"] }
 esp-storage = { version = "0.10", features = ["embedded-storage", "esp32s3"] }
 esp-alloc = { version = "0.11" }
-esp-println = { version = "0.18", features = ["esp32s3", "log-04"] }
+# USB OTG is reserved for HID; send diagnostics to UART0 instead of Serial/JTAG.
+esp-println = { version = "0.18", default-features = false, features = ["esp32s3", "log-04", "uart", "critical-section"] }
 esp-radio = { version = "1.0.0-beta.0", features = ["esp32s3", "unstable", "ble"] }
 esp-rtos = { version = "0.4", features = ["esp32s3", "esp-radio", "embassy"] }
 esp-bootloader-esp-idf = { version = "0.6", features = ["esp32s3", "log-04"] }

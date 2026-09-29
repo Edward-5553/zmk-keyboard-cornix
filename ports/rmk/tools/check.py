@@ -27,6 +27,7 @@ def main():
     assert len(dongle["split"]["peripheral"]) == 2
     assert [p["row_offset"] for p in dongle["split"]["peripheral"]] == [0, 4]
     for config in configs:
+        assert len(config["keyboard"]["product_name"].encode()) <= 16, "BLE device name is limited to 16 bytes"
         assert not config["storage"]["clear_storage"], "Reset must be an explicit temporary CI build"
     pins = [
         (["P0_30", "P0_31", "P0_29", "P0_02"], ["P0_28", "P0_03", "P1_10", "P1_11", "P1_13", "P0_09", "P0_10"]),
@@ -62,6 +63,9 @@ def main():
     vial = json.loads((ROOT / "dongle/vial.json").read_text())
     assert vial["matrix"] == {"rows": 8, "cols": 7}
     assert len(vial["customKeycodes"]) == 8
+    encoders = [key for key in vial["layouts"]["keymap"][-1] if isinstance(key, str)]
+    assert [key.split("\n")[0] for key in encoders] == ["0,0", "0,1", "1,0", "1,1"]
+    assert all(key.split("\n")[-1] == "e" for key in encoders)
     # All tracked TOML and JSON files must parse, including target/toolchain configs.
     for path in ROOT.rglob("*.toml"):
         read_toml(path)

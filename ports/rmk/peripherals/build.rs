@@ -19,6 +19,7 @@ use const_gen::*;
 use xz2::read::XzEncoder;
 
 fn main() {
+    println!("cargo:rerun-if-changed=keyboard.toml");
     // Generate vial config at the root of project
     println!("cargo:rerun-if-changed=vial.json");
     generate_vial_config();
@@ -71,7 +72,7 @@ fn generate_vial_config() {
         .read_to_end(&mut keyboard_def_compressed)
         .unwrap();
 
-    let keyboard_id: Vec<u8> = vec![0xB9, 0xBC, 0x09, 0xB2, 0x9D, 0x37, 0x4C, 0xEA];
+    let keyboard_id: Vec<u8> = vec![0x43, 0x4F, 0x52, 0x4E, 0x53, 0x33, 0x52, 0x31];
     let const_declarations = [
         const_declaration!(pub VIAL_KEYBOARD_DEF = keyboard_def_compressed),
         const_declaration!(pub VIAL_KEYBOARD_ID = keyboard_id),

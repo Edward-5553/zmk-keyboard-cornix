@@ -1,13 +1,11 @@
 [package]
 name = "cornix-rmk-peripherals"
 version = "0.2.0"
-authors = ["Haobo Gu <haobogu@outlook.com>"]
-description = "Keyboard firmware written in Rust"
-homepage = "https://github.com/rmk-rs/rmk"
-repository = "https://github.com/rmk-rs/rmk"
-readme = "../../README.md"
+description = "Cornix left and right RMK split peripherals"
+repository = "https://github.com/Edward-5553/zmk-keyboard-cornix"
+readme = "../README.md"
 edition = "2024"
-license = "MIT OR Apache-2.0"
+license = "MIT"
 
 [dependencies]
 rmk = { git = "https://github.com/rmk-rs/rmk", rev = "f12257e89e9d07c461f4c774626b04af5b10600b", default-features = false, features = ["defmt", "storage", "vial", "host_lock", "nrf52840_ble", "split", "async_matrix", "adafruit_bl"] }

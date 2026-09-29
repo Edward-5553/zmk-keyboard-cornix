@@ -59,11 +59,15 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: ports/rmk/peripherals
+          cache-on-failure: true
       - name: Prepare temporary reset configuration
         if: inputs.reset_storage == true
         run: python3 ../tools/generate.py --reset-storage
       - name: Compile both Cornix halves
         run: cargo build --release --bins
+      - name: Record dependency resolution changes
+        if: always()
+        run: git diff -- Cargo.lock
       - name: Package UF2 and resolved dependencies
         run: |
           mkdir -p ../dist/peripherals
@@ -109,6 +113,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: ports/rmk/dongle
+          cache-on-failure: true
       - name: Prepare temporary reset configuration
         if: inputs.reset_storage == true
         run: python3 ../tools/generate.py --reset-storage
@@ -117,6 +122,9 @@ jobs:
         run: |
           source "$HOME/export-esp.sh"
           cargo +esp build --release
+      - name: Record dependency resolution changes
+        if: always()
+        run: git diff -- Cargo.lock
       - name: Package merged flash image and ELF
         shell: bash
         run: |
