@@ -32,11 +32,11 @@ static nvs_handle_t storage;
 static uint8_t own_type;
 static uint32_t generation;
 static int64_t pairing_until,blocked_since;
-static atomic_uint session;
+static atomic_uint session,report_epoch;
 static atomic_bool waiting;
 static atomic_bool forget_requested,queue_failed;
 static struct ble_npl_callout timer;
-struct queued_report { struct output output; uint32_t session; };
+struct queued_report { struct output output; uint32_t session,epoch; };
 static QueueHandle_t reports;
 static uint8_t values[3][8];
 static const uint8_t lengths[]={8,2,5};
@@ -210,7 +210,9 @@ static void poll(struct ble_npl_event *event) {
     struct queued_report report;
     for(unsigned budget=0;budget<8 && xQueuePeek(reports,&report,0)==pdTRUE;budget++) {
         uint32_t active=atomic_load(&session);
-        if(!active || report.session!=active){xQueueReceive(reports,&report,0);continue;}
+        if(!active || report.session!=active || report.epoch!=atomic_load(&report_epoch)){
+            xQueueReceive(reports,&report,0);continue;
+        }
         const struct output *o=&report.output;
         unsigned index=0;
         uint8_t bytes[8];
@@ -240,12 +242,12 @@ static void poll(struct ble_npl_event *event) {
 void ble_output_send(const struct output *out,void *context) {
     uint32_t active=atomic_load(&session);
     if(!active || active!=(uint32_t)(uintptr_t)context)return;
-    if(out->kind==OUT_WAIT){vTaskDelay(pdMS_TO_TICKS(30));return;}
+    if(out->kind==OUT_RESET){atomic_fetch_add(&report_epoch,1);return;}
     if(out->kind==OUT_WHEEL && out->wheel)
         display_status_activity(out->wheel>0?DISPLAY_HINT_SCROLL_UP:DISPLAY_HINT_SCROLL_DOWN);
     if(out->kind==OUT_CONSUMER && (out->consumer==233 || out->consumer==234))
         display_status_activity(out->consumer==233?DISPLAY_HINT_VOL_UP:DISPLAY_HINT_VOL_DOWN);
-    struct queued_report report={.output=*out,.session=active};
+    struct queued_report report={.output=*out,.session=active,.epoch=atomic_load(&report_epoch)};
     if(xQueueSend(reports,&report,0)!=pdTRUE)atomic_store(&queue_failed,true);
 }
 void ble_output_init(void) {

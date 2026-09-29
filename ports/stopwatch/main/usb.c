@@ -10,7 +10,6 @@
 #include "esp_mac.h"
 #include "esp_timer.h"
 #include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -31,9 +30,12 @@ static const uint8_t config_descriptor[] = {
     TUD_HID_DESCRIPTOR(0,4,HID_ITF_PROTOCOL_NONE,sizeof(report_descriptor),0x81,16,1),
 };
 static char serial[13];
-static struct output desired_keyboard;
-static uint16_t desired_consumer;
-static bool keyboard_dirty, consumer_dirty;
+// Owned only by the input task. TinyUSB callbacks never access this FIFO.
+#define USB_QUEUE_SIZE 64
+static struct output reports[USB_QUEUE_SIZE];
+static unsigned head,count;
+static int64_t last_progress;
+static bool failed;
 static const char *strings[] = {(char[]){9,4},"Cornix", "StopWatch Dongle (experimental)",serial,"Keyboard / media / wheel"};
 uint8_t const *tud_hid_descriptor_report_cb(uint8_t instance) { return report_descriptor; }
 uint16_t tud_hid_get_report_cb(uint8_t instance,uint8_t report_id,hid_report_type_t type,uint8_t *buffer,uint16_t len) {
@@ -60,31 +62,36 @@ void usb_start(void) {
 }
 
 void usb_poll(void) {
-    if (!tud_hid_ready()) return;
-    if (keyboard_dirty) {
-        if (tud_hid_keyboard_report(1,desired_keyboard.mods,desired_keyboard.keys)) {
-            keyboard_dirty=false;display_status_keyboard(desired_keyboard.mods,desired_keyboard.keys);
+    if(!count || failed)return;
+    if(tud_hid_ready()) {
+        const struct output *out=&reports[head];
+        bool sent=false;
+        if(out->kind==OUT_KEYBOARD)sent=tud_hid_keyboard_report(1,out->mods,out->keys);
+        else if(out->kind==OUT_CONSUMER)sent=tud_hid_report(2,&out->consumer,sizeof(out->consumer));
+        else if(out->kind==OUT_WHEEL)sent=tud_hid_mouse_report(3,0,0,0,out->wheel,0);
+        if(sent) {
+            if(out->kind==OUT_KEYBOARD)display_status_keyboard(out->mods,out->keys);
+            head=(head+1)%USB_QUEUE_SIZE;count--;last_progress=esp_timer_get_time();
+            return;
         }
-    } else if (consumer_dirty) {
-        if (tud_hid_report(2,&desired_consumer,sizeof(desired_consumer))) consumer_dirty=false;
     }
+    // Recovery is handled by the input task, not by waiting here and blocking keys.
+    if(tud_mounted() && !tud_suspended() && esp_timer_get_time()-last_progress>=100000)
+        failed=true;
 }
 
+bool usb_take_overflow(void) {bool value=failed;failed=false;return value;}
+
 void usb_output(const struct output *out, void *context) {
+    if(out->kind==OUT_RESET) {head=count=0;failed=false;return;}
     if(out->kind==OUT_WHEEL && out->wheel)
         display_status_activity(out->wheel>0?DISPLAY_HINT_SCROLL_UP:DISPLAY_HINT_SCROLL_DOWN);
     if(out->kind==OUT_CONSUMER && (out->consumer==233 || out->consumer==234))
         display_status_activity(out->consumer==233?DISPLAY_HINT_VOL_UP:DISPLAY_HINT_VOL_DOWN);
-    if (out->kind==OUT_WAIT) { vTaskDelay(pdMS_TO_TICKS(30)); return; }
-    if (out->kind==OUT_KEYBOARD) { desired_keyboard=*out; keyboard_dirty=true; }
-    if (out->kind==OUT_CONSUMER) { desired_consumer=out->consumer; consumer_dirty=true; }
-    int64_t deadline=esp_timer_get_time()+100000;
-    while (tud_mounted() && !tud_suspended() && esp_timer_get_time()<deadline) {
-        usb_poll();
-        if (!keyboard_dirty && !consumer_dirty && (out->kind!=OUT_WHEEL || tud_hid_ready())) break;
-        vTaskDelay(pdMS_TO_TICKS(1));
-    }
-    // Keep keyboard/media releases pending across a busy or suspended endpoint.
-    // Wheel reports are relative and can safely be dropped while disconnected.
-    if (out->kind==OUT_WHEEL && tud_hid_ready()) tud_hid_mouse_report(3,0,0,0,out->wheel,0);
+    if(out->kind!=OUT_KEYBOARD && out->kind!=OUT_CONSUMER && out->kind!=OUT_WHEEL)return;
+    if(failed)return;
+    if(count==USB_QUEUE_SIZE) {failed=true;return;}
+    if(!count)last_progress=esp_timer_get_time();
+    reports[(head+count++)%USB_QUEUE_SIZE]=*out;
+    usb_poll();
 }

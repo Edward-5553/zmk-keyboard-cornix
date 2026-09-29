@@ -14,6 +14,11 @@ Nordic 的板定义、原有 dongle 和 `build.yaml` 保持不变。
 
 ## 当前范围
 
+2026-09-29 输入路径修正：两条分体 BLE 链路显式采用 ZMK 的 7.5 ms / latency 30 /
+4 秒超时；空格/回车短按不再额外等待，宏与音量旋钮改为非阻塞定时行为，USB 使用保序队列。
+主机回归测试通过；本次整体固件编译及实机延迟对比尚未完成。
+对齐范围、上游依据和差异见 [ZMK 输入行为对齐](ZMK_COMPATIBILITY.md)。
+
 - 实现两条分体 BLE 连接及一条电脑 BLE HID 连接、ZMK split GATT 服务发现、加密订阅、NVS 配对保存和定向广播重连。
 - 构建时读取 `../../config/cornix.keymap` 作为 5 层 × 50 键的默认预设；
   支持通过 [HTML 编辑器](editor.html) 在线改键并保存到 NVS，重启后恢复。

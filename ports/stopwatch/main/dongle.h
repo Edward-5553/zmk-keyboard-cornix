@@ -7,4 +7,5 @@ void dongle_input(const struct input_event *event);
 void split_start(void);
 void usb_start(void);
 void usb_poll(void);
+bool usb_take_overflow(void);
 void usb_output(const struct output *out, void *context);

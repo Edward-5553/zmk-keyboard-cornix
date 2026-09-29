@@ -3,6 +3,7 @@
 #include "dongle.h"
 #include "ble_output.h"
 #include "display_status.h"
+#include "zmk_compat.h"
 #include "nimble/nimble_port.h"
 #include "nimble/nimble_port_freertos.h"
 #include "host/ble_hs.h"
@@ -32,6 +33,20 @@ static int64_t pairing_deadline;
 void ble_store_config_init(void);
 static int gap_event(struct ble_gap_event *event, void *arg);
 static void battery_discover(struct peer *p);
+static const struct ble_gap_conn_params split_params={
+    .scan_itvl=0x10,.scan_window=0x10,
+    .itvl_min=SPLIT_INTERVAL,.itvl_max=SPLIT_INTERVAL,
+    .latency=SPLIT_LATENCY,.supervision_timeout=SPLIT_TIMEOUT,
+};
+static void log_connection(uint16_t conn) {
+    struct ble_gap_conn_desc desc;
+    if(ble_gap_conn_find(conn,&desc))return;
+    ESP_LOGI(TAG,"Split %u: interval=%u (1.25ms), latency=%u, timeout=%u (10ms)",
+             conn,desc.conn_itvl,desc.conn_latency,desc.supervision_timeout);
+    if(desc.conn_itvl!=SPLIT_INTERVAL || desc.conn_latency!=SPLIT_LATENCY ||
+       desc.supervision_timeout!=SPLIT_TIMEOUT)
+        ESP_LOGW(TAG,"Split %u differs from ZMK preferred parameters",conn);
+}
 static void scan_later(void) { ble_npl_callout_reset(&scan_timer,ble_npl_time_ms_to_ticks32(500)); }
 
 static struct peer *find_peer(uint16_t conn) {
@@ -221,7 +236,7 @@ static int gap_event(struct ble_gap_event *event,void *arg) {
         if (event->disc.event_type!=BLE_HCI_ADV_RPT_EVTYPE_ADV_IND &&
             event->disc.event_type!=BLE_HCI_ADV_RPT_EVTYPE_DIR_IND) return 0;
         ble_gap_disc_cancel();
-        rc=ble_gap_connect(own_addr_type,&event->disc.addr,10000,NULL,gap_event,NULL);
+        rc=ble_gap_connect(own_addr_type,&event->disc.addr,10000,&split_params,gap_event,NULL);
         if (rc) scan_later();
         return 0;
     }
@@ -239,9 +254,16 @@ static int gap_event(struct ble_gap_event *event,void *arg) {
         uint8_t identity[7]={desc.peer_id_addr.type};
         memcpy(identity+1,desc.peer_id_addr.val,6);
         display_status_connect(p-peers,identity);
+        log_connection(p->conn);
         rc=ble_gap_security_initiate(p->conn);
         if (rc) fail(p,"start encryption",rc);
         scan_later();
+        return 0;
+    case BLE_GAP_EVENT_CONN_UPDATE:
+        if(find_peer(event->conn_update.conn_handle)) {
+            if(event->conn_update.status)ESP_LOGW(TAG,"Split parameter update: %d",event->conn_update.status);
+            log_connection(event->conn_update.conn_handle);
+        }
         return 0;
     case BLE_GAP_EVENT_ENC_CHANGE:
         p=find_peer(event->enc_change.conn_handle);

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 #include "engine.h"
 #include "keymap_generated.h"
+#include "zmk_compat.h"
 #include <string.h>
 
 static output_fn emit;
@@ -9,17 +10,28 @@ static struct binding active[50];
 static bool down[50];
 static uint16_t layers[LAYER_COUNT];
 static int pending;
-static uint32_t pending_at, last_tap_at[50];
-static bool tapped[50];
+static uint32_t pending_at, last_tap_at;
+static int last_tap_position;
 struct edge { uint8_t pos; bool down; uint32_t at; };
 static struct edge deferred[128];
 static unsigned deferred_count;
 static int64_t sensor_remainder[2];
 static struct binding live_keymap[LAYER_COUNT][50];
+// ZMK's behavior queue delays synthetic behaviors, never the physical input task.
+#define TAP_QUEUE_SIZE 64
+struct queued_tap { struct binding binding; uint16_t tap_ms, wait_ms; };
+static struct queued_tap tap_queue[TAP_QUEUE_SIZE];
+static unsigned tap_head,tap_count;
+static unsigned tap_phase; // 0=start, 1=pressed, 2=inter-behavior wait
+static uint32_t tap_deadline;
+static struct binding synthetic;
+static struct output last_keyboard,last_consumer;
+static bool reports_valid;
 _Static_assert(LAYER_COUNT==KEYMAP_LAYERS,"Update runtime protocol for layer count changes");
 
 uint32_t engine_keymap_schema(void) {return KEYMAP_SCHEMA;}
 bool engine_idle(void) {
+    if(tap_count)return false;
     for(unsigned i=0;i<50;i++)if(down[i])return false;
     return true;
 }
@@ -68,8 +80,8 @@ static void report(struct binding extra) {
     struct output keyboard = {.kind=OUT_KEYBOARD};
     struct output consumer = {.kind=OUT_CONSUMER};
     bool keys[256] = {0};
-    for (int i=0; i<=50; i++) {
-        struct binding b = i==50 ? extra : active[i];
+    for (int i=0; i<=51; i++) {
+        struct binding b = i==51 ? synthetic : i==50 ? extra : active[i];
         if (b.kind != B_KEY) continue;
         keyboard.mods |= b.mods;
         if (b.page==12) consumer.consumer=b.code;
@@ -82,16 +94,39 @@ static void report(struct binding extra) {
         count++;
     }
     if (count>6) memset(keyboard.keys, 1, sizeof(keyboard.keys)); // HID ErrorRollOver
-    emit(&keyboard,emit_context);
-    emit(&consumer,emit_context);
+    if(!reports_valid || keyboard.mods!=last_keyboard.mods ||
+       memcmp(keyboard.keys,last_keyboard.keys,sizeof(keyboard.keys)))emit(&keyboard,emit_context);
+    if(!reports_valid || consumer.consumer!=last_consumer.consumer)emit(&consumer,emit_context);
+    last_keyboard=keyboard;last_consumer=consumer;reports_valid=true;
 }
 
-static void tap(struct binding b) {
-    b.kind=B_KEY;
-    report(b);
-    emit(&(struct output){.kind=OUT_WAIT},emit_context);
-    report((struct binding){0});
-    emit(&(struct output){.kind=OUT_WAIT},emit_context);
+static bool queue_taps(const struct binding *bindings,unsigned count,unsigned tap_ms,unsigned wait_ms) {
+    if(count>TAP_QUEUE_SIZE-tap_count) {engine_cancel();return false;}
+    for(unsigned i=0;i<count;i++) {
+        unsigned slot=(tap_head+tap_count++)%TAP_QUEUE_SIZE;
+        tap_queue[slot]=(struct queued_tap){bindings[i],tap_ms,wait_ms};
+        tap_queue[slot].binding.kind=B_KEY;
+    }
+    return true;
+}
+
+static void tick_taps(uint32_t now) {
+    while(tap_count) {
+        struct queued_tap *t=&tap_queue[tap_head];
+        if(tap_phase && (int32_t)(now-tap_deadline)<0)return;
+        if(tap_phase==0) {
+            last_tap_position=-1;last_tap_at=now;
+            synthetic=t->binding;report((struct binding){0});
+            tap_phase=1;tap_deadline=now+t->tap_ms;
+            if(t->tap_ms)return;
+        } else if(tap_phase==1) {
+            synthetic=(struct binding){0};report((struct binding){0});
+            tap_phase=2;tap_deadline=now+t->wait_ms;
+            if(t->wait_ms)return;
+        } else {
+            tap_head=(tap_head+1)%TAP_QUEUE_SIZE;tap_count--;tap_phase=0;
+        }
+    }
 }
 
 static struct binding resolve(unsigned pos) {
@@ -128,31 +163,42 @@ void engine_cancel(void) {
     memset(active,0,sizeof(active));
     memset(down,0,sizeof(down));
     memset(layers,0,sizeof(layers));
-    memset(tapped,0,sizeof(tapped));
+    last_tap_position=-1;last_tap_at=0;
+    tap_head=tap_count=tap_phase=0;
+    synthetic=(struct binding){0};
     memset(sensor_remainder,0,sizeof(sensor_remainder));
     pending=-1;
     deferred_count=0;
-    if (emit) report((struct binding){0});
+    reports_valid=false;
+    if (emit) {
+        emit(&(struct output){.kind=OUT_RESET},emit_context);
+        report((struct binding){0});
+    }
 }
 
 void engine_tick(uint32_t now) {
     // Unsigned subtraction handles the millisecond counter wrapping.
-    if (pending>=0 && (uint32_t)(now-pending_at)>=200) hold_pending();
+    if (pending>=0 && (uint32_t)(now-pending_at)>=HOLD_TAP_TERM_MS) hold_pending();
+    tick_taps(now);
 }
+
+void engine_poll(uint32_t now) {tick_taps(now);}
 
 void engine_position(uint8_t pos, bool pressed, uint32_t now) {
     if (pos>=50) return;
-    engine_tick(now);
+    // Replayed position timestamps must not advance the synthetic behavior clock.
+    if(pending>=0 && (uint32_t)(now-pending_at)>=HOLD_TAP_TERM_MS)hold_pending();
     if (pending>=0) {
         if (pos==pending && !pressed) {
-            struct binding b=active[pos];
-            active[pos]=(struct binding){0};
+            active[pos].kind=B_KEY;
             down[pos]=false;
             pending=-1;
-            tapped[pos]=true;
-            last_tap_at[pos]=now;
-            tap(b);
+            last_tap_position=pos;
+            last_tap_at=pending_at; // ZMK quick-tap measures press-to-press.
+            report((struct binding){0});
             replay();
+            active[pos]=(struct binding){0};
+            report((struct binding){0});
             return;
         }
         if (pos==pending) return;
@@ -160,10 +206,15 @@ void engine_position(uint8_t pos, bool pressed, uint32_t now) {
         bool intervening=false;
         for (unsigned i=0; i<deferred_count; i++)
             if (deferred[i].pos==pos && deferred[i].down) intervening=true;
-        if (deferred_count==128) { engine_cancel(); return; }
-        deferred[deferred_count++]=(struct edge){pos,pressed,now};
-        if (!pressed && intervening) hold_pending();
-        return;
+        bool modifier=active[pos].kind==B_KEY && active[pos].page==7 &&
+                      active[pos].code>=224 && active[pos].code<=231;
+        // ZMK lets releases of previously held non-modifier keys pass through.
+        if(pressed || intervening || modifier) {
+            if (deferred_count==128) { engine_cancel(); return; }
+            deferred[deferred_count++]=(struct edge){pos,pressed,now};
+            if (!pressed && intervening) hold_pending();
+            return;
+        }
     }
     if (down[pos]==pressed) return;
     down[pos]=pressed;
@@ -175,9 +226,11 @@ void engine_position(uint8_t pos, bool pressed, uint32_t now) {
         return;
     }
     struct binding b=resolve(pos);
+    bool layer_tap=b.kind==B_LT;
     if (b.kind==B_LT) {
-        if (tapped[pos] && (uint32_t)(now-last_tap_at[pos])<150) {
+        if (last_tap_position==pos && (uint32_t)(now-last_tap_at)<QUICK_TAP_MS) {
             b.kind=B_KEY; // Quick second tap can be held for host key repeat.
+            last_tap_at=now;
         } else {
             active[pos]=b;
             pending=pos;
@@ -186,8 +239,12 @@ void engine_position(uint8_t pos, bool pressed, uint32_t now) {
         }
     }
     active[pos]=b;
+    if(b.kind==B_KEY && !(b.page==7 && b.code>=224 && b.code<=231) &&
+       !layer_tap && (int32_t)(now-last_tap_at)>0) {
+        last_tap_position=-1;last_tap_at=now;
+    }
     if (b.kind==B_MACRO) {
-        for (unsigned i=0; i<macro_lengths[b.code]; i++) tap(macros[b.code][i]);
+        queue_taps(macros[b.code],macro_lengths[b.code],MACRO_TAP_MS,MACRO_WAIT_MS);
     } else report((struct binding){0});
 }
 
@@ -212,7 +269,10 @@ bool engine_sensor(const uint8_t *data, size_t size) {
         if (data[0]==0) {
             struct output out={.kind=OUT_WHEEL,.wheel=-direction};
             emit(&out,emit_context);
-        } else tap((struct binding){.kind=B_KEY,.code=direction>0?233:234,.page=12});
+        } else {
+            struct binding b={.kind=B_KEY,.code=direction>0?233:234,.page=12};
+            if(!queue_taps(&b,1,SENSOR_TAP_MS,0))return false;
+        }
     }
     return true;
 }

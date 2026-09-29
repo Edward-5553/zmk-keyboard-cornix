@@ -36,6 +36,14 @@ with tempfile.TemporaryDirectory(prefix='stopwatch-',ignore_cleanup_errors=True)
               str(PORT/'tests/engine_test.c'),'-o',str(path/'engine-test.exe')]
     subprocess.run(command,check=True)
     subprocess.run([str(path/'engine-test.exe')],check=True)
+    for name, sources in [('timing', ['engine.c']), ('usb', ['engine.c','usb.c'])]:
+        command=[cc]+(['cc'] if Path(cc).stem=='zig' else [])
+        command+=['-std=c11','-Wall','-Wextra','-Werror','-Wno-unused-parameter',
+                  '-I'+str(PORT/'tests/stubs'),'-I'+str(PORT/'main'),'-I'+str(path)]
+        command += [str(PORT/'main'/s) for s in sources]
+        command += [str(PORT/f'tests/{name}_test.c'),'-o',str(path/f'{name}-test.exe')]
+        subprocess.run(command,check=True)
+        subprocess.run([str(path/f'{name}-test.exe')],check=True)
     command=[cc]+(['cc'] if Path(cc).stem=='zig' else [])
     command+=['-std=c11','-Wall','-Wextra','-Werror','-Wno-unused-parameter',
               '-I'+str(PORT/'main'),'-I'+str(path),str(PORT/'main/engine.c'),

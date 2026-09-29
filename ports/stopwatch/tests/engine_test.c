@@ -42,6 +42,7 @@ int main(void) {
     reset(); engine_position(43,true,0); engine_cancel(); assert(!saw(0,44,0)); up();
     // Macro produces { } Left, with Shift only on the bracket strokes.
     reset(); engine_position(44,true,0); engine_tick(201); engine_position(13,true,202);
+    for(unsigned t=202;t<=382;t++)engine_tick(t);
     assert(saw(0,47,2)); assert(saw(0,48,2)); assert(saw(0,80,0));
     engine_position(13,false,210); engine_position(44,false,220); up();
     // Two physical Shift keys must keep Shift down until both are released.
@@ -62,6 +63,7 @@ int main(void) {
     reset(); uint8_t sensor[14]={0,1,9}; assert(engine_sensor(sensor,14)); assert(count==0);
     assert(engine_sensor(sensor,14)); assert(count==1 && log_entries[0].wheel==-1);
     sensor[0]=1; sensor[2]=18; assert(engine_sensor(sensor,14));
+    engine_tick(1);
     bool volume=false; for(unsigned i=0;i<count;i++) if(log_entries[i].consumer==233) volume=true;
     assert(volume); assert(!engine_sensor(sensor,13)); sensor[0]=2; assert(!engine_sensor(sensor,14));
     // Legacy negative tick and invalid giant tick.

@@ -47,8 +47,10 @@ void app_main(void) {
         display_status_layer(engine_layer());
         if(mounted && !now_mounted)keymap_config_disconnect();
         mounted=now_mounted;
+        bool output_overflow=usb_take_overflow();
+        output_overflow=atomic_exchange(&overflow,false) || output_overflow;
         if (output_router_update(&router,tud_mounted(),tud_suspended(),ble_session,
-                                 atomic_exchange(&overflow,false))) {
+                                 output_overflow)) {
             memset(states,0,sizeof(states));
             memset(merged,0,sizeof(merged));
             xQueueReset(inputs);
@@ -57,7 +59,11 @@ void app_main(void) {
         if(keymap_config_poll()) {
             memset(states,0,sizeof(states));memset(merged,0,sizeof(merged));xQueueReset(inputs);
         }
-        if (xQueueReceive(inputs,&e,pdMS_TO_TICKS(5))!=pdTRUE) {
+        // Tick synthetic behaviors even under continuous input; no 30 ms sleeps.
+        // Already-received physical releases must be considered before a wall-clock
+        // hold timeout; engine_tick handles that timeout when the input FIFO is empty.
+        engine_poll(millis());
+        if (xQueueReceive(inputs,&e,pdMS_TO_TICKS(1))!=pdTRUE) {
             engine_tick(millis());
             continue;
         }

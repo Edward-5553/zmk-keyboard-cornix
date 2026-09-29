@@ -63,6 +63,6 @@ int main(void) {
     o=(struct output){.kind=OUT_WHEEL,.wheel=-1};
     assert(output_hid_report(&o,bytes,&index)==5 && index==2 && bytes[3]==255);
     assert(!bytes[0] && !bytes[1] && !bytes[2] && !bytes[4]);
-    o.kind=OUT_WAIT;assert(!output_hid_report(&o,bytes,&index));
+    o.kind=OUT_RESET;assert(!output_hid_report(&o,bytes,&index));
     puts("USB/BLE routing, ordered tap, release, suspend and reconnect tests passed");
 }

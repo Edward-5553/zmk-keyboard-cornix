@@ -6,12 +6,13 @@
 
 enum binding_kind { B_NONE, B_TRANS, B_KEY, B_LT, B_MACRO };
 struct binding { uint8_t kind, mods; uint16_t code; uint8_t page, layer; };
-enum output_kind { OUT_KEYBOARD, OUT_CONSUMER, OUT_WHEEL, OUT_WAIT };
+enum output_kind { OUT_KEYBOARD, OUT_CONSUMER, OUT_WHEEL, OUT_RESET };
 struct output { enum output_kind kind; uint8_t mods, keys[6]; uint16_t consumer; int8_t wheel; };
 typedef void (*output_fn)(const struct output *, void *);
 void engine_init(output_fn output, void *context);
 void engine_position(uint8_t position, bool pressed, uint32_t now);
 void engine_tick(uint32_t now);
+void engine_poll(uint32_t now); // Advance synthetic work without deciding queued physical edges.
 uint8_t engine_layer(void);
 void engine_cancel(void); // Disconnect/overflow: release everything, never emit a tap.
 bool engine_sensor(const uint8_t *data, size_t size);
