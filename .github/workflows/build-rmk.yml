@@ -142,7 +142,7 @@ jobs:
           source "$HOME/export-esp.sh"
           if [ "${{ inputs.diagnostic_usb }}" = "true" ]; then
             python3 -c 'from pathlib import Path; p=Path("keyboard.toml"); s=p.read_text(); assert "usb_enable = true" in s; p.write_text(s.replace("usb_enable = true", "usb_enable = false"))'
-            cargo +esp build --locked --release --no-default-features --features diagnostic-usb
+            cargo +esp build --offline --release --no-default-features --features diagnostic-usb
           else
             cargo +esp build --locked --release
           fi
